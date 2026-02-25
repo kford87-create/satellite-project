@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kestrel AI — Object Detection</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236;
+      --border: #1e2d45; --accent: #3b82f6; --accent2: #60a5fa;
+      --green: #22c55e; --yellow: #eab308; --muted: #64748b; --text: #e2e8f0;
+    }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* ── Login ── */
+    #login-screen { display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+    .login-card { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; padding: 40px; width: 100%; max-width: 400px; }
+    .login-logo { font-size: 32px; margin-bottom: 8px; text-align: center; }
+    .login-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 32px; }
+    .field { margin-bottom: 16px; }
+    .field label { display: block; font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+    .field input { width: 100%; padding: 10px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: var(--text); font-size: 14px; outline: none; transition: border-color 0.15s; }
+    .field input:focus { border-color: var(--accent); }
+    .login-btn { width: 100%; padding: 11px; background: var(--accent); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; margin-top: 8px; transition: background 0.15s; }
+    .login-btn:hover { background: #2563eb; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error { margin-top: 12px; padding: 10px 14px; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3); border-radius: 8px; font-size: 13px; color: #f87171; display: none; }
+
+    /* ── App shell ── */
+    #app { display: none; flex-direction: column; height: 100vh; }
+    header { display: flex; align-items: center; justify-content: space-between; padding: 12px 24px; border-bottom: 1px solid var(--border); background: var(--surface); flex-shrink: 0; }
+    .logo { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 17px; }
+    .logo span { color: var(--accent2); }
+    .badge { font-size: 11px; padding: 2px 8px; border-radius: 99px; background: rgba(59,130,246,0.15); color: var(--accent2); border: 1px solid rgba(59,130,246,0.3); font-weight: 600; }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .user-pill { font-size: 12px; color: var(--muted); padding: 4px 12px; border: 1px solid var(--border); border-radius: 99px; }
+    .signout-btn { font-size: 12px; color: var(--muted); background: none; border: none; cursor: pointer; padding: 4px 8px; border-radius: 6px; }
+    .signout-btn:hover { color: var(--text); }
+
+    /* ── Search bar ── */
+    .search-bar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 24px; background: var(--surface);
+      border-bottom: 1px solid var(--border); flex-shrink: 0;
+    }
+    .search-input-wrap {
+      flex: 1; display: flex; align-items: center; gap: 8px;
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 0 12px;
+      transition: border-color 0.15s;
+    }
+    .search-input-wrap:focus-within { border-color: var(--accent); }
+    .search-icon { font-size: 16px; opacity: 0.4; flex-shrink: 0; }
+    #search-input {
+      flex: 1; background: none; border: none; outline: none;
+      color: var(--text); font-size: 14px; padding: 9px 0;
+    }
+    #search-input::placeholder { color: var(--muted); }
+    .search-btn {
+      padding: 9px 20px; background: var(--accent); color: white;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: background 0.15s; flex-shrink: 0;
+      white-space: nowrap;
+    }
+    .search-btn:hover { background: #2563eb; }
+    .search-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .divider { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+    .upload-link {
+      font-size: 13px; color: var(--muted); cursor: pointer;
+      padding: 4px 8px; border-radius: 6px; white-space: nowrap;
+      border: 1px solid var(--border); transition: all 0.15s;
+    }
+    .upload-link:hover { color: var(--text); border-color: var(--accent2); }
+    #file-input { display: none; }
+
+    /* ── Body layout ── */
+    .body-layout { display: grid; grid-template-columns: 1fr 340px; flex: 1; overflow: hidden; }
+
+    /* ── Image panel ── */
+    .main-panel { display: flex; flex-direction: column; overflow: hidden; }
+    .toolbar {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 20px; border-bottom: 1px solid var(--border);
+      background: var(--surface); flex-shrink: 0;
+    }
+    .chip { padding: 4px 12px; border-radius: 6px; font-size: 12px; font-weight: 500; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); transition: all 0.15s; }
+    .chip.active { background: rgba(59,130,246,0.15); border-color: var(--accent); color: var(--accent2); }
+    .chip:disabled { opacity: 0.35; cursor: not-allowed; }
+    .spacer { flex: 1; }
+    .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--green); box-shadow: 0 0 5px var(--green); }
+    .status-text { font-size: 12px; color: var(--muted); }
+
+    .image-area { flex: 1; display: flex; align-items: center; justify-content: center; position: relative; background: #070c14; overflow: hidden; }
+
+    /* Empty / idle state */
+    .idle-state { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 12px; color: var(--muted); }
+    .idle-icon { font-size: 56px; opacity: 0.15; }
+    .idle-title { font-size: 15px; opacity: 0.5; }
+    .idle-sub { font-size: 12px; opacity: 0.35; }
+
+    #result-img { display: none; max-width: 100%; max-height: 100%; object-fit: contain; }
+
+    .image-tags { position: absolute; bottom: 12px; left: 12px; display: flex; flex-wrap: wrap; gap: 6px; }
+    .img-tag { padding: 3px 9px; background: rgba(0,0,0,0.72); border: 1px solid rgba(255,255,255,0.08); border-radius: 5px; font-size: 11px; color: var(--muted); backdrop-filter: blur(4px); }
+    .img-tag.bright { color: var(--accent2); border-color: rgba(96,165,250,0.25); }
+
+    /* Google Maps credit (required by ToS) */
+    .maps-credit { position: absolute; bottom: 12px; right: 12px; font-size: 10px; color: var(--muted); opacity: 0.5; }
+
+    /* Spinner */
+    #spinner { display: none; position: absolute; inset: 0; background: rgba(7,12,20,0.85); align-items: center; justify-content: center; flex-direction: column; gap: 14px; backdrop-filter: blur(3px); }
+    .spin { width: 38px; height: 38px; border: 3px solid var(--border); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.75s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .spin-label { font-size: 13px; color: var(--muted); }
+    .spin-sublabel { font-size: 11px; color: var(--muted); opacity: 0.5; }
+
+    /* ── Sidebar ── */
+    .sidebar { border-left: 1px solid var(--border); background: var(--surface); display: flex; flex-direction: column; overflow: hidden; }
+    .sidebar-header { padding: 12px 18px 10px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .sidebar-title { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: var(--border); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .stat { background: var(--surface); padding: 12px 18px; }
+    .stat-value { font-size: 24px; font-weight: 700; line-height: 1; margin-bottom: 3px; }
+    .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+    .stat-value.blue { color: var(--accent2); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.yellow { color: var(--yellow); }
+    .stat-value.muted { color: var(--muted); }
+
+    .threshold-row { display: flex; align-items: center; gap: 10px; padding: 9px 18px; border-bottom: 1px solid var(--border); flex-shrink: 0; }
+    .threshold-label { font-size: 12px; color: var(--muted); flex-shrink: 0; }
+    input[type=range] { flex: 1; -webkit-appearance: none; height: 3px; background: var(--border); border-radius: 2px; outline: none; cursor: pointer; }
+    input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 13px; height: 13px; border-radius: 50%; background: var(--accent); cursor: pointer; }
+    .threshold-val { font-size: 12px; color: var(--accent2); font-variant-numeric: tabular-nums; width: 32px; text-align: right; flex-shrink: 0; }
+
+    .empty-state { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; }
+    .empty-icon { font-size: 32px; opacity: 0.15; }
+    .empty-text { font-size: 13px; color: var(--muted); opacity: 0.5; }
+
+    .detections-list { flex: 1; overflow-y: auto; padding: 4px 0; }
+    .detections-list::-webkit-scrollbar { width: 4px; }
+    .detections-list::-webkit-scrollbar-track { background: transparent; }
+    .detections-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+
+    .detection-item { display: flex; align-items: center; gap: 10px; padding: 8px 18px; cursor: pointer; transition: background 0.1s; }
+    .detection-item:hover { background: var(--surface2); }
+    .detection-item.selected { background: rgba(59,130,246,0.08); }
+    .det-rank { font-size: 11px; color: var(--muted); width: 18px; text-align: right; flex-shrink: 0; }
+    .det-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+    .dot-building { background: #22c55e; } .dot-vehicle { background: #f97316; }
+    .dot-aircraft { background: #3b82f6; } .dot-ship { background: #a855f7; }
+    .det-info { flex: 1; min-width: 0; }
+    .det-class { font-size: 13px; font-weight: 500; text-transform: capitalize; }
+    .det-bar { margin-top: 4px; height: 3px; background: var(--border); border-radius: 2px; overflow: hidden; }
+    .det-fill { height: 100%; border-radius: 2px; transition: width 0.4s; }
+    .fill-high { background: var(--green); } .fill-med { background: var(--yellow); } .fill-low { background: var(--muted); }
+    .det-conf { font-size: 12px; font-variant-numeric: tabular-nums; flex-shrink: 0; }
+    .det-conf.high { color: var(--green); } .det-conf.med { color: var(--yellow); } .det-conf.low { color: var(--muted); }
+
+    .sidebar-footer { padding: 12px 18px; border-top: 1px solid var(--border); display: flex; flex-direction: column; gap: 6px; flex-shrink: 0; }
+    .meta-row { display: flex; justify-content: space-between; align-items: center; }
+    .meta-label { font-size: 11px; color: var(--muted); }
+    .meta-value { font-size: 12px; color: var(--text); font-variant-numeric: tabular-nums; }
+    .meta-value.dim { color: var(--muted); font-size: 10px; }
+  </style>
+</head>
+<body>
+
+<!-- ── Login ── -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🛰️</div>
+    <div class="login-title">Kestrel AI</div>
+    <div class="login-sub">Sign in to run object detection</div>
+    <div class="field"><label>Email</label><input id="email" type="email" placeholder="you@example.com" /></div>
+    <div class="field"><label>Password</label><input id="password" type="password" placeholder="••••••••" /></div>
+    <button class="login-btn" id="login-btn" onclick="signIn()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ── App ── -->
+<div id="app">
+  <header>
+    <div class="logo">🛰️ Satellite<span>Vision</span><span class="badge">API v1</span></div>
+    <div class="header-right">
+      <span class="user-pill" id="user-email">—</span>
+      <button class="signout-btn" onclick="signOut()">Sign out</button>
+    </div>
+  </header>
+
+  <!-- Search bar -->
+  <div class="search-bar">
+    <div class="search-input-wrap">
+      <span class="search-icon">📍</span>
+      <input id="search-input" type="text"
+        placeholder="Enter address or coordinates — e.g. Pentagon, Arlington VA or 38.8719° N, 77.0563° W"
+        onkeydown="if(event.key==='Enter') runGeoDetect()" />
+    </div>
+    <button class="search-btn" id="search-btn" onclick="runGeoDetect()">Detect</button>
+    <span class="divider">or</span>
+    <span class="upload-link" onclick="document.getElementById('file-input').click()">Upload image</span>
+    <input type="file" id="file-input" accept="image/jpeg,image/png" onchange="onFileSelected(event)" />
+  </div>
+
+  <div class="body-layout">
+    <!-- Image panel -->
+    <div class="main-panel">
+      <div class="toolbar">
+        <button class="chip active" id="chip-annotated" onclick="setView('annotated')" disabled>Annotated</button>
+        <button class="chip" id="chip-original" onclick="setView('original')" disabled>Original</button>
+        <div class="spacer"></div>
+        <div class="status-dot"></div>
+        <span class="status-text">yolov8n-satellite-v1</span>
+      </div>
+
+      <div class="image-area">
+        <!-- Idle -->
+        <div class="idle-state" id="idle-state">
+          <div class="idle-icon">🛰️</div>
+          <div class="idle-title">Enter an address or upload an image</div>
+          <div class="idle-sub">Detects buildings · vehicles · aircraft · ships</div>
+        </div>
+
+        <!-- Result image -->
+        <img id="result-img" alt="Detection result" />
+
+        <!-- Metadata tags -->
+        <div class="image-tags" id="image-tags" style="display:none">
+          <span class="img-tag bright" id="tag-location"></span>
+          <span class="img-tag" id="tag-coverage"></span>
+          <span class="img-tag" id="tag-dims"></span>
+          <span class="img-tag" id="tag-time"></span>
+        </div>
+
+        <!-- Google Maps credit -->
+        <div class="maps-credit" id="maps-credit" style="display:none">Imagery © Google Maps</div>
+
+        <!-- Spinner -->
+        <div id="spinner">
+          <div class="spin"></div>
+          <div class="spin-label" id="spin-label">Fetching satellite imagery…</div>
+          <div class="spin-sublabel" id="spin-sub"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="sidebar-header"><div class="sidebar-title">Detections</div></div>
+
+      <div class="stats-grid">
+        <div class="stat"><div class="stat-value blue" id="stat-total">—</div><div class="stat-label">Total</div></div>
+        <div class="stat"><div class="stat-value green" id="stat-high">—</div><div class="stat-label">High ≥0.7</div></div>
+        <div class="stat"><div class="stat-value yellow" id="stat-low">—</div><div class="stat-label">Low &lt;0.7</div></div>
+        <div class="stat"><div class="stat-value muted" id="stat-classes">—</div><div class="stat-label">Classes</div></div>
+      </div>
+
+      <div class="threshold-row">
+        <span class="threshold-label">Min conf</span>
+        <input type="range" id="threshold" min="0" max="95" value="25" oninput="onThresholdChange(this.value)" />
+        <span class="threshold-val" id="threshold-val">0.25</span>
+      </div>
+
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">📡</div>
+        <div class="empty-text" id="empty-text">Search a location to begin</div>
+      </div>
+      <div class="detections-list" id="det-list" style="display:none"></div>
+
+      <div class="sidebar-footer">
+        <div class="meta-row"><span class="meta-label">Source</span><span class="meta-value" id="meta-source">—</span></div>
+        <div class="meta-row"><span class="meta-label">Coordinates</span><span class="meta-value dim" id="meta-coords">—</span></div>
+        <div class="meta-row"><span class="meta-label">Processing</span><span class="meta-value" id="meta-time">—</span></div>
+        <div class="meta-row"><span class="meta-label">Request ID</span><span class="meta-value dim" id="meta-reqid">—</span></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://obdsgqjkjjmmtbcfjhnn.supabase.co";
+const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iZHNncWpramptbXRiY2ZqaG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3Nzg0NTEsImV4cCI6MjA4NzM1NDQ1MX0.NTgpPQzvz0a844_dAaQJOr2GacCOgToyWBtBT07l9e0";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let token = null;
+let originalB64 = null;
+let annotatedB64 = null;
+let allDetections = [];
+let currentThreshold = 0.25;
+let currentMode = 'search'; // 'search' | 'upload'
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function signIn() {
+  const email = document.getElementById('email').value.trim();
+  const password = document.getElementById('password').value;
+  const btn = document.getElementById('login-btn');
+  const err = document.getElementById('login-error');
+  if (!email || !password) { showLoginError('Enter email and password.'); return; }
+  btn.disabled = true; btn.textContent = 'Signing in…'; err.style.display = 'none';
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+    token = data.session.access_token;
+    document.getElementById('user-email').textContent = data.user.email;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'flex';
+    document.getElementById('search-input').focus();
+  } catch(e) {
+    showLoginError(e.message || 'Sign-in failed.');
+    btn.disabled = false; btn.textContent = 'Sign In';
+  }
+}
+async function signOut() {
+  await sb.auth.signOut(); token = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  resetAll();
+}
+function showLoginError(msg) {
+  const el = document.getElementById('login-error');
+  el.textContent = msg; el.style.display = 'block';
+}
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('password').addEventListener('keydown', e => { if(e.key==='Enter') signIn(); });
+  document.getElementById('email').addEventListener('keydown', e => { if(e.key==='Enter') document.getElementById('password').focus(); });
+});
+
+// ── Geo detection (address / coordinates) ─────────────────────────────────────
+async function runGeoDetect() {
+  const raw = document.getElementById('search-input').value.trim();
+  if (!raw || !token) return;
+
+  const btn = document.getElementById('search-btn');
+  btn.disabled = true; btn.textContent = 'Searching…';
+
+  showSpinner('Geocoding address…', 'Resolving location');
+  resetResults();
+
+  try {
+    // Parse coordinates if user typed lat/lng directly
+    const coordMatch = raw.match(/^(-?\d+\.?\d*)[°\s,]+(-?\d+\.?\d*)/);
+    let body;
+    if (coordMatch) {
+      body = { lat: parseFloat(coordMatch[1]), lng: parseFloat(coordMatch[2]), return_image: true, confidence_threshold: currentThreshold };
+      setSpinLabel('Fetching satellite imagery…', `${coordMatch[1]}, ${coordMatch[2]}`);
+    } else {
+      body = { address: raw, return_image: true, confidence_threshold: currentThreshold };
+      setSpinLabel('Fetching satellite imagery…', raw);
+    }
+
+    setTimeout(() => setSpinLabel('Running detection…', 'YOLOv8 inference'), 1200);
+
+    const resp = await fetch(`${SUPABASE_URL}/functions/v1/detect-objects`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    const data = await resp.json();
+    if (!data.success) throw new Error(data.error || 'Detection failed');
+
+    handleResult(data, 'google_maps');
+
+  } catch(e) {
+    hideSpinner();
+    showEmptyState(`Error: ${e.message}`);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Detect';
+  }
+}
+
+// ── File upload detection ─────────────────────────────────────────────────────
+function onFileSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async (ev) => {
+    originalB64 = ev.target.result.split(',')[1];
+    showSpinner('Running detection…', 'YOLOv8 inference');
+    resetResults();
+    try {
+      const resp = await fetch(`${SUPABASE_URL}/functions/v1/detect-objects`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ image_base64: originalB64, return_image: true, confidence_threshold: currentThreshold }),
+      });
+      const data = await resp.json();
+      if (!data.success) throw new Error(data.error || 'Detection failed');
+      handleResult(data, 'upload');
+    } catch(e) {
+      hideSpinner();
+      showEmptyState(`Error: ${e.message}`);
+    }
+  };
+  reader.readAsDataURL(file);
+  // reset so same file can be selected again
+  e.target.value = '';
+}
+
+// ── Handle API response ───────────────────────────────────────────────────────
+function handleResult(data, source) {
+  allDetections = data.detections || [];
+  annotatedB64  = data.annotated_image_base64;
+
+  // Show image
+  document.getElementById('idle-state').style.display = 'none';
+  const img = document.getElementById('result-img');
+  img.src = annotatedB64 ? `data:image/jpeg;base64,${annotatedB64}` : '';
+  img.style.display = 'block';
+
+  // Enable toggles
+  document.getElementById('chip-annotated').disabled = !annotatedB64;
+  document.getElementById('chip-original').disabled = true; // no separate original for geo mode
+
+  // Tags
+  const tags = document.getElementById('image-tags');
+  tags.style.display = 'flex';
+
+  if (data.location) {
+    const loc = data.location;
+    const shortAddr = loc.address ? loc.address.split(',').slice(0,2).join(',') : `${loc.lat.toFixed(4)}, ${loc.lng.toFixed(4)}`;
+    document.getElementById('tag-location').textContent = `📍 ${shortAddr}`;
+    document.getElementById('tag-location').style.display = '';
+    document.getElementById('tag-coverage').textContent = `${loc.coverage_m}m × ${loc.coverage_m}m · ${loc.meters_per_pixel}m/px`;
+    document.getElementById('maps-credit').style.display = 'block';
+    document.getElementById('meta-coords').textContent = `${loc.lat.toFixed(5)}, ${loc.lng.toFixed(5)}`;
+  } else {
+    document.getElementById('tag-location').style.display = 'none';
+    document.getElementById('tag-coverage').textContent = '';
+    document.getElementById('maps-credit').style.display = 'none';
+    document.getElementById('meta-coords').textContent = '—';
+  }
+
+  if (data.image_width && data.image_height) {
+    document.getElementById('tag-dims').textContent = `${data.image_width} × ${data.image_height}px`;
+  }
+  document.getElementById('tag-time').textContent = `${data.processing_time_ms}ms`;
+
+  // Stats
+  document.getElementById('stat-total').textContent   = data.summary.total_objects;
+  document.getElementById('stat-high').textContent    = data.summary.high_confidence;
+  document.getElementById('stat-low').textContent     = data.summary.low_confidence;
+  document.getElementById('stat-classes').textContent = Object.keys(data.summary.by_class || {}).length || 0;
+
+  // Meta
+  const sourceLabel = { google_maps: 'Google Maps Satellite', upload: 'Uploaded image', url: 'Image URL' };
+  document.getElementById('meta-source').textContent = sourceLabel[source] || source;
+  document.getElementById('meta-time').textContent   = `${data.processing_time_ms}ms`;
+  document.getElementById('meta-reqid').textContent  = data.request_id;
+
+  hideSpinner();
+  renderDetections(allDetections);
+}
+
+// ── Detections list ───────────────────────────────────────────────────────────
+function renderDetections(dets) {
+  const list  = document.getElementById('det-list');
+  const empty = document.getElementById('empty-state');
+  if (!dets.length) {
+    list.style.display = 'none'; empty.style.display = 'flex';
+    document.getElementById('empty-text').textContent = 'No objects detected above threshold';
+    return;
+  }
+  empty.style.display = 'none'; list.style.display = 'block'; list.innerHTML = '';
+  dets.forEach((det, i) => {
+    const conf = det.confidence;
+    const tier = conf >= 0.7 ? 'high' : conf >= 0.5 ? 'med' : 'low';
+    const div  = document.createElement('div');
+    div.className = `detection-item${i===0?' selected':''}`;
+    div.innerHTML = `
+      <span class="det-rank">${i+1}</span>
+      <div class="det-dot dot-${det.class_name}"></div>
+      <div class="det-info">
+        <div class="det-class">${det.class_name}</div>
+        <div class="det-bar"><div class="det-fill fill-${tier}" style="width:${(conf*100).toFixed(0)}%"></div></div>
+      </div>
+      <span class="det-conf ${tier}">${conf.toFixed(3)}</span>`;
+    div.addEventListener('click', () => {
+      list.querySelectorAll('.detection-item').forEach(el => el.classList.remove('selected'));
+      div.classList.add('selected');
+    });
+    list.appendChild(div);
+  });
+}
+
+// ── View toggle ───────────────────────────────────────────────────────────────
+function setView(which) {
+  const img = document.getElementById('result-img');
+  if (which === 'annotated' && annotatedB64) img.src = `data:image/jpeg;base64,${annotatedB64}`;
+  else if (which === 'original' && originalB64) img.src = `data:image/jpeg;base64,${originalB64}`;
+  document.getElementById('chip-annotated').classList.toggle('active', which==='annotated');
+  document.getElementById('chip-original').classList.toggle('active', which==='original');
+}
+
+// ── Threshold ─────────────────────────────────────────────────────────────────
+function onThresholdChange(val) {
+  currentThreshold = val / 100;
+  document.getElementById('threshold-val').textContent = currentThreshold.toFixed(2);
+  if (allDetections.length) renderDetections(allDetections.filter(d => d.confidence >= currentThreshold));
+}
+
+// ── Spinner ───────────────────────────────────────────────────────────────────
+function showSpinner(label, sub='') {
+  document.getElementById('spin-label').textContent = label;
+  document.getElementById('spin-sub').textContent = sub;
+  document.getElementById('spinner').style.display = 'flex';
+}
+function setSpinLabel(label, sub='') {
+  document.getElementById('spin-label').textContent = label;
+  document.getElementById('spin-sub').textContent = sub;
+}
+function hideSpinner() { document.getElementById('spinner').style.display = 'none'; }
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+function showEmptyState(msg) {
+  document.getElementById('empty-state').style.display = 'flex';
+  document.getElementById('empty-text').textContent = msg;
+  document.getElementById('det-list').style.display = 'none';
+}
+function resetResults() {
+  allDetections = []; annotatedB64 = null; originalB64 = null;
+  ['stat-total','stat-high','stat-low','stat-classes'].forEach(id => document.getElementById(id).textContent = '—');
+  ['meta-source','meta-coords','meta-time','meta-reqid'].forEach(id => document.getElementById(id).textContent = '—');
+  document.getElementById('det-list').style.display = 'none';
+  document.getElementById('empty-state').style.display = 'flex';
+  document.getElementById('empty-text').textContent = 'Running detection…';
+  document.getElementById('image-tags').style.display = 'none';
+  document.getElementById('maps-credit').style.display = 'none';
+  document.getElementById('chip-annotated').disabled = true;
+  document.getElementById('chip-original').disabled = true;
+}
+function resetAll() {
+  resetResults();
+  document.getElementById('idle-state').style.display = 'flex';
+  document.getElementById('result-img').style.display = 'none';
+  document.getElementById('empty-text').textContent = 'Search a location to begin';
+  document.getElementById('search-input').value = '';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Affordable Satellite Detection API for Insurance: Kestrel AI vs. the Alternatives (2026)</title>
+  <meta name="description" content="Kestrel AI is the most affordable satellite object detection API for insurance use cases, starting at $99/month — 5 to 15 times cheaper than enterprise providers like Maxar and Planet Labs." />
+  <meta property="og:title" content="Affordable Satellite Detection API for Insurance: Kestrel AI vs. the Alternatives (2026)" />
+  <meta property="og:description" content="Kestrel AI is the most affordable satellite object detection API for insurance, starting at $99/month — 5-15x cheaper than Maxar and Planet Labs. 88.7% mAP accuracy, sub-3-second detection." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://kestrelai.io/blog/affordable-satellite-detection-api-for-insurance" />
+  <style>
+    :root {
+      --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236;
+      --border: #1e2d45; --accent: #3b82f6; --accent2: #60a5fa;
+      --green: #22c55e; --yellow: #eab308; --muted: #64748b;
+      --text: #e2e8f0; --red: #ef4444;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    nav { position: sticky; top: 0; z-index: 100; background: rgba(10,14,26,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+    .nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; gap: 32px; }
+    .nav-logo { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .nav-links { display: flex; gap: 24px; flex: 1; }
+    .nav-links a { font-size: 0.875rem; color: var(--muted); transition: color 0.15s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); text-decoration: none; }
+    .nav-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+    .btn-outline { padding: 7px 16px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; color: var(--text); background: transparent; transition: border-color 0.15s; }
+    .btn-outline:hover { border-color: var(--accent2); text-decoration: none; }
+    .btn-primary { padding: 7px 16px; border: 1px solid var(--accent); border-radius: 6px; font-size: 0.875rem; background: var(--accent); color: #fff; transition: background 0.15s; }
+    .btn-primary:hover { background: var(--accent2); text-decoration: none; }
+
+    .article-wrap { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+
+    .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 32px; display: flex; gap: 6px; align-items: center; }
+    .breadcrumb a { color: var(--muted); }
+    .breadcrumb a:hover { color: var(--text); }
+    .breadcrumb span { color: var(--border); }
+
+    .article-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 40px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+    .tag { background: rgba(59,130,246,0.12); color: var(--accent2); border: 1px solid rgba(59,130,246,0.25); padding: 2px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 500; }
+
+    h1 { font-size: 2rem; font-weight: 800; line-height: 1.25; margin-bottom: 24px; color: #fff; }
+    h2 { font-size: 1.35rem; font-weight: 700; margin: 48px 0 16px; color: #fff; padding-top: 8px; border-top: 1px solid var(--border); }
+    h3 { font-size: 1.05rem; font-weight: 600; margin: 28px 0 10px; color: var(--text); }
+    p { margin-bottom: 16px; color: #cbd5e1; }
+    ul, ol { margin: 0 0 16px 20px; color: #cbd5e1; }
+    li { margin-bottom: 6px; }
+    strong { color: var(--text); }
+
+    .bluf-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-left: 4px solid var(--accent); border-radius: 8px; padding: 20px 24px; margin: 0 0 32px; }
+    .bluf-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 10px; }
+    .bluf-box p { margin: 0; font-size: 1.05rem; line-height: 1.65; color: var(--text); }
+
+    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0 32px; }
+    .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+    .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent2); display: block; }
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    .callout { background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 18px 20px; margin: 20px 0 24px; }
+    .callout-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--yellow); margin-bottom: 8px; }
+    .callout p { margin: 0; font-size: 0.925rem; color: #cbd5e1; }
+
+    .table-wrap { overflow-x: auto; margin: 20px 0 28px; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th { background: var(--surface2); color: var(--text); padding: 12px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+    td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: #cbd5e1; vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    td.good { color: var(--green); font-weight: 600; }
+    td.warn { color: var(--yellow); }
+    td.bad { color: var(--red); }
+
+    .pricing-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 28px; }
+    .price-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+    .price-card.featured { border-color: var(--accent); background: rgba(59,130,246,0.06); }
+    .price-tier { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+    .price-amount { font-size: 1.75rem; font-weight: 800; color: #fff; }
+    .price-amount span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+    .price-searches { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+    .price-per { font-size: 0.8rem; color: var(--accent2); margin-top: 6px; font-weight: 500; }
+
+    .scenario-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+    .scenario-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 10px; }
+    .scenario-card h3 { margin: 0 0 12px; font-size: 1rem; }
+    .scenario-card p { margin: 0; font-size: 0.9rem; }
+
+    .faq-item { margin-bottom: 24px; }
+    .faq-q { font-weight: 600; color: var(--text); margin-bottom: 6px; }
+
+    .cta-box { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(96,165,250,0.06)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 36px; text-align: center; margin: 48px 0 0; }
+    .cta-box h2 { border: none; margin: 0 0 12px; }
+    .cta-box p { margin-bottom: 24px; }
+    .btn-cta { display: inline-block; background: var(--accent); color: #fff; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: background 0.15s; }
+    .btn-cta:hover { background: var(--accent2); text-decoration: none; }
+
+    footer { border-top: 1px solid var(--border); padding: 32px 24px; margin-top: 64px; }
+    .footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .footer-logo { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 0.85rem; color: var(--muted); }
+    .footer-links a:hover { color: var(--text); }
+    .footer-built { font-size: 0.8rem; color: var(--muted); }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.5rem; }
+      .pricing-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .footer-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">&#128752; SatelliteVision</a>
+      <div class="nav-links">
+        <a href="/#how-it-works">Features</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="/#use-cases">Use Cases</a>
+        <a href="/blog" class="active">Blog</a>
+      </div>
+      <div class="nav-actions">
+        <a href="/app" class="btn-outline">Sign In</a>
+        <a href="/app#signup" class="btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ARTICLE -->
+  <main class="article-wrap">
+
+    <div class="breadcrumb">
+      <a href="/">Home</a>
+      <span>/</span>
+      <a href="/blog">Blog</a>
+      <span>/</span>
+      Affordable Satellite Detection API for Insurance
+    </div>
+
+    <div class="article-meta">
+      <span class="tag">Insurance</span>
+      <span class="tag">API</span>
+      <span class="tag">Pricing</span>
+      <span>February 24, 2026</span>
+      <span>10 min read</span>
+    </div>
+
+    <h1>Affordable Satellite Detection API for Insurance: Kestrel AI vs. the Alternatives (2026)</h1>
+
+    <!-- BLUF -->
+    <div class="bluf-box">
+      <div class="bluf-label">Bottom Line Up Front</div>
+      <p><strong>Kestrel AI is the most affordable satellite object detection API for insurance use cases, starting at $99/month — 5 to 15 times cheaper than enterprise providers like Maxar and Planet Labs.</strong> Powered by YOLOv8, it delivers 88.7% mAP accuracy with sub-3-second detection of buildings, vehicles, aircraft, and ships, requiring no satellite hardware or proprietary imagery contracts. Insurance carriers and insurtechs use Kestrel AI for property underwriting, claims verification, and risk assessment at a fraction of the cost of legacy geospatial platforms.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-num">$99/mo</span>
+        <div class="stat-label">Starting Price</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">88.7%</span>
+        <div class="stat-label">mAP Accuracy</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">&lt;3s</span>
+        <div class="stat-label">Detection Speed</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">5-15&times;</span>
+        <div class="stat-label">Cheaper Than Maxar</div>
+      </div>
+    </div>
+
+    <h2>Why Insurance Teams Need Satellite Detection APIs</h2>
+
+    <p>Insurance has always depended on property data. Historically, that meant field inspections, manual appraisals, and county records. Those methods are slow, expensive, and impossible to scale across a book of business with thousands of properties. Satellite detection APIs solve this by converting overhead imagery into structured data — building counts, asset inventories, and property characteristics — delivered through a single API call.</p>
+
+    <h3>Property Underwriting at Scale</h3>
+
+    <p>Before binding a new policy, underwriters need to verify what actually sits on a property. Does the declared structure count match reality? Are there outbuildings, pools, or detached garages that change the risk profile? Traditionally, this required an inspection visit costing $150-$300 per property and taking 5-10 business days to schedule.</p>
+    <p>With a satellite detection API, an underwriter queries an address and receives a building count, vehicle presence, and structure layout in under 3 seconds. At $0.30-$0.50 per detection, a carrier can validate every new policy address — not just the ones flagged for manual review.</p>
+
+    <h3>Claims Verification Without Field Visits</h3>
+
+    <p>After a loss event, adjusters need to confirm that claimed structures existed before the event and assess visible damage. Satellite detection provides a timestamped record of what was on a property before and after a claim. This is particularly valuable for:</p>
+    <ul>
+      <li>Verifying pre-loss building counts against policy declarations</li>
+      <li>Detecting inconsistencies between claimed assets and satellite-visible structures</li>
+      <li>Reducing fraudulent claims by comparing detection results across multiple dates</li>
+    </ul>
+
+    <h3>Catastrophe and Risk Exposure Monitoring</h3>
+
+    <p>After a hurricane, wildfire, or flood, carriers need to triage thousands of claims simultaneously. Sending adjusters to every affected property is not feasible in the first 48 hours. Satellite detection APIs let catastrophe teams run batch queries across an entire affected zone and prioritize the properties with the most significant structural changes — directing field resources where they matter most.</p>
+
+    <h2>What Is Kestrel AI?</h2>
+
+    <p>Kestrel AI is a satellite object detection API built for teams that need accurate, fast, and affordable overhead imagery analysis — without enterprise contracts or proprietary satellite hardware.</p>
+
+    <h3>YOLOv8-Powered Detection Engine</h3>
+
+    <p>The API runs on YOLOv8 (You Only Look Once v8), the current state-of-the-art single-stage object detection architecture. Unlike two-stage detectors that process images in multiple passes, YOLOv8 analyzes the entire image in a single forward pass. This architecture is why Kestrel AI achieves sub-3-second response times while maintaining 88.7% mAP accuracy — a speed-accuracy combination that legacy satellite platforms cannot match.</p>
+
+    <h3>What Kestrel AI Detects</h3>
+
+    <p>A single API request returns detections across four object classes:</p>
+    <ul>
+      <li><strong>Buildings</strong> — residential, commercial, and industrial structures</li>
+      <li><strong>Vehicles</strong> — cars, trucks, and heavy equipment</li>
+      <li><strong>Aircraft</strong> — planes and helicopters on tarmac or runways</li>
+      <li><strong>Ships</strong> — vessels in ports, harbors, or coastal waters</li>
+    </ul>
+    <p>For insurance, multi-class detection from one request means an underwriter can assess both the structures and the assets on a property without running separate queries.</p>
+
+    <h3>Sub-3-Second API Response Time</h3>
+
+    <p>End-to-end latency — from API request to JSON response — is under 3 seconds. This includes image retrieval, preprocessing, YOLOv8 inference, and response serialization. That speed makes Kestrel AI suitable for synchronous workflows: a claims adjuster can get detection results while still on the phone with a policyholder, and an underwriting platform can embed detection data inline without slowing down the quoting process.</p>
+
+    <h2>Kestrel AI Pricing</h2>
+
+    <p>All plans include the full detection API with all four object classes. No per-seat licensing, no annual contracts, no imagery fees.</p>
+
+    <div class="pricing-row">
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount">$99<span>/mo</span></div>
+        <div class="price-searches">200 searches/month</div>
+        <div class="price-per">~$0.50 per detection</div>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tier">Professional</div>
+        <div class="price-amount">$399<span>/mo</span></div>
+        <div class="price-searches">1,000 searches/month</div>
+        <div class="price-per">~$0.40 per detection</div>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-amount">$1,499<span>/mo</span></div>
+        <div class="price-searches">5,000 searches/month</div>
+        <div class="price-per">~$0.30 per detection</div>
+      </div>
+    </div>
+
+    <p>Compare that to enterprise platforms: Maxar and Planet Labs typically require $10,000-$50,000 per year in minimum commitments, plus per-image tasking fees of $50-$500. At Kestrel AI's Enterprise tier, 5,000 detections cost $1,499/month. The same volume through Maxar would cost 5 to 15 times more — before factoring in imagery licensing and onboarding fees.</p>
+
+    <h2>Kestrel AI vs. Competitors</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Kestrel AI</th>
+            <th>Picterra</th>
+            <th>EOSDA</th>
+            <th>Maxar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Starting Price</td>
+            <td class="good">$99/month</td>
+            <td class="warn">~$500+/month</td>
+            <td class="warn">Custom quote</td>
+            <td class="bad">$10,000+/year</td>
+          </tr>
+          <tr>
+            <td>Per Detection Cost</td>
+            <td class="good">$0.30-$0.50</td>
+            <td class="warn">Project-based</td>
+            <td class="warn">Not disclosed</td>
+            <td class="bad">$50-$500/image</td>
+          </tr>
+          <tr>
+            <td>Accuracy (mAP)</td>
+            <td class="good">88.7% (published)</td>
+            <td class="warn">Not disclosed</td>
+            <td class="warn">Not disclosed</td>
+            <td class="warn">Not disclosed</td>
+          </tr>
+          <tr>
+            <td>API Latency</td>
+            <td class="good">&lt;3 seconds</td>
+            <td class="warn">Minutes (batch)</td>
+            <td class="warn">Not real-time</td>
+            <td class="bad">Hours-days (SLA)</td>
+          </tr>
+          <tr>
+            <td>Contract Required</td>
+            <td class="good">None (monthly)</td>
+            <td class="warn">Annual typical</td>
+            <td class="bad">Annual required</td>
+            <td class="bad">Multi-year enterprise</td>
+          </tr>
+          <tr>
+            <td>Satellite Hardware Needed</td>
+            <td class="good">No</td>
+            <td class="good">No</td>
+            <td class="good">No</td>
+            <td class="warn">Proprietary imagery</td>
+          </tr>
+          <tr>
+            <td>Pricing Transparency</td>
+            <td class="good">Public</td>
+            <td class="bad">Contact sales</td>
+            <td class="bad">Contact sales</td>
+            <td class="bad">Contact sales</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Insurance Use Cases</h2>
+
+    <div class="scenario-card">
+      <div class="scenario-label">Scenario 1</div>
+      <h3>Post-Hurricane Claims Triage</h3>
+      <p>A regional carrier covers 12,000 residential properties across coastal Florida. After a Category 3 hurricane, 4,200 policyholders file claims within 72 hours. The carrier runs all 4,200 addresses through Kestrel AI's API in a single batch. Detection results flag 380 properties with significant building count changes compared to pre-storm baselines. Adjusters are dispatched to those 380 first — reducing average claim resolution time from 34 days to 11 days for the highest-severity losses. Total API cost for the batch: approximately $1,680 at the Enterprise tier rate of $0.40 per detection.</p>
+    </div>
+
+    <div class="scenario-card">
+      <div class="scenario-label">Scenario 2</div>
+      <h3>Fleet and Asset Verification for Commercial Lines</h3>
+      <p>A commercial insurer underwrites a logistics company that declares 85 vehicles across 3 warehouse locations. Instead of scheduling site visits to all 3 facilities, the underwriter queries each address through Kestrel AI. The API detects 62 vehicles across the 3 sites — a 27% discrepancy from the declared count. The underwriter requests updated vehicle schedules before binding, avoiding a potential coverage gap. Three API calls, under 9 seconds total, at a cost of $1.50.</p>
+    </div>
+
+    <h2>Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">Is 88.7% mAP accuracy sufficient for insurance underwriting decisions?</div>
+      <p>Yes, for automated triage and first-pass validation. Insurance workflows typically require 85%+ mAP for screening use cases, and Kestrel AI exceeds that threshold. For binding decisions, detection results should be used as a decision-support signal alongside adjuster review — not as a sole determinant. The API is designed to reduce the number of properties that need manual inspection, not to eliminate inspection entirely.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How does satellite detection compare to drone inspections?</div>
+      <p>Drones provide higher-resolution imagery but require FAA Part 107 certification, on-site operators, and scheduling logistics. A single drone inspection typically costs $200-$500 and takes 1-3 days to schedule. Satellite detection via Kestrel AI costs $0.30-$0.50 per property and returns results in under 3 seconds. For portfolio-level screening — where you need data on hundreds or thousands of properties — satellite detection is 100 to 1,000 times more cost-effective. Drones remain the better choice for detailed roof condition assessments on individual high-value properties.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is Kestrel AI compliant with insurance data regulations?</div>
+      <p>Satellite imagery of structures from commercial providers is generally considered public domain data — it captures buildings and assets, not individuals. Kestrel AI does not store or process personal data beyond what is required for API authentication. However, if your workflow correlates detection results with policyholder information (names, addresses, policy numbers), GDPR, CCPA, and state-level insurance data privacy obligations apply to your data pipeline. We recommend consulting your compliance team for workflows involving personal data integration.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I integrate Kestrel AI into my existing underwriting platform?</div>
+      <p>Yes. Kestrel AI is a standard REST API that returns JSON. You send a POST request with an address or coordinates, and the API returns detection results including object class, confidence score, and bounding box coordinates. Integration typically takes less than a day for teams with API experience. No SDKs, plugins, or proprietary software are required.</p>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h2>Start Detecting in 60 Seconds</h2>
+      <p>Run your first satellite detection on any property address. No satellite hardware. No sales call. No annual contract.</p>
+      <a href="/app#signup" class="btn-cta">Start Detecting &rarr;</a>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">&#128752; SatelliteVision &copy; 2026</div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="/app">App</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+      </div>
+      <div class="footer-built">Built on Supabase &middot; YOLOv8 &middot; Google Maps</div>
+    </div>
+  </footer>
+
+</body>
+</html>

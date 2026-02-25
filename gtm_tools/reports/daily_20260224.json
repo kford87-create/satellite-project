@@ -1,0 +1,16 @@
+{
+  "run_date": "2026-02-24T19:55:13.554625+00:00",
+  "mode": "dry_run",
+  "tools_run": [
+    "Customer Health Monitor",
+    "Prospect Signal Detector",
+    "Community Scanner"
+  ],
+  "tools_failed": [],
+  "summaries": {
+    "health": "0 customers monitored. 0 churn risks, 0 upsell opportunities.",
+    "prospects": "5 buying-intent signals detected. Top segment: N/A.",
+    "community": "4 threads found (avg relevance: 0.72). 3 high-opportunity."
+  },
+  "basecamp_summary": "Daily GTM Summary \u2014 2026-02-24\n\n- Health: 0 customers monitored. 0 churn risks, 0 upsell opportunities.\n- Prospects: 5 buying-intent signals detected. Top segment: N/A.\n- Community: 4 threads found (avg relevance: 0.72). 3 high-opportunity.\n\nTools run: 3 | Failed: 0"
+}

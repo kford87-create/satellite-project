@@ -1,0 +1,54 @@
+.vercel
+
+# Data (too large for git)
+data/
+*.tar.gz
+
+# Model weights
+models/
+*.pt
+*.onnx
+
+# Environment
+.env
+.env.*
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.egg-info/
+dist/
+build/
+.eggs/
+venv/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Jupyter
+.ipynb_checkpoints/
+
+# Node
+node_modules/
+
+# Logs
+*.log
+
+# Claude Code local settings
+.claude/
+
+# Secrets / tokens
+basecamp-mcp/tokens.json
+.wrangler/
+supabase/.temp/
+
+# Zip archives
+*.zip

@@ -1,0 +1,102 @@
+{
+  "snapshot_date": "2026-02-24T19:20:43.272598+00:00",
+  "mode": "dry_run",
+  "competitors": {
+    "Picterra": {
+      "prices_found": [
+        "$490/month",
+        "$1,200/month",
+        "$2,800/month"
+      ],
+      "features_found": [
+        "object detection",
+        "custom model",
+        "API",
+        "GeoJSON",
+        "batch processing"
+      ],
+      "recent_posts": [
+        "How Picterra is transforming infrastructure inspection",
+        "New: Multi-class detection for urban mapping",
+        "Case study: Picterra for utilities monitoring"
+      ],
+      "press_signals": [],
+      "raw_text_hash": "f2ccf03057ee7fa50ae52a6c9307353bacf50d0fe7e640c005408daae7bb984f"
+    },
+    "FlyPix AI": {
+      "prices_found": [
+        "Contact for pricing"
+      ],
+      "features_found": [
+        "object detection",
+        "aerial",
+        "API",
+        "satellite",
+        "deep learning"
+      ],
+      "recent_posts": [
+        "FlyPix AI raises $8M Series A",
+        "Introducing real-time aerial detection"
+      ],
+      "press_signals": [
+        "raises",
+        "Series A"
+      ],
+      "raw_text_hash": "07cbea1a83a5a46dfedf1f4075f824400c57be98bfc22c3ec248f6976ca4a0d9"
+    },
+    "EOSDA": {
+      "prices_found": [
+        "$299/month",
+        "$799/month",
+        "Enterprise \u2014 contact us"
+      ],
+      "features_found": [
+        "object detection",
+        "change detection",
+        "satellite",
+        "API",
+        "cloud platform"
+      ],
+      "recent_posts": [
+        "EOSDA partners with Airbus on satellite analytics",
+        "New vegetation + building detection model",
+        "EOSDA crop monitoring now covers 50+ countries"
+      ],
+      "press_signals": [
+        "partnership",
+        "Airbus"
+      ],
+      "raw_text_hash": "e79e37684a41000b77df9d3b03b3753af3f1415dda1b2b196ba17d37e7068b92"
+    },
+    "Geospatial Insight": {
+      "prices_found": [],
+      "features_found": [
+        "object detection",
+        "change detection",
+        "building detection",
+        "GeoJSON"
+      ],
+      "recent_posts": [
+        "Geospatial Insight wins MOD contract",
+        "Expanding into North American insurance market"
+      ],
+      "press_signals": [
+        "contract",
+        "MOD"
+      ],
+      "raw_text_hash": "7fd9061cb0d96844f114ecadf1df3372c7476b3752ba1cc633ef57fc846ae862"
+    }
+  },
+  "diff": null,
+  "alerts": [],
+  "kestrel_positioning": {
+    "price_advantage": "Kestrel Starter ($99) is 3.0\u00d7 cheaper than cheapest competitor ($299)",
+    "feature_gaps": [
+      "Custom model training not yet available in Kestrel AI"
+    ],
+    "opportunities": [
+      "No competitor publicly offers sub-3s detection SLA",
+      "Geospatial Insight hides pricing \u2014 Kestrel AI's transparent $99 entry is a differentiator"
+    ]
+  }
+}

@@ -1,0 +1,71 @@
+{
+  "run_date": "2026-02-24T19:55:13.555640+00:00",
+  "mode": "dry_run",
+  "platform_filter": "all",
+  "min_score": 0.6,
+  "threads_surfaced": 4,
+  "avg_relevance_score": 0.72,
+  "threads": [
+    {
+      "platform": "reddit",
+      "title": "What's the most affordable satellite object detection API for a small startup?",
+      "url": "https://reddit.com/r/gis/comments/mock1",
+      "score": 234,
+      "comments": 18,
+      "relevance_score": 0.85,
+      "engagement_opportunity": "high",
+      "keywords_matched": [
+        "satellite",
+        "affordable",
+        "detection"
+      ],
+      "subreddit": "gis",
+      "draft_response": "Great question on cost. Most enterprise satellite detection platforms (Maxar, Planet Labs) require $10k+/month contracts \u2014 way out of reach for smaller teams. There are a few more accessible options now.\n\nOne I've been building is Kestrel AI \u2014 YOLOv8-based satellite object detection at $99/month (200 searches) via the web app, with API access on the $399 plan. Sub-3s detection, 88.7% mAP on buildings/vehicles/aircraft/ships.\n\nHappy to share more or answer specific technical questions if useful."
+    },
+    {
+      "platform": "stackexchange",
+      "title": "How to detect buildings from satellite imagery using deep learning?",
+      "url": "https://gis.stackexchange.com/questions/mock7",
+      "score": 12,
+      "comments": 4,
+      "relevance_score": 0.7,
+      "engagement_opportunity": "high",
+      "keywords_matched": [
+        "satellite",
+        "affordable",
+        "detection"
+      ],
+      "draft_response": "For satellite object detection, there are a few tiers of tooling depending on your scale and budget.\n\nFor mid-market use cases (insurance, construction, real estate) \u2014 Kestrel AI does this with YOLOv8 at $99/month. Address \u2192 satellite image \u2192 detection results in under 3 seconds. Works well for building footprint and vehicle detection.\n\nHappy to share more or answer specific technical questions if useful."
+    },
+    {
+      "platform": "stackexchange",
+      "title": "Comparing satellite object detection platforms for insurance use case?",
+      "url": "https://gis.stackexchange.com/questions/mock8",
+      "score": 8,
+      "comments": 3,
+      "relevance_score": 0.7,
+      "engagement_opportunity": "high",
+      "keywords_matched": [
+        "satellite",
+        "insurance",
+        "detection",
+        "picterra"
+      ],
+      "draft_response": "For satellite object detection, there are a few tiers of tooling depending on your scale and budget.\n\nFor mid-market use cases (insurance, construction, real estate) \u2014 Kestrel AI does this with YOLOv8 at $99/month. Address \u2192 satellite image \u2192 detection results in under 3 seconds. Works well for building footprint and vehicle detection.\n\nHappy to share more or answer specific technical questions if useful."
+    },
+    {
+      "platform": "reddit",
+      "title": "Anyone using aerial imagery for automated roof inspection?",
+      "url": "https://reddit.com/r/insurtech/comments/mock2",
+      "score": 87,
+      "comments": 11,
+      "relevance_score": 0.65,
+      "engagement_opportunity": "medium",
+      "keywords_matched": [
+        "picterra"
+      ],
+      "subreddit": "insurtech"
+    }
+  ],
+  "summary": "4 high-relevance threads found. reddit: 2, stackexchange: 2."
+}

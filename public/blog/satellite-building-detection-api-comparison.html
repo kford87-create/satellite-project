@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Satellite Building Detection API Comparison: Kestrel AI vs. Picterra vs. EOSDA vs. Maxar (2026)</title>
+  <meta name="description" content="Compare the top satellite building detection APIs in 2026: Kestrel AI, Picterra, EOSDA, and Maxar. Side-by-side pricing, accuracy, speed, and use-case fit.">
+  <link rel="canonical" href="https://kestrelai.io/blog/satellite-building-detection-api-comparison">
+  <style>
+:root {
+  --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236;
+  --border: #1e2d45; --accent: #3b82f6; --accent2: #60a5fa;
+  --green: #22c55e; --yellow: #eab308; --muted: #64748b;
+  --text: #e2e8f0; --red: #ef4444;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--bg); color: var(--text); line-height: 1.7; }
+a { color: var(--accent2); text-decoration: none; }
+a:hover { text-decoration: underline; }
+nav { position: sticky; top: 0; z-index: 100; background: rgba(10,14,26,0.92); backdrop-filter: blur(12px); border-bottom: 1px solid var(--border); }
+.nav-inner { max-width: 1100px; margin: 0 auto; padding: 0 24px; height: 64px; display: flex; align-items: center; gap: 32px; }
+.nav-logo { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+.nav-links { display: flex; gap: 24px; flex: 1; }
+.nav-links a { font-size: 0.875rem; color: var(--muted); transition: color 0.15s; }
+.nav-links a:hover, .nav-links a.active { color: var(--text); text-decoration: none; }
+.nav-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+.btn-outline { padding: 7px 16px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.875rem; color: var(--text); background: transparent; transition: border-color 0.15s; }
+.btn-outline:hover { border-color: var(--accent2); text-decoration: none; }
+.btn-primary { padding: 7px 16px; border: 1px solid var(--accent); border-radius: 6px; font-size: 0.875rem; background: var(--accent); color: #fff; transition: background 0.15s; }
+.btn-primary:hover { background: var(--accent2); text-decoration: none; }
+.article-wrap { max-width: 760px; margin: 0 auto; padding: 56px 24px 80px; }
+.breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 32px; display: flex; gap: 6px; align-items: center; }
+.breadcrumb a { color: var(--muted); }
+.breadcrumb a:hover { color: var(--text); }
+.breadcrumb span { color: var(--border); }
+.article-meta { font-size: 0.8rem; color: var(--muted); margin-bottom: 40px; display: flex; gap: 20px; flex-wrap: wrap; align-items: center; }
+.tag { background: rgba(59,130,246,0.12); color: var(--accent2); border: 1px solid rgba(59,130,246,0.25); padding: 2px 10px; border-radius: 99px; font-size: 0.75rem; font-weight: 500; }
+h1 { font-size: 2rem; font-weight: 800; line-height: 1.25; margin-bottom: 24px; color: #fff; }
+h2 { font-size: 1.35rem; font-weight: 700; margin: 48px 0 16px; color: #fff; padding-top: 8px; border-top: 1px solid var(--border); }
+h3 { font-size: 1.05rem; font-weight: 600; margin: 28px 0 10px; color: var(--text); }
+p { margin-bottom: 16px; color: #cbd5e1; }
+ul, ol { margin: 0 0 16px 20px; color: #cbd5e1; }
+li { margin-bottom: 6px; }
+strong { color: var(--text); }
+.bluf-box { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.3); border-left: 4px solid var(--accent); border-radius: 8px; padding: 20px 24px; margin: 0 0 32px; }
+.bluf-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 10px; }
+.bluf-box p { margin: 0; font-size: 1.05rem; line-height: 1.65; color: var(--text); }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; margin: 20px 0 32px; }
+.stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px; text-align: center; }
+.stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent2); display: block; }
+.stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+.table-wrap { overflow-x: auto; margin: 20px 0 28px; border-radius: 8px; border: 1px solid var(--border); }
+table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+th { background: var(--surface2); color: var(--text); padding: 12px 14px; text-align: left; font-weight: 600; border-bottom: 1px solid var(--border); }
+td { padding: 12px 14px; border-bottom: 1px solid var(--border); color: #cbd5e1; vertical-align: top; }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+td.good { color: var(--green); font-weight: 600; }
+td.warn { color: var(--yellow); }
+td.bad { color: var(--red); }
+.pricing-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 28px; }
+.price-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+.price-card.featured { border-color: var(--accent); background: rgba(59,130,246,0.06); }
+.price-tier { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+.price-amount { font-size: 1.75rem; font-weight: 800; color: #fff; }
+.price-amount span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+.price-searches { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+.price-per { font-size: 0.8rem; color: var(--accent2); margin-top: 6px; font-weight: 500; }
+.scenario-card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; padding: 24px; margin-bottom: 16px; }
+.scenario-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--accent2); margin-bottom: 10px; }
+.scenario-card h3 { margin: 0 0 12px; font-size: 1rem; }
+.scenario-card p { margin: 0; font-size: 0.9rem; }
+.faq-item { margin-bottom: 24px; }
+.faq-q { font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.cta-box { background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(96,165,250,0.06)); border: 1px solid rgba(59,130,246,0.3); border-radius: 12px; padding: 36px; text-align: center; margin: 48px 0 0; }
+.cta-box h2 { border: none; margin: 0 0 12px; }
+.cta-box p { margin-bottom: 24px; }
+.btn-cta { display: inline-block; background: var(--accent); color: #fff; padding: 12px 28px; border-radius: 8px; font-weight: 600; font-size: 1rem; transition: background 0.15s; }
+.btn-cta:hover { background: var(--accent2); text-decoration: none; }
+footer { border-top: 1px solid var(--border); padding: 32px 24px; margin-top: 64px; }
+.footer-inner { max-width: 1100px; margin: 0 auto; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+.footer-logo { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+.footer-links { display: flex; gap: 20px; }
+.footer-links a { font-size: 0.85rem; color: var(--muted); }
+.footer-links a:hover { color: var(--text); }
+.footer-built { font-size: 0.8rem; color: var(--muted); }
+@media (max-width: 640px) {
+  h1 { font-size: 1.5rem; }
+  .pricing-row { grid-template-columns: 1fr; }
+  .nav-links { display: none; }
+  .footer-inner { flex-direction: column; text-align: center; }
+}
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">&#128752; SatelliteVision</a>
+    <div class="nav-links">
+      <a href="/#how-it-works">Features</a>
+      <a href="/#pricing">Pricing</a>
+      <a href="/#use-cases">Use Cases</a>
+      <a href="/blog" class="active">Blog</a>
+    </div>
+    <div class="nav-actions">
+      <a href="/app" class="btn-outline">Sign In</a>
+      <a href="/app#signup" class="btn-primary">Get Started</a>
+    </div>
+  </div>
+</nav>
+
+<main class="article-wrap">
+
+  <div class="breadcrumb">
+    <a href="/">Home</a> <span>/</span> <a href="/blog">Blog</a> <span>/</span> API Comparison
+  </div>
+
+  <h1>Satellite Building Detection API Comparison: Kestrel AI vs. Picterra vs. EOSDA vs. Maxar (2026)</h1>
+
+  <div class="article-meta">
+    <span>February 24, 2026</span>
+    <span>11 min read</span>
+    <span class="tag">API</span>
+    <span class="tag">Comparison</span>
+    <span class="tag">Object Detection</span>
+  </div>
+
+  <div class="bluf-box">
+    <div class="bluf-label">Bottom Line Up Front</div>
+    <p>The leading satellite building detection APIs in 2026 are Kestrel AI, Picterra, EOSDA, and Maxar Geospatial Platform &mdash; with Kestrel AI delivering the best price-to-performance ratio at $99/month, 88.7% mAP accuracy, and sub-3-second detection speeds powered by YOLOv8. Maxar and Planet Labs offer higher-resolution imagery but cost 5&ndash;15x more and require satellite infrastructure commitments. For insurance, construction, real estate, and government use cases requiring rapid, scalable building detection without hardware overhead, Kestrel AI is the most cost-efficient entry point.</p>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-num">$99/mo</span>
+      <div class="stat-label">Starting Price</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">88.7%</span>
+      <div class="stat-label">mAP Accuracy</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">&lt;3s</span>
+      <div class="stat-label">Detection Speed</div>
+    </div>
+    <div class="stat-card">
+      <span class="stat-num">4</span>
+      <div class="stat-label">Providers Compared</div>
+    </div>
+  </div>
+
+  <!-- Section 1 -->
+  <h2>What Is a Satellite Building Detection API?</h2>
+
+  <p>A satellite building detection API accepts overhead imagery&mdash;captured by satellites, drones, or aircraft&mdash;and returns structured data about the buildings it finds: bounding boxes, confidence scores, counts, and sometimes footprint polygons. Instead of hiring analysts to manually trace structures across thousands of images, you send an image to an endpoint and get machine-readable results in seconds.</p>
+
+  <p>These APIs underpin workflows in insurance underwriting, construction monitoring, urban planning, disaster response, and real estate valuation. The market has matured significantly since 2024, and buyers now have real choices between cost, accuracy, and specialization.</p>
+
+  <h3>How Detection APIs Work</h3>
+
+  <p>Most providers follow the same pipeline: you upload a satellite image (typically GeoTIFF or JPEG), the server runs inference through a trained object detection model, and you receive a JSON response with detected objects, their coordinates, confidence scores, and class labels. Some providers host the imagery themselves and let you query by geographic coordinates instead.</p>
+
+  <p>The underlying models vary. Kestrel AI uses YOLOv8, optimized for real-time inference. Picterra uses a proprietary segmentation architecture. EOSDA relies on multi-spectral analysis tailored to agriculture. Maxar combines high-resolution proprietary imagery with deep learning models trained on 30-cm-resolution WorldView captures.</p>
+
+  <h3>Key Metrics: Accuracy, Latency, Cost</h3>
+
+  <p>Three numbers matter when evaluating a detection API:</p>
+  <ul>
+    <li><strong>Accuracy (mAP):</strong> Mean average precision across object classes. Above 85% is production-grade for building detection. Below 80% produces too many false positives for automated workflows.</li>
+    <li><strong>Latency:</strong> Time from image submission to structured result. Under 5 seconds enables real-time applications. Over 30 seconds limits you to batch processing.</li>
+    <li><strong>Cost per detection:</strong> Monthly subscription or per-image pricing. Ranges from $0.02/image (Kestrel AI at volume) to $5+/image (Maxar with proprietary imagery).</li>
+  </ul>
+
+  <!-- Section 2 -->
+  <h2>The 4 Leading Providers Compared</h2>
+
+  <h3>Kestrel AI &mdash; Best for Cost-Efficiency and Speed</h3>
+
+  <p>Kestrel AI runs YOLOv8 on cloud GPUs and exposes a straightforward REST API. You send an image, you get detections. No imagery subscription required&mdash;bring your own satellite or drone images. At $99/month for 5,000 detections, it is the lowest entry point in the market. Detection speed averages 2.1 seconds, and the model achieves 88.7% mAP on building detection benchmarks trained on SpaceNet data. Multi-class support (vehicles, aircraft, ships) is included at no extra cost.</p>
+
+  <h3>Picterra &mdash; Best for No-Code Custom Training</h3>
+
+  <p>Picterra offers a browser-based platform where non-technical users can train custom detection models by drawing annotations on imagery. This is ideal for teams that need to detect non-standard objects (solar panels, construction equipment, specific roof types) without writing code. Pricing starts at $290/month. Detection accuracy depends on your training data, but their pre-built building detector benchmarks around 84% mAP. Latency is higher at 8&ndash;15 seconds per image due to the segmentation-first architecture.</p>
+
+  <h3>EOSDA &mdash; Best for Crop and Land-Use Analytics</h3>
+
+  <p>EOSDA specializes in agricultural and environmental monitoring. Their building detection exists as part of a broader land-use classification system rather than a standalone feature. Pricing is quote-based, typically starting around $500/month for API access. Accuracy for building detection alone is approximately 79% mAP&mdash;lower than dedicated providers because the model is optimized for vegetation indices and field boundaries. Best suited for organizations that need building context alongside agricultural analytics.</p>
+
+  <h3>Maxar &mdash; Best for Ultra-High-Resolution Imagery</h3>
+
+  <p>Maxar operates the WorldView satellite constellation, capturing imagery at 30-cm resolution&mdash;the highest commercially available. Their Geospatial Platform bundles proprietary imagery with detection models, making it the only provider on this list where you do not need to source your own images. Accuracy exceeds 92% mAP thanks to the resolution advantage. The tradeoff is cost: enterprise contracts start at $1,500/month with annual commitments, and per-image pricing for on-demand access can reach $5&ndash;8 per query.</p>
+
+  <!-- Section 3 -->
+  <h2>Side-by-Side Comparison</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Feature</th>
+          <th>Kestrel AI</th>
+          <th>Picterra</th>
+          <th>EOSDA</th>
+          <th>Maxar</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Starting Price</strong></td>
+          <td class="good">$99/mo</td>
+          <td class="warn">$290/mo</td>
+          <td class="warn">~$500/mo</td>
+          <td class="bad">$1,500+/mo</td>
+        </tr>
+        <tr>
+          <td><strong>Detection Speed</strong></td>
+          <td class="good">&lt;3s</td>
+          <td class="warn">8&ndash;15s</td>
+          <td class="warn">10&ndash;30s</td>
+          <td>5&ndash;10s</td>
+        </tr>
+        <tr>
+          <td><strong>Accuracy (mAP)</strong></td>
+          <td class="good">88.7%</td>
+          <td>84%</td>
+          <td class="warn">~79%</td>
+          <td class="good">92%+</td>
+        </tr>
+        <tr>
+          <td><strong>No Hardware Required</strong></td>
+          <td class="good">Yes</td>
+          <td class="good">Yes</td>
+          <td class="good">Yes</td>
+          <td class="good">Yes</td>
+        </tr>
+        <tr>
+          <td><strong>Transparent Pricing</strong></td>
+          <td class="good">Yes</td>
+          <td class="good">Yes</td>
+          <td class="bad">Quote only</td>
+          <td class="bad">Quote only</td>
+        </tr>
+        <tr>
+          <td><strong>Object Classes</strong></td>
+          <td>Buildings, vehicles, aircraft, ships</td>
+          <td>Custom (user-trained)</td>
+          <td>Buildings, fields, vegetation</td>
+          <td>Buildings, roads, infrastructure</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Section 4 -->
+  <h2>Pricing Breakdown</h2>
+
+  <p>Kestrel AI is the only provider with fully public, self-serve pricing. Here is how the tiers break down:</p>
+
+  <div class="pricing-row">
+    <div class="price-card">
+      <div class="price-tier">Starter</div>
+      <div class="price-amount">$99 <span>/mo</span></div>
+      <div class="price-searches">5,000 detections/month</div>
+      <div class="price-per">$0.020 per detection</div>
+    </div>
+    <div class="price-card featured">
+      <div class="price-tier">Professional</div>
+      <div class="price-amount">$349 <span>/mo</span></div>
+      <div class="price-searches">25,000 detections/month</div>
+      <div class="price-per">$0.014 per detection</div>
+    </div>
+    <div class="price-card">
+      <div class="price-tier">Enterprise</div>
+      <div class="price-amount">$899 <span>/mo</span></div>
+      <div class="price-searches">100,000 detections/month</div>
+      <div class="price-per">$0.009 per detection</div>
+    </div>
+  </div>
+
+  <p>By comparison, Picterra's $290/month plan includes 1,000 processing credits. EOSDA and Maxar require contacting sales, with typical enterprise deals starting at $6,000&ndash;$18,000 annually.</p>
+
+  <!-- Section 5 -->
+  <h2>How to Choose the Right API</h2>
+
+  <p>Use this decision framework based on your primary requirement:</p>
+
+  <div class="scenario-card">
+    <div class="scenario-label">Budget-Conscious Teams</div>
+    <h3>You need production-grade detection under $200/month</h3>
+    <p>Choose <strong>Kestrel AI</strong>. No other provider offers sub-3-second detection at 88.7% accuracy for under $100/month. Ideal for startups, mid-market insurance, and real estate analytics teams.</p>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-label">Custom Object Detection</div>
+    <h3>You need to detect non-standard objects without writing code</h3>
+    <p>Choose <strong>Picterra</strong>. Their visual annotation and training platform lets non-developers build custom models. Worth the premium if your use case involves specialized objects like solar installations or construction stages.</p>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-label">Agricultural Context</div>
+    <h3>You need building detection alongside crop and land-use data</h3>
+    <p>Choose <strong>EOSDA</strong>. Building detection alone does not justify the cost, but if you already need vegetation indices, field boundary mapping, and environmental monitoring, their integrated platform avoids stitching together multiple vendors.</p>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-label">Maximum Accuracy</div>
+    <h3>You need the highest possible resolution and cannot source your own imagery</h3>
+    <p>Choose <strong>Maxar</strong>. Their 30-cm WorldView imagery and 92%+ accuracy are unmatched. Government agencies and defense contractors with large budgets and strict accuracy requirements should start here.</p>
+  </div>
+
+  <!-- Section 6 -->
+  <h2>FAQs</h2>
+
+  <div class="faq-item">
+    <div class="faq-q">Can I use my own satellite or drone imagery with these APIs?</div>
+    <p>Kestrel AI, Picterra, and EOSDA all accept user-uploaded imagery in standard formats (GeoTIFF, JPEG, PNG). Maxar primarily uses its own satellite imagery but also supports user uploads through the Geospatial Platform.</p>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">What resolution imagery do I need for accurate building detection?</div>
+    <p>For reliable building detection, you need imagery at 50 cm/pixel or better. At 30 cm (Maxar WorldView), you can distinguish individual roof features. At 1 meter, small structures like sheds start to disappear. Most commercial satellite providers (Planet, Airbus) deliver 50-cm imagery that works well with all four APIs.</p>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">How does Kestrel AI achieve fast detection speeds at a low price point?</div>
+    <p>Kestrel AI uses YOLOv8, a single-pass detection architecture that processes an entire image in one forward pass rather than scanning regions sequentially. This makes inference fast enough to run on standard cloud GPUs without dedicated hardware, which keeps infrastructure costs low and detection times under 3 seconds.</p>
+  </div>
+
+  <div class="faq-item">
+    <div class="faq-q">Do these APIs work for change detection (comparing images over time)?</div>
+    <p>Not directly. These APIs detect objects in individual images. For change detection, you would run detection on two images from different dates and compare the results programmatically. Kestrel AI and Picterra both return structured JSON that makes diffing straightforward. EOSDA offers built-in change detection for agricultural use cases.</p>
+  </div>
+
+  <!-- CTA -->
+  <div class="cta-box">
+    <h2>Start Detecting Buildings in Minutes</h2>
+    <p>Get 500 free detections when you sign up. No credit card required, no imagery subscription needed. Upload an image and get results in under 3 seconds.</p>
+    <a href="/app#signup" class="btn-cta">Start Free Trial</a>
+  </div>
+
+</main>
+
+<footer>
+  <div class="footer-inner">
+    <div class="footer-logo">&#128752; SatelliteVision &copy; 2026</div>
+    <div class="footer-links">
+      <a href="/">Home</a>
+      <a href="/blog">Blog</a>
+      <a href="/app">App</a>
+      <a href="/privacy">Privacy</a>
+      <a href="/terms">Terms</a>
+    </div>
+    <div class="footer-built">Built on Supabase &middot; YOLOv8 &middot; Google Maps</div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Satellite Building Detection API: How It Works, Top Providers, and Pricing (2026)</title>
+  <meta name="description" content="Kestrel AI is a satellite building detection API powered by YOLOv8 that detects buildings, vehicles, aircraft, and ships with 88.7% mAP accuracy in under 3 seconds, starting at $99/month — 5–15x cheaper than Maxar or Planet Labs." />
+  <meta property="og:title" content="Satellite Building Detection API: How It Works, Top Providers, and Pricing (2026)" />
+  <meta property="og:description" content="Kestrel AI is a satellite building detection API powered by YOLOv8 that detects buildings, vehicles, aircraft, and ships with 88.7% mAP accuracy in under 3 seconds, starting at $99/month." />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://satellite-detector-demo.vercel.app/blog/satellite-building-detection-api" />
+  <style>
+    :root {
+      --bg: #0a0e1a;
+      --surface: #111827;
+      --surface2: #1a2236;
+      --border: #1e2d45;
+      --accent: #3b82f6;
+      --accent2: #60a5fa;
+      --green: #22c55e;
+      --yellow: #eab308;
+      --muted: #64748b;
+      --text: #e2e8f0;
+      --red: #ef4444;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+    a { color: var(--accent2); text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(10,14,26,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      max-width: 1100px; margin: 0 auto;
+      padding: 0 24px; height: 64px;
+      display: flex; align-items: center; gap: 32px;
+    }
+    .nav-logo { font-size: 1.05rem; font-weight: 700; color: var(--text); white-space: nowrap; }
+    .nav-links { display: flex; gap: 24px; flex: 1; }
+    .nav-links a { font-size: 0.875rem; color: var(--muted); transition: color 0.15s; }
+    .nav-links a:hover, .nav-links a.active { color: var(--text); text-decoration: none; }
+    .nav-actions { display: flex; gap: 10px; align-items: center; flex-shrink: 0; }
+    .btn-outline {
+      padding: 7px 16px; border: 1px solid var(--border); border-radius: 6px;
+      font-size: 0.875rem; color: var(--text); background: transparent; cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .btn-outline:hover { border-color: var(--accent2); background: rgba(59,130,246,0.08); text-decoration: none; }
+    .btn-primary {
+      padding: 7px 16px; border: 1px solid var(--accent); border-radius: 6px;
+      font-size: 0.875rem; background: var(--accent); color: #fff; cursor: pointer;
+      transition: background 0.15s;
+    }
+    .btn-primary:hover { background: var(--accent2); text-decoration: none; }
+
+    /* LAYOUT */
+    .article-wrap {
+      max-width: 760px; margin: 0 auto;
+      padding: 56px 24px 80px;
+    }
+
+    /* BREADCRUMB */
+    .breadcrumb {
+      font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 32px; display: flex; gap: 6px; align-items: center;
+    }
+    .breadcrumb a { color: var(--muted); }
+    .breadcrumb a:hover { color: var(--text); }
+    .breadcrumb span { color: var(--border); }
+
+    /* META */
+    .article-meta {
+      font-size: 0.8rem; color: var(--muted);
+      margin-bottom: 40px; display: flex; gap: 20px; flex-wrap: wrap;
+    }
+    .tag {
+      background: rgba(59,130,246,0.12); color: var(--accent2);
+      border: 1px solid rgba(59,130,246,0.25);
+      padding: 2px 10px; border-radius: 99px;
+      font-size: 0.75rem; font-weight: 500;
+    }
+
+    /* TYPOGRAPHY */
+    h1 { font-size: 2rem; font-weight: 800; line-height: 1.25; margin-bottom: 24px; color: #fff; }
+    h2 { font-size: 1.35rem; font-weight: 700; margin: 48px 0 16px; color: #fff; padding-top: 8px; border-top: 1px solid var(--border); }
+    h3 { font-size: 1.05rem; font-weight: 600; margin: 28px 0 10px; color: var(--text); }
+    p { margin-bottom: 16px; color: #cbd5e1; }
+    ul, ol { margin: 0 0 16px 20px; color: #cbd5e1; }
+    li { margin-bottom: 6px; }
+    strong { color: var(--text); }
+    code {
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 4px; padding: 2px 6px; font-size: 0.875em;
+      font-family: 'JetBrains Mono', 'Fira Code', monospace; color: var(--accent2);
+    }
+    pre {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px; overflow-x: auto;
+      margin: 0 0 20px; font-size: 0.85rem; line-height: 1.6;
+    }
+    pre code { background: none; border: none; padding: 0; color: #a5f3fc; }
+
+    /* BLUF BOX */
+    .bluf-box {
+      background: rgba(59,130,246,0.08);
+      border: 1px solid rgba(59,130,246,0.3);
+      border-left: 4px solid var(--accent);
+      border-radius: 8px; padding: 20px 24px; margin: 0 0 32px;
+    }
+    .bluf-label {
+      font-size: 0.7rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 0.1em; color: var(--accent2); margin-bottom: 10px;
+    }
+    .bluf-box p { margin: 0; font-size: 1.05rem; line-height: 1.65; color: var(--text); }
+
+    /* STATS GRID */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 12px; margin: 20px 0 32px;
+    }
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 8px; padding: 16px; text-align: center;
+    }
+    .stat-num { font-size: 1.6rem; font-weight: 800; color: var(--accent2); display: block; }
+    .stat-label { font-size: 0.75rem; color: var(--muted); margin-top: 4px; }
+
+    /* TABLE */
+    .table-wrap { overflow-x: auto; margin: 20px 0 28px; border-radius: 8px; border: 1px solid var(--border); }
+    table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    th {
+      background: var(--surface2); color: var(--text);
+      padding: 12px 14px; text-align: left; font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 12px 14px; border-bottom: 1px solid var(--border);
+      color: #cbd5e1; vertical-align: top;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255,255,255,0.02); }
+    td.kestrel { color: var(--green); font-weight: 600; }
+    td.warn { color: var(--yellow); }
+    td.bad { color: var(--red); }
+
+    /* PRICING CARDS */
+    .pricing-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0 28px; }
+    .price-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 20px;
+    }
+    .price-card.featured { border-color: var(--accent); background: rgba(59,130,246,0.06); }
+    .price-tier { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 8px; }
+    .price-amount { font-size: 1.75rem; font-weight: 800; color: #fff; }
+    .price-amount span { font-size: 0.9rem; font-weight: 400; color: var(--muted); }
+    .price-searches { font-size: 0.8rem; color: var(--muted); margin-top: 4px; }
+    .price-per { font-size: 0.8rem; color: var(--accent2); margin-top: 6px; font-weight: 500; }
+
+    /* CTA */
+    .cta-box {
+      background: linear-gradient(135deg, rgba(59,130,246,0.12), rgba(96,165,250,0.06));
+      border: 1px solid rgba(59,130,246,0.3); border-radius: 12px;
+      padding: 36px; text-align: center; margin: 48px 0 0;
+    }
+    .cta-box h2 { border: none; margin: 0 0 12px; }
+    .cta-box p { margin-bottom: 24px; }
+    .btn-cta {
+      display: inline-block; background: var(--accent); color: #fff;
+      padding: 12px 28px; border-radius: 8px; font-weight: 600;
+      font-size: 1rem; transition: background 0.15s;
+    }
+    .btn-cta:hover { background: var(--accent2); text-decoration: none; }
+
+    /* FAQ */
+    .faq-item { margin-bottom: 24px; }
+    .faq-q { font-weight: 600; color: var(--text); margin-bottom: 6px; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 32px 24px; margin-top: 64px;
+    }
+    .footer-inner {
+      max-width: 1100px; margin: 0 auto;
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 16px;
+    }
+    .footer-logo { font-weight: 700; font-size: 0.95rem; color: var(--text); }
+    .footer-links { display: flex; gap: 20px; }
+    .footer-links a { font-size: 0.85rem; color: var(--muted); }
+    .footer-links a:hover { color: var(--text); }
+    .footer-built { font-size: 0.8rem; color: var(--muted); }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 1.5rem; }
+      .pricing-row { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .footer-inner { flex-direction: column; text-align: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-inner">
+      <a href="/" class="nav-logo">🛰️ SatelliteVision</a>
+      <div class="nav-links">
+        <a href="/#how-it-works">Features</a>
+        <a href="/#pricing">Pricing</a>
+        <a href="/#use-cases">Use Cases</a>
+        <a href="/blog" class="active">Blog</a>
+      </div>
+      <div class="nav-actions">
+        <a href="/app" class="btn-outline">Sign In</a>
+        <a href="/app#signup" class="btn-primary">Get Started</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ARTICLE -->
+  <main class="article-wrap">
+
+    <div class="breadcrumb">
+      <a href="/">Home</a>
+      <span>/</span>
+      <a href="/blog">Blog</a>
+      <span>/</span>
+      Satellite Building Detection API
+    </div>
+
+    <div class="article-meta">
+      <span class="tag">API</span>
+      <span class="tag">Object Detection</span>
+      <span class="tag">Satellite Imagery</span>
+      <span>February 24, 2026</span>
+      <span>12 min read</span>
+    </div>
+
+    <h1>Satellite Building Detection API: How It Works, Top Providers, and Pricing (2026)</h1>
+
+    <!-- BLUF -->
+    <div class="bluf-box">
+      <div class="bluf-label">Bottom Line Up Front</div>
+      <p><strong>Kestrel AI is a satellite building detection API powered by YOLOv8 that detects buildings, vehicles, aircraft, and ships from satellite imagery with 88.7% mAP accuracy and sub-3-second processing time, starting at $99/month.</strong> It requires no satellite hardware and delivers results 5–15x cheaper than enterprise providers like Maxar or Planet Labs. Insurance underwriters, construction firms, real estate platforms, and government agencies use it to automate aerial object detection at scale.</p>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-num">88.7%</span>
+        <div class="stat-label">mAP Accuracy</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">&lt;3s</span>
+        <div class="stat-label">Detection Latency</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">$99/mo</span>
+        <div class="stat-label">Starting Price</div>
+      </div>
+      <div class="stat-card">
+        <span class="stat-num">4</span>
+        <div class="stat-label">Object Classes</div>
+      </div>
+    </div>
+
+    <h2>What Is a Satellite Building Detection API?</h2>
+    <p>A satellite building detection API is a software service that accepts satellite or aerial imagery as input and returns the locations, bounding boxes, and classifications of objects detected in that image — buildings, vehicles, aircraft, ships, or other structures — without requiring you to own or operate any satellite hardware.</p>
+    <p>You send an HTTP request (typically with an image URL, coordinates, or a base64-encoded image), and the API returns a JSON response containing detection results. The entire round-trip takes seconds rather than the hours or days required by traditional satellite tasking workflows.</p>
+
+    <h3>How Building Detection Differs from General Object Detection</h3>
+    <p>Standard computer vision models like YOLO are trained on ground-level imagery (COCO dataset: dogs, cars, people). Satellite building detection models are specifically trained on <strong>overhead imagery at varying altitudes and zoom levels</strong>, requiring specialized datasets and augmentation strategies to handle:</p>
+    <ul>
+      <li>Top-down perspective (no front-facing features)</li>
+      <li>Rotation invariance (buildings appear at all angles)</li>
+      <li>Scale variance (imagery from 100m vs 1,000m altitude)</li>
+      <li>Atmospheric and lighting conditions across geographies</li>
+      <li>Small object sizes relative to image resolution</li>
+    </ul>
+    <p>Kestrel AI's model was trained on the SpaceNet dataset — over 3,800 overhead images — specifically optimized for these challenges.</p>
+
+    <h3>Key Use Cases by Industry</h3>
+    <ul>
+      <li><strong>Property insurance:</strong> Post-catastrophe damage triage, roof condition assessment, underwriting validation</li>
+      <li><strong>Insurtech:</strong> Automated property risk scoring at scale, fraud detection via asset verification</li>
+      <li><strong>Construction:</strong> Site progress monitoring, equipment tracking, unauthorized structure detection</li>
+      <li><strong>Real estate:</strong> Portfolio-level property assessment, neighborhood change detection</li>
+      <li><strong>Government / defense:</strong> GEOINT, base monitoring, SBIR-eligible geospatial intelligence workflows</li>
+    </ul>
+
+    <h2>How Kestrel AI's Satellite Building Detection API Works</h2>
+
+    <h3>YOLOv8 Architecture and Why It Matters</h3>
+    <p>Kestrel AI is built on <strong>YOLOv8</strong> (You Only Look Once v8), the current state-of-the-art single-stage object detection architecture from Ultralytics. Unlike two-stage detectors (e.g., Faster R-CNN), YOLOv8 processes the entire image in a single forward pass, making it ideal for real-time API use cases where latency matters.</p>
+    <p>The architecture delivers an exceptional speed-accuracy tradeoff — 88.7% mAP on our satellite imagery benchmark while maintaining sub-3-second end-to-end latency including image fetching, preprocessing, inference, and response serialization.</p>
+
+    <h3>88.7% mAP — What This Score Means in Practice</h3>
+    <p><strong>mAP (mean Average Precision)</strong> is the standard benchmark for object detection models. It measures the model's precision across all detection confidence thresholds and object classes. An 88.7% mAP means:</p>
+    <ul>
+      <li>~89 out of 100 buildings present in an image are correctly detected and localized</li>
+      <li>False positive rate is low enough for production underwriting and monitoring workflows</li>
+      <li>Performance holds across different geographies and building types in the training set</li>
+    </ul>
+    <p>For comparison, most enterprise satellite intelligence platforms do not publicly disclose mAP benchmarks — making Kestrel AI's transparency a meaningful differentiator for technical buyers.</p>
+
+    <h3>Sub-3-Second Detection: Speed Benchmarks</h3>
+    <p>End-to-end latency from API request to JSON response is <strong>under 3 seconds</strong> for standard satellite imagery inputs. This includes:</p>
+    <ul>
+      <li>Image retrieval from Google Maps Static API</li>
+      <li>Preprocessing and normalization</li>
+      <li>YOLOv8 inference on CPU (Hugging Face Spaces, cpu-basic)</li>
+      <li>Response serialization and return</li>
+    </ul>
+    <p>This makes Kestrel AI suitable for synchronous workflows — a claims adjuster can get detection results while still on the phone with a policyholder.</p>
+
+    <h3>Supported Object Classes</h3>
+    <p>The current model detects four object classes from a single API endpoint:</p>
+    <ul>
+      <li><strong>Buildings</strong> — residential, commercial, industrial structures</li>
+      <li><strong>Vehicles</strong> — cars, trucks, heavy equipment</li>
+      <li><strong>Aircraft</strong> — planes, helicopters visible on tarmac or runways</li>
+      <li><strong>Ships</strong> — vessels visible in ports, harbors, or open water</li>
+    </ul>
+    <p>Multi-class detection from a single request means insurers can assess both structure and asset inventory from one satellite image query.</p>
+
+    <h2>Satellite Building Detection API Pricing</h2>
+
+    <div class="pricing-row">
+      <div class="price-card">
+        <div class="price-tier">Starter</div>
+        <div class="price-amount">$99<span>/mo</span></div>
+        <div class="price-searches">200 searches/month</div>
+        <div class="price-per">~$0.50 per detection</div>
+      </div>
+      <div class="price-card featured">
+        <div class="price-tier">Professional</div>
+        <div class="price-amount">$399<span>/mo</span></div>
+        <div class="price-searches">1,000 searches/month</div>
+        <div class="price-per">~$0.40 per detection</div>
+      </div>
+      <div class="price-card">
+        <div class="price-tier">Enterprise</div>
+        <div class="price-amount">$1,499<span>/mo</span></div>
+        <div class="price-searches">5,000 searches/month</div>
+        <div class="price-per">~$0.30 per detection</div>
+      </div>
+    </div>
+
+    <h3>Hidden Costs to Watch For With Enterprise Providers</h3>
+    <p>Enterprise satellite intelligence platforms like Maxar, Planet Labs, and EOSDA typically bundle several cost layers that aren't visible in initial quotes:</p>
+    <ul>
+      <li><strong>Imagery tasking fees:</strong> $300–$2,000+ per km² for new satellite captures</li>
+      <li><strong>Archive access fees:</strong> Charged per scene, often $50–$500/image</li>
+      <li><strong>Annual contract minimums:</strong> Most require $10,000–$50,000/year commitments</li>
+      <li><strong>Professional services:</strong> Onboarding, custom model training, integration support</li>
+      <li><strong>Per-seat licensing:</strong> User-based rather than usage-based pricing</li>
+    </ul>
+    <p>Kestrel AI uses transparent, usage-based pricing with no contracts, no hidden fees, and monthly billing. You pay for searches used, not seats occupied.</p>
+
+    <h3>Cost Comparison: Kestrel AI vs. Enterprise Platforms</h3>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Provider</th><th>Entry Price</th><th>Per Detection</th><th>Contract</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>Kestrel AI</strong></td>
+            <td class="kestrel">$99/month</td>
+            <td class="kestrel">~$0.30–$0.50</td>
+            <td class="kestrel">None (monthly)</td>
+          </tr>
+          <tr>
+            <td>Picterra</td>
+            <td class="warn">~$500+/month</td>
+            <td class="warn">High (project-based)</td>
+            <td class="warn">Annual typical</td>
+          </tr>
+          <tr>
+            <td>EOSDA</td>
+            <td class="warn">Custom quote</td>
+            <td class="warn">Not disclosed</td>
+            <td class="bad">Annual required</td>
+          </tr>
+          <tr>
+            <td>Maxar</td>
+            <td class="bad">$10,000+/year</td>
+            <td class="bad">$50–$500+/image</td>
+            <td class="bad">Multi-year enterprise</td>
+          </tr>
+          <tr>
+            <td>Planet Labs</td>
+            <td class="bad">$10,000+/year</td>
+            <td class="bad">Per scene + API fees</td>
+            <td class="bad">Annual required</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Satellite Building Detection API Comparison</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Feature</th>
+            <th>Kestrel AI</th>
+            <th>Picterra</th>
+            <th>EOSDA</th>
+            <th>Maxar</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Detection Model</td>
+            <td class="kestrel">YOLOv8 (real-time)</td>
+            <td>Custom CNN (user-trained)</td>
+            <td>ML (crop-focused)</td>
+            <td>Proprietary</td>
+          </tr>
+          <tr>
+            <td>Accuracy (mAP)</td>
+            <td class="kestrel">88.7% (disclosed)</td>
+            <td class="warn">Not disclosed</td>
+            <td class="warn">Not disclosed</td>
+            <td class="warn">Not disclosed</td>
+          </tr>
+          <tr>
+            <td>API Latency</td>
+            <td class="kestrel">&lt;3 seconds</td>
+            <td class="warn">Minutes (batch)</td>
+            <td class="warn">Not real-time</td>
+            <td class="warn">Hours–days (SLA)</td>
+          </tr>
+          <tr>
+            <td>Starting Price</td>
+            <td class="kestrel">$99/month</td>
+            <td class="warn">~$500+/month</td>
+            <td class="warn">Custom quote</td>
+            <td class="bad">$10,000+/year</td>
+          </tr>
+          <tr>
+            <td>No Hardware Required</td>
+            <td class="kestrel">Yes</td>
+            <td class="kestrel">Yes</td>
+            <td class="kestrel">Yes</td>
+            <td class="warn">Proprietary imagery</td>
+          </tr>
+          <tr>
+            <td>Pricing Transparency</td>
+            <td class="kestrel">Public</td>
+            <td class="bad">Contact sales</td>
+            <td class="bad">Contact sales</td>
+            <td class="bad">Contact sales</td>
+          </tr>
+          <tr>
+            <td>SBIR Eligible</td>
+            <td class="kestrel">Yes</td>
+            <td class="warn">Unknown</td>
+            <td class="warn">Unknown</td>
+            <td class="bad">No</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2>Industry Use Cases With Measurable Outcomes</h2>
+
+    <h3>Property Insurance & Insurtech: Automating Underwriting</h3>
+    <p>Insurance carriers and insurtechs use satellite building detection to automate property validation at underwriting. Instead of dispatching an inspector to every new policy address, an underwriter can query the Kestrel AI API with an address and receive a satellite-derived building count, structure type estimate, and vehicle presence — in under 3 seconds.</p>
+    <p>Practical applications include:</p>
+    <ul>
+      <li>Verifying declared structures match satellite-visible buildings before binding</li>
+      <li>Post-CAT (catastrophe) damage triage: prioritizing claims by detected structural change</li>
+      <li>Ongoing portfolio monitoring for unreported additions or outbuildings</li>
+    </ul>
+
+    <h3>Construction Monitoring: Tracking Site Progress via Satellite</h3>
+    <p>Construction project managers use the API to track progress at remote or multi-site projects without sending personnel. By running weekly satellite queries on the same coordinates and diffing the detection results, teams can monitor:</p>
+    <ul>
+      <li>Whether new structures have appeared (or been removed)</li>
+      <li>Equipment and vehicle presence as a proxy for workforce activity</li>
+      <li>Unauthorized construction or encroachments on adjacent parcels</li>
+    </ul>
+
+    <h3>Real Estate Analytics: Portfolio-Scale Property Assessment</h3>
+    <p>Real estate analytics firms use satellite detection APIs to characterize properties at portfolio scale — thousands of addresses processed in hours rather than months. Detection results feed valuation models, risk scores, and market intelligence dashboards.</p>
+
+    <h3>Government & Defense: SBIR-Eligible Deployment</h3>
+    <p>Kestrel AI's architecture and pricing make it eligible for SBIR (Small Business Innovation Research) program funding. Federal agencies and defense contractors can use SBIR Phase I and II grants to pilot and scale satellite AI capabilities without the multi-year procurement cycles required for prime contractor solutions like Maxar.</p>
+
+    <h2>How to Integrate the Kestrel AI Building Detection API</h2>
+
+    <h3>API Authentication and Endpoint Structure</h3>
+    <p>Authentication uses a Supabase JWT token obtained via standard email/password or OAuth sign-in. Pass the token as a Bearer header on every request:</p>
+    <pre><code>POST https://obdsgqjkjjmmtbcfjhnn.supabase.co/functions/v1/detect
+Authorization: Bearer &lt;your-jwt-token&gt;
+Content-Type: application/json</code></pre>
+
+    <h3>Input: Address-Based Request</h3>
+    <pre><code>{
+  "address": "1600 Amphitheatre Parkway, Mountain View, CA",
+  "zoom": 18,
+  "source": "google_maps"
+}</code></pre>
+
+    <h3>Sample Response Output</h3>
+    <pre><code>{
+  "address": "1600 Amphitheatre Parkway, Mountain View, CA",
+  "lat": 37.4224,
+  "lng": -122.0840,
+  "zoom": 18,
+  "detections": [
+    { "class": "building", "confidence": 0.92, "bbox": [102, 84, 310, 275] },
+    { "class": "vehicle",  "confidence": 0.87, "bbox": [45,  190, 88,  224] },
+    { "class": "vehicle",  "confidence": 0.81, "bbox": [200, 300, 245, 335] }
+  ],
+  "detection_count": 3,
+  "processing_time_ms": 1847,
+  "imagery_source": "google_maps_static"
+}</code></pre>
+
+    <h3>Rate Limits by Pricing Tier</h3>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Tier</th><th>Monthly Searches</th><th>Concurrent Requests</th><th>Image Sources</th></tr></thead>
+        <tbody>
+          <tr><td>Starter</td><td>200</td><td>1</td><td>Google Maps Static</td></tr>
+          <tr><td>Professional</td><td>1,000</td><td>3</td><td>Google Maps Static</td></tr>
+          <tr><td>Enterprise</td><td>5,000</td><td>10</td><td>Google Maps Static + custom upload</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>Searches reset on the 1st of each month. There are no overage charges — once the monthly limit is reached, the account is prompted to upgrade to the next tier.</p>
+
+    <h2>Frequently Asked Questions</h2>
+
+    <div class="faq-item">
+      <div class="faq-q">What accuracy does a satellite building detection API need for insurance use?</div>
+      <p>Insurance workflows typically require 85%+ mAP for automated triage use cases, with human review for edge cases. Kestrel AI's 88.7% mAP exceeds this threshold. For binding decisions, results should be treated as a first-pass signal with adjuster review, not a replacement for a formal inspection.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Can I detect buildings without owning satellite imagery?</div>
+      <p>Yes. Kestrel AI fetches satellite imagery automatically via the Google Maps Static API using the address or coordinates you provide. You don't need to source, store, or manage any imagery. This is the key operational difference from platforms like Planet Labs or Maxar, which require you to order or license imagery separately.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">Is satellite building detection GDPR and CCPA compliant?</div>
+      <p>Satellite imagery of buildings from commercial providers is generally considered public domain data — it captures structures, not individuals. However, if your workflow involves correlating detection results with personal data (e.g., policyholder addresses), GDPR and CCPA obligations apply to your data pipeline. Consult your DPA. Kestrel AI does not store or process personal data beyond what is necessary for API authentication.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">What is the minimum detectable building size?</div>
+      <p>At zoom level 18 (the default), Google Maps Static imagery has a ground resolution of approximately 0.6 meters/pixel at a 640×640 image size. Buildings smaller than ~5×5 meters may not be reliably detected. Most residential and commercial structures are well above this threshold.</p>
+    </div>
+
+    <div class="faq-item">
+      <div class="faq-q">How does YOLOv8 compare to older detection models for satellite imagery?</div>
+      <p>YOLOv8 outperforms prior YOLO generations (v5, v7) and traditional two-stage detectors (Faster R-CNN) in the speed-accuracy tradeoff for production API deployment. Its anchor-free detection head and improved backbone make it particularly effective for small object detection — critical for satellite imagery where vehicles and structures occupy a small fraction of the total image area.</p>
+    </div>
+
+    <h2>Conclusion</h2>
+    <p>A satellite building detection API eliminates the cost and complexity barrier that has historically kept aerial intelligence tools out of reach for mid-market insurance, construction, and real estate companies. The key criteria for evaluating providers are accuracy (published mAP), latency (real-time vs. batch), pricing transparency, and the ability to operate without proprietary satellite hardware.</p>
+    <p>Kestrel AI checks all four boxes: <strong>88.7% mAP, sub-3-second latency, public pricing starting at $99/month, and zero hardware dependency</strong>. For teams priced out of Maxar and Planet Labs, it's the production-ready alternative.</p>
+
+    <!-- CTA -->
+    <div class="cta-box">
+      <h2>Try Kestrel AI Free</h2>
+      <p>Run your first satellite building detection in under 60 seconds. No satellite hardware. No sales call. No contract.</p>
+      <a href="/app#signup" class="btn-cta">Start Detecting →</a>
+    </div>
+
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-logo">🛰️ SatelliteVision &copy; 2026</div>
+      <div class="footer-links">
+        <a href="/">Home</a>
+        <a href="/blog">Blog</a>
+        <a href="/app">App</a>
+        <a href="/privacy">Privacy</a>
+        <a href="/terms">Terms</a>
+      </div>
+      <div class="footer-built">Built on Supabase · YOLOv8 · Google Maps</div>
+    </div>
+  </footer>
+
+</body>
+</html>

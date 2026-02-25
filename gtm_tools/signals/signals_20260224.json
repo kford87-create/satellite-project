@@ -1,0 +1,59 @@
+{
+  "run_date": "2026-02-24T19:55:13.555392+00:00",
+  "mode": "dry_run",
+  "segment_filter": "all",
+  "signals_found": 5,
+  "signals": [
+    {
+      "company": "Palantir",
+      "segment": "defense",
+      "signal_type": "product_launch",
+      "signal_detail": "AI-powered roof inspection product",
+      "source_url": "https://linkedin.com/jobs/search?keywords=AI-powered+roof+inspection+product",
+      "intent_score": 0.93,
+      "detected_at": "2026-02-24T19:55:13.555383+00:00",
+      "draft_outreach": "Hi [Name], saw Palantir just launched AI-powered roof inspection product \u2014 impressive work. If aerial/satellite data is part of your roadmap, Kestrel AI integrates in minutes. $99/mo, sub-3s detection. Happy to show you a live demo."
+    },
+    {
+      "company": "Nearmap",
+      "segment": "insurtech",
+      "signal_type": "funding",
+      "signal_detail": "Series A ($18M)",
+      "source_url": "https://linkedin.com/jobs/search?keywords=Series+A+($18M)",
+      "intent_score": 0.88,
+      "detected_at": "2026-02-24T19:55:13.555375+00:00",
+      "draft_outreach": "Hi [Name], congrats on Nearmap's recent Series A ($18M)! As you scale, satellite imagery analysis often becomes a bottleneck. Kestrel AI handles it automatically at $99/mo \u2014 15\u00d7 cheaper than Planet Labs. Worth a quick chat?"
+    },
+    {
+      "company": "Coterie Insurance",
+      "segment": "insurance",
+      "signal_type": "funding",
+      "signal_detail": "Series B ($42M)",
+      "source_url": "https://linkedin.com/jobs/search?keywords=Series+B+($42M)",
+      "intent_score": 0.85,
+      "detected_at": "2026-02-24T19:55:13.555363+00:00",
+      "draft_outreach": "Hi [Name], congrats on Coterie Insurance's recent Series B ($42M)! As you scale, satellite imagery analysis often becomes a bottleneck. Kestrel AI handles it automatically at $99/mo \u2014 15\u00d7 cheaper than Planet Labs. Worth a quick chat?"
+    },
+    {
+      "company": "CoreLogic",
+      "segment": "insurtech",
+      "signal_type": "job_posting",
+      "signal_detail": "Posted 'Aerial Inspection ML Engineer'",
+      "source_url": "https://linkedin.com/jobs/search?keywords=Aerial+Inspection+ML+Engineer",
+      "intent_score": 0.63,
+      "detected_at": "2026-02-24T19:55:13.555372+00:00",
+      "draft_outreach": "Hi [Name], I noticed CoreLogic is hiring a Aerial Inspection ML Engineer \u2014 that's exactly the workflow Kestrel AI automates. We provide satellite object detection at $99/month vs $50k+/year for Maxar. Would a 15-min demo make sense this week?"
+    },
+    {
+      "company": "Kin Insurance",
+      "segment": "insurance",
+      "signal_type": "funding",
+      "signal_detail": "Seed ($5M)",
+      "source_url": "https://linkedin.com/jobs/search?keywords=Seed+($5M)",
+      "intent_score": 0.62,
+      "detected_at": "2026-02-24T19:55:13.555354+00:00",
+      "draft_outreach": "Hi [Name], congrats on Kin Insurance's recent Seed ($5M)! As you scale, satellite imagery analysis often becomes a bottleneck. Kestrel AI handles it automatically at $99/mo \u2014 15\u00d7 cheaper than Planet Labs. Worth a quick chat?"
+    }
+  ],
+  "summary": "5 signals detected across 5 companies. Top intent: Palantir (0.93)."
+}

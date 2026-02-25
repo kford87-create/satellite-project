@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SatelliteVision — Admin</title>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #0a0e1a; --surface: #111827; --surface2: #1a2236;
+      --border: #1e2d45; --accent: #3b82f6; --accent2: #60a5fa;
+      --green: #22c55e; --yellow: #eab308; --muted: #64748b; --text: #e2e8f0;
+      --red: #ef4444; --purple: #a855f7;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: var(--bg); color: var(--text); min-height: 100vh;
+    }
+
+    /* ── Login ── */
+    #login-screen {
+      display: flex; align-items: center; justify-content: center;
+      min-height: 100vh; padding: 24px;
+    }
+    .login-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 16px; padding: 40px; width: 100%; max-width: 400px;
+    }
+    .login-logo { font-size: 32px; margin-bottom: 8px; text-align: center; }
+    .login-title { font-size: 22px; font-weight: 700; text-align: center; margin-bottom: 4px; }
+    .login-sub { font-size: 13px; color: var(--muted); text-align: center; margin-bottom: 24px; }
+    .field { margin-bottom: 16px; }
+    .field label {
+      display: block; font-size: 12px; font-weight: 600; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px;
+    }
+    .field input {
+      width: 100%; padding: 10px 14px; background: var(--bg);
+      border: 1px solid var(--border); border-radius: 8px;
+      color: var(--text); font-size: 14px; outline: none; transition: border-color 0.15s;
+    }
+    .field input:focus { border-color: var(--accent); }
+    .login-btn {
+      width: 100%; padding: 11px; background: var(--accent); color: white;
+      border: none; border-radius: 8px; font-size: 14px; font-weight: 600;
+      cursor: pointer; margin-top: 8px; transition: background 0.15s;
+    }
+    .login-btn:hover { background: #2563eb; }
+    .login-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .login-error {
+      margin-top: 12px; padding: 10px 14px;
+      background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.3);
+      border-radius: 8px; font-size: 13px; color: #f87171; display: none;
+    }
+
+    /* ── Dashboard ── */
+    #dashboard { display: none; flex-direction: column; min-height: 100vh; }
+
+    /* Header */
+    header {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 12px 24px; border-bottom: 1px solid var(--border);
+      background: var(--surface); position: sticky; top: 0; z-index: 10;
+    }
+    .logo {
+      display: flex; align-items: center; gap: 10px;
+      font-weight: 700; font-size: 17px; text-decoration: none; color: var(--text);
+      cursor: pointer;
+    }
+    .logo-icon { font-size: 22px; }
+    .logo-name { color: var(--accent2); }
+    .admin-badge {
+      font-size: 10px; padding: 2px 8px; border-radius: 99px;
+      background: rgba(168,85,247,0.15); color: #c084fc;
+      border: 1px solid rgba(168,85,247,0.3); font-weight: 700;
+      letter-spacing: 0.5px; text-transform: uppercase;
+    }
+    .header-right { display: flex; align-items: center; gap: 10px; }
+    .user-pill {
+      font-size: 12px; color: var(--muted); padding: 4px 12px;
+      border: 1px solid var(--border); border-radius: 99px;
+    }
+    .refresh-btn {
+      font-size: 12px; color: var(--accent2); background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.25); border-radius: 8px;
+      cursor: pointer; padding: 5px 14px; font-weight: 600; transition: all 0.15s;
+    }
+    .refresh-btn:hover { background: rgba(59,130,246,0.2); }
+    .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .signout-btn {
+      font-size: 12px; color: var(--muted); background: none; border: none;
+      cursor: pointer; padding: 5px 10px; border-radius: 6px; transition: color 0.15s;
+    }
+    .signout-btn:hover { color: var(--text); }
+
+    /* Main content */
+    main { flex: 1; padding: 28px 28px 48px; max-width: 1400px; margin: 0 auto; width: 100%; }
+
+    /* Section titles */
+    .section-title {
+      font-size: 13px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.8px;
+      margin-bottom: 14px; margin-top: 32px;
+    }
+    .section-title:first-child { margin-top: 0; }
+
+    /* ── Stat Cards ── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px;
+    }
+    @media (max-width: 900px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 500px) { .stats-grid { grid-template-columns: 1fr; } }
+
+    .stat-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 22px;
+    }
+    .stat-label {
+      font-size: 11px; font-weight: 700; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 10px;
+    }
+    .stat-value {
+      font-size: 30px; font-weight: 800; color: var(--text);
+      line-height: 1; margin-bottom: 4px;
+    }
+    .stat-sub { font-size: 12px; color: var(--muted); }
+
+    /* ── Plan Distribution ── */
+    .plan-row {
+      display: flex; gap: 12px; flex-wrap: wrap;
+    }
+    .plan-chip {
+      display: flex; align-items: center; gap: 8px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 10px; padding: 10px 16px; font-size: 13px;
+    }
+    .plan-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .plan-chip-label { color: var(--muted); }
+    .plan-chip-count { font-weight: 700; color: var(--text); }
+
+    /* ── Chart ── */
+    .chart-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; padding: 20px 22px;
+    }
+    .chart-card canvas { display: block; width: 100%; }
+
+    /* ── Tables ── */
+    .table-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: 12px; overflow: hidden;
+    }
+    .table-wrap { overflow-x: auto; }
+    table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+      min-width: 600px;
+    }
+    thead th {
+      padding: 11px 14px; text-align: left; font-size: 11px; font-weight: 700;
+      color: var(--muted); text-transform: uppercase; letter-spacing: 0.6px;
+      background: var(--surface2); border-bottom: 1px solid var(--border);
+      white-space: nowrap; user-select: none;
+    }
+    thead th.sortable { cursor: pointer; }
+    thead th.sortable:hover { color: var(--text); }
+    thead th .sort-arrow { margin-left: 4px; opacity: 0.4; font-style: normal; }
+    thead th.sort-asc .sort-arrow,
+    thead th.sort-desc .sort-arrow { opacity: 1; color: var(--accent2); }
+    tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: var(--surface2); }
+    tbody td { padding: 10px 14px; vertical-align: middle; color: var(--text); }
+    .td-muted { color: var(--muted); font-size: 12px; }
+    .td-mono { font-family: 'SF Mono', 'Fira Code', monospace; font-size: 12px; }
+
+    /* Plan badges */
+    .badge-plan {
+      font-size: 10px; font-weight: 700; padding: 2px 8px;
+      border-radius: 99px; text-transform: uppercase; letter-spacing: 0.5px;
+      white-space: nowrap;
+    }
+    .badge-starter {
+      background: rgba(59,130,246,0.15); color: var(--accent2);
+      border: 1px solid rgba(59,130,246,0.3);
+    }
+    .badge-professional {
+      background: rgba(34,197,94,0.12); color: #4ade80;
+      border: 1px solid rgba(34,197,94,0.3);
+    }
+    .badge-enterprise {
+      background: rgba(168,85,247,0.12); color: #c084fc;
+      border: 1px solid rgba(168,85,247,0.3);
+    }
+    .badge-free {
+      background: rgba(100,116,139,0.15); color: var(--muted);
+      border: 1px solid rgba(100,116,139,0.3);
+    }
+
+    /* Source badge */
+    .badge-source {
+      font-size: 10px; font-weight: 600; padding: 2px 7px;
+      border-radius: 6px; background: var(--surface2);
+      border: 1px solid var(--border); color: var(--muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* Skeleton loader */
+    @keyframes shimmer {
+      0% { background-position: -400px 0; }
+      100% { background-position: 400px 0; }
+    }
+    .skeleton {
+      border-radius: 6px; height: 18px; width: 80px;
+      background: linear-gradient(90deg, var(--surface2) 25%, var(--border) 50%, var(--surface2) 75%);
+      background-size: 400px 100%; animation: shimmer 1.4s infinite;
+      display: inline-block;
+    }
+    .skeleton-stat { height: 32px; width: 72px; border-radius: 8px; }
+    .skeleton-row td .skeleton { width: 100%; }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 48px 24px; color: var(--muted); font-size: 14px;
+    }
+    .empty-icon { font-size: 32px; margin-bottom: 10px; display: block; }
+
+    /* Detections count */
+    .det-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: rgba(59,130,246,0.12); color: var(--accent2);
+      border: 1px solid rgba(59,130,246,0.25); border-radius: 6px;
+      font-size: 12px; font-weight: 700; padding: 1px 8px; min-width: 28px;
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== LOGIN ===== -->
+<div id="login-screen">
+  <div class="login-card">
+    <div class="login-logo">🛰️</div>
+    <div class="login-title">Admin Access</div>
+    <div class="login-sub">SatelliteVision internal dashboard</div>
+    <div class="field">
+      <label>Email</label>
+      <input type="email" id="login-email" placeholder="admin@example.com" autocomplete="email" />
+    </div>
+    <div class="field">
+      <label>Password</label>
+      <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+    </div>
+    <button class="login-btn" id="login-btn" onclick="doLogin()">Sign In</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
+
+<!-- ===== DASHBOARD ===== -->
+<div id="dashboard">
+  <header>
+    <a class="logo" href="/" title="Back to main site">
+      <span class="logo-icon">🛰️</span>
+      <span>Satellite<span class="logo-name">Vision</span></span>
+      <span class="admin-badge">Admin</span>
+    </a>
+    <div class="header-right">
+      <span class="user-pill" id="admin-email-pill">—</span>
+      <button class="refresh-btn" id="refresh-btn" onclick="loadAll()">↻ Refresh</button>
+      <button class="signout-btn" onclick="doSignOut()">Sign out</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- Stats Row -->
+    <div class="section-title">Overview</div>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-label">Total Users</div>
+        <div class="stat-value" id="stat-users"><span class="skeleton skeleton-stat"></span></div>
+        <div class="stat-sub" id="stat-users-sub">&nbsp;</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Total Searches</div>
+        <div class="stat-value" id="stat-searches"><span class="skeleton skeleton-stat"></span></div>
+        <div class="stat-sub" id="stat-searches-sub">&nbsp;</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Searches Today</div>
+        <div class="stat-value" id="stat-today"><span class="skeleton skeleton-stat"></span></div>
+        <div class="stat-sub" id="stat-today-sub">&nbsp;</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Est. MRR</div>
+        <div class="stat-value" id="stat-mrr"><span class="skeleton skeleton-stat"></span></div>
+        <div class="stat-sub" id="stat-mrr-sub">&nbsp;</div>
+      </div>
+    </div>
+
+    <!-- Plan Distribution -->
+    <div class="section-title" style="margin-top:24px;">Plan Distribution</div>
+    <div class="plan-row" id="plan-row">
+      <div class="plan-chip"><span class="plan-dot" style="background:#3b82f6"></span><span class="plan-chip-label">Starter</span>&nbsp;<span class="plan-chip-count"><span class="skeleton" style="width:24px;height:14px"></span></span></div>
+      <div class="plan-chip"><span class="plan-dot" style="background:#22c55e"></span><span class="plan-chip-label">Professional</span>&nbsp;<span class="plan-chip-count"><span class="skeleton" style="width:24px;height:14px"></span></span></div>
+      <div class="plan-chip"><span class="plan-dot" style="background:#a855f7"></span><span class="plan-chip-label">Enterprise</span>&nbsp;<span class="plan-chip-count"><span class="skeleton" style="width:24px;height:14px"></span></span></div>
+      <div class="plan-chip"><span class="plan-dot" style="background:var(--muted)"></span><span class="plan-chip-label">Free / Other</span>&nbsp;<span class="plan-chip-count"><span class="skeleton" style="width:24px;height:14px"></span></span></div>
+    </div>
+
+    <!-- Chart -->
+    <div class="section-title">Search Volume — Last 30 Days</div>
+    <div class="chart-card">
+      <canvas id="volume-chart" height="160"></canvas>
+    </div>
+
+    <!-- Recent Searches -->
+    <div class="section-title">Recent Searches</div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>User</th>
+              <th>Company</th>
+              <th>Address</th>
+              <th>Detections</th>
+              <th>Source</th>
+              <th>ms</th>
+            </tr>
+          </thead>
+          <tbody id="searches-tbody">
+            <tr class="skeleton-row"><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton" style="width:140px"></span></td><td><span class="skeleton" style="width:36px"></span></td><td><span class="skeleton" style="width:56px"></span></td><td><span class="skeleton" style="width:40px"></span></td></tr>
+            <tr class="skeleton-row"><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton" style="width:140px"></span></td><td><span class="skeleton" style="width:36px"></span></td><td><span class="skeleton" style="width:56px"></span></td><td><span class="skeleton" style="width:40px"></span></td></tr>
+            <tr class="skeleton-row"><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton" style="width:140px"></span></td><td><span class="skeleton" style="width:36px"></span></td><td><span class="skeleton" style="width:56px"></span></td><td><span class="skeleton" style="width:40px"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="section-title">All Users</div>
+    <div class="table-card">
+      <div class="table-wrap">
+        <table id="users-table">
+          <thead>
+            <tr>
+              <th class="sortable" data-col="created_at" data-type="date">Joined <i class="sort-arrow">↕</i></th>
+              <th class="sortable" data-col="full_name" data-type="str">Name <i class="sort-arrow">↕</i></th>
+              <th class="sortable" data-col="company_name" data-type="str">Company <i class="sort-arrow">↕</i></th>
+              <th>Email</th>
+              <th>Phone</th>
+              <th>Job Title</th>
+              <th class="sortable" data-col="plan" data-type="str">Plan <i class="sort-arrow">↕</i></th>
+              <th class="sortable" data-col="searches_mo" data-type="num">Searches/mo <i class="sort-arrow">↕</i></th>
+              <th class="sortable" data-col="total_searches" data-type="num">Total Searches <i class="sort-arrow">↕</i></th>
+              <th class="sortable" data-col="last_active" data-type="date">Last Active <i class="sort-arrow">↕</i></th>
+            </tr>
+          </thead>
+          <tbody id="users-tbody">
+            <tr class="skeleton-row"><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton" style="width:120px"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton" style="width:60px"></span></td><td><span class="skeleton" style="width:36px"></span></td><td><span class="skeleton" style="width:36px"></span></td><td><span class="skeleton"></span></td></tr>
+            <tr class="skeleton-row"><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton" style="width:120px"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton"></span></td><td><span class="skeleton" style="width:60px"></span></td><td><span class="skeleton" style="width:36px"></span></td><td><span class="skeleton" style="width:36px"></span></td><td><span class="skeleton"></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script>
+  const SUPABASE_URL = "https://obdsgqjkjjmmtbcfjhnn.supabase.co";
+  const SUPABASE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9iZHNncWpramptbXRiY2ZqaG5uIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE3Nzg0NTEsImV4cCI6MjA4NzM1NDQ1MX0.NTgpPQzvz0a844_dAaQJOr2GacCOgToyWBtBT07l9e0";
+
+  const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+  // ─── Session timeout (30 min idle) ───
+  const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+  let lastActivity = Date.now();
+  function resetActivity() { lastActivity = Date.now(); }
+  document.addEventListener('mousedown', resetActivity);
+  document.addEventListener('keydown', resetActivity);
+  setInterval(async () => {
+    if (Date.now() - lastActivity > SESSION_TIMEOUT_MS) {
+      await sb.auth.signOut();
+      location.reload();
+    }
+  }, 60000);
+
+  // ─── Sort state ───
+  let sortCol = null;
+  let sortDir = 'desc';
+  let usersData = [];
+
+  // ─── Helpers ───
+  function fmt(n) {
+    if (n === null || n === undefined) return '—';
+    return Number(n).toLocaleString();
+  }
+
+  function fmtMoney(n) {
+    return '$' + Number(n).toLocaleString('en-US', { minimumFractionDigits: 0 });
+  }
+
+  function timeAgo(iso) {
+    if (!iso) return '—';
+    const diff = Date.now() - new Date(iso).getTime();
+    const s = Math.floor(diff / 1000);
+    if (s < 60) return s + 's ago';
+    const m = Math.floor(s / 60);
+    if (m < 60) return m + 'm ago';
+    const h = Math.floor(m / 60);
+    if (h < 24) return h + 'h ago';
+    const d = Math.floor(h / 24);
+    if (d < 30) return d + 'd ago';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
+
+  function fmtDate(iso) {
+    if (!iso) return '—';
+    return new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: '2-digit' });
+  }
+
+  function fmtPhone(p) {
+    if (!p) return '—';
+    const d = p.replace(/\D/g, '');
+    if (d.length === 10) return `(${d.slice(0,3)}) ${d.slice(3,6)}-${d.slice(6)}`;
+    if (d.length === 11 && d[0] === '1') return `+1 (${d.slice(1,4)}) ${d.slice(4,7)}-${d.slice(7)}`;
+    return p;
+  }
+
+  function planBadge(plan) {
+    if (!plan) return '<span class="badge-plan badge-free">Free</span>';
+    const p = plan.toLowerCase();
+    if (p.includes('enterprise')) return `<span class="badge-plan badge-enterprise">Enterprise</span>`;
+    if (p.includes('professional') || p.includes('pro')) return `<span class="badge-plan badge-professional">Professional</span>`;
+    if (p.includes('starter')) return `<span class="badge-plan badge-starter">Starter</span>`;
+    return `<span class="badge-plan badge-free">${plan}</span>`;
+  }
+
+  function esc(s) {
+    if (!s) return '';
+    return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  // ─── Login ───
+  async function doLogin() {
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    const btn = document.getElementById('login-btn');
+    const errEl = document.getElementById('login-error');
+    errEl.style.display = 'none';
+    btn.disabled = true;
+    btn.textContent = 'Signing in…';
+    try {
+      const { data, error } = await sb.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      await handleSession(data.session);
+    } catch (e) {
+      errEl.textContent = e.message || 'Sign in failed.';
+      errEl.style.display = 'block';
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Sign In';
+    }
+  }
+
+  document.getElementById('login-password').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  document.getElementById('login-email').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('login-password').focus();
+  });
+
+  async function handleSession(session) {
+    if (!session) return;
+    const user = session.user;
+
+    // Check is_admin flag from database — not a hardcoded email
+    const { data: profile, error: profileError } = await sb
+      .from('profiles')
+      .select('is_admin')
+      .eq('id', user.id)
+      .single();
+
+    if (profileError || !profile?.is_admin) {
+      const errEl = document.getElementById('login-error');
+      errEl.textContent = 'Access denied. Admin privileges required.';
+      errEl.style.display = 'block';
+      await sb.auth.signOut();
+      return;
+    }
+
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'flex';
+    document.getElementById('admin-email-pill').textContent = user.email;
+    resetActivity();
+    await loadAll();
+  }
+
+  async function doSignOut() {
+    await sb.auth.signOut();
+    location.reload();
+  }
+
+  // ─── Check existing session on load ───
+  (async () => {
+    const { data: { session } } = await sb.auth.getSession();
+    if (session) await handleSession(session);
+  })();
+
+  // ─── Load all data ───
+  async function loadAll() {
+    const btn = document.getElementById('refresh-btn');
+    btn.disabled = true;
+    btn.textContent = '↻ Loading…';
+    try {
+      await Promise.all([loadUsers(), loadRecentSearches(), loadDailyChart()]);
+    } finally {
+      btn.disabled = false;
+      btn.textContent = '↻ Refresh';
+    }
+  }
+
+  // ─── Load Users ───
+  async function loadUsers() {
+    const { data: users, error } = await sb
+      .from('profiles')
+      .select('*, searches(count)')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('profiles error', error);
+      document.getElementById('users-tbody').innerHTML =
+        '<tr><td colspan="10" class="empty-state"><span class="empty-icon">⚠️</span>Failed to load users.</td></tr>';
+      return;
+    }
+
+    usersData = (users || []).map(u => ({
+      ...u,
+      total_searches: u.searches?.[0]?.count ?? 0,
+      searches_mo: u.searches_this_month ?? u.searches_mo ?? 0,
+      last_active: u.last_active_at ?? u.updated_at ?? u.created_at,
+    }));
+
+    // Stats
+    const total = usersData.length;
+    document.getElementById('stat-users').textContent = fmt(total);
+    document.getElementById('stat-users-sub').textContent = total === 1 ? '1 registered account' : `${total} registered accounts`;
+
+    // Plan distribution
+    const counts = { starter: 0, professional: 0, enterprise: 0, other: 0 };
+    usersData.forEach(u => {
+      const p = (u.plan || '').toLowerCase();
+      if (p.includes('enterprise')) counts.enterprise++;
+      else if (p.includes('professional') || p.includes('pro')) counts.professional++;
+      else if (p.includes('starter')) counts.starter++;
+      else counts.other++;
+    });
+
+    document.getElementById('plan-row').innerHTML = `
+      <div class="plan-chip"><span class="plan-dot" style="background:#3b82f6"></span><span class="plan-chip-label">Starter</span>&nbsp;<span class="plan-chip-count">${counts.starter}</span></div>
+      <div class="plan-chip"><span class="plan-dot" style="background:#22c55e"></span><span class="plan-chip-label">Professional</span>&nbsp;<span class="plan-chip-count">${counts.professional}</span></div>
+      <div class="plan-chip"><span class="plan-dot" style="background:#a855f7"></span><span class="plan-chip-label">Enterprise</span>&nbsp;<span class="plan-chip-count">${counts.enterprise}</span></div>
+      <div class="plan-chip"><span class="plan-dot" style="background:var(--muted)"></span><span class="plan-chip-label">Free / Other</span>&nbsp;<span class="plan-chip-count">${counts.other}</span></div>
+    `;
+
+    // MRR estimate
+    const mrr = counts.starter * 99 + counts.professional * 399 + counts.enterprise * 1499;
+    document.getElementById('stat-mrr').textContent = fmtMoney(mrr);
+    document.getElementById('stat-mrr-sub').textContent =
+      `${counts.starter}×$99 + ${counts.professional}×$399 + ${counts.enterprise}×$1,499`;
+
+    renderUsersTable();
+  }
+
+  function renderUsersTable() {
+    let rows = [...usersData];
+
+    // Sort
+    if (sortCol) {
+      rows.sort((a, b) => {
+        let av = a[sortCol], bv = b[sortCol];
+        if (av === null || av === undefined) av = sortDir === 'asc' ? '\uffff' : '';
+        if (bv === null || bv === undefined) bv = sortDir === 'asc' ? '\uffff' : '';
+        const col = document.querySelector(`[data-col="${sortCol}"]`);
+        const type = col ? col.dataset.type : 'str';
+        if (type === 'num') { av = Number(av) || 0; bv = Number(bv) || 0; }
+        if (type === 'date') { av = av ? new Date(av).getTime() : 0; bv = bv ? new Date(bv).getTime() : 0; }
+        if (av < bv) return sortDir === 'asc' ? -1 : 1;
+        if (av > bv) return sortDir === 'asc' ? 1 : -1;
+        return 0;
+      });
+    }
+
+    if (rows.length === 0) {
+      document.getElementById('users-tbody').innerHTML =
+        '<tr><td colspan="10"><div class="empty-state"><span class="empty-icon">👤</span>No users yet.</div></td></tr>';
+      return;
+    }
+
+    document.getElementById('users-tbody').innerHTML = rows.map(u => `
+      <tr>
+        <td class="td-muted">${fmtDate(u.created_at)}</td>
+        <td>${esc(u.full_name) || '<span class="td-muted">—</span>'}</td>
+        <td>${esc(u.company_name) || '<span class="td-muted">—</span>'}</td>
+        <td class="td-mono" style="font-size:12px">${esc(u.email) || '<span class="td-muted">—</span>'}</td>
+        <td class="td-muted">${fmtPhone(u.phone)}</td>
+        <td class="td-muted">${esc(u.job_title) || '—'}</td>
+        <td>${planBadge(u.plan)}</td>
+        <td style="text-align:right;padding-right:20px" class="td-muted">${fmt(u.searches_mo)}</td>
+        <td style="text-align:right;padding-right:20px" class="td-muted">${fmt(u.total_searches)}</td>
+        <td class="td-muted">${timeAgo(u.last_active)}</td>
+      </tr>
+    `).join('');
+  }
+
+  // ─── Sortable headers ───
+  document.querySelectorAll('thead th.sortable').forEach(th => {
+    th.addEventListener('click', () => {
+      const col = th.dataset.col;
+      if (sortCol === col) {
+        sortDir = sortDir === 'asc' ? 'desc' : 'asc';
+      } else {
+        sortCol = col;
+        sortDir = 'desc';
+      }
+      // Update arrow indicators
+      document.querySelectorAll('thead th.sortable').forEach(h => {
+        h.classList.remove('sort-asc', 'sort-desc');
+        const arrow = h.querySelector('.sort-arrow');
+        if (arrow) arrow.textContent = '↕';
+      });
+      th.classList.add(sortDir === 'asc' ? 'sort-asc' : 'sort-desc');
+      const arrow = th.querySelector('.sort-arrow');
+      if (arrow) arrow.textContent = sortDir === 'asc' ? '↑' : '↓';
+      renderUsersTable();
+    });
+  });
+
+  // ─── Recent Searches ───
+  async function loadRecentSearches() {
+    const { data: recent, error } = await sb
+      .from('searches')
+      .select('*, profiles(full_name, company_name, email)')
+      .order('created_at', { ascending: false })
+      .limit(50);
+
+    if (error) {
+      console.error('searches error', error);
+      document.getElementById('searches-tbody').innerHTML =
+        '<tr><td colspan="7" class="empty-state"><span class="empty-icon">⚠️</span>Failed to load searches.</td></tr>';
+      return;
+    }
+
+    // Total searches stat
+    const { count: totalCount } = await sb.from('searches').select('*', { count: 'exact', head: true });
+    document.getElementById('stat-searches').textContent = fmt(totalCount ?? (recent || []).length);
+    document.getElementById('stat-searches-sub').textContent = 'all time';
+
+    // Today's searches stat
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+    const { count: todayCount } = await sb
+      .from('searches')
+      .select('*', { count: 'exact', head: true })
+      .gte('created_at', todayStart.toISOString());
+    document.getElementById('stat-today').textContent = fmt(todayCount ?? 0);
+    document.getElementById('stat-today-sub').textContent = 'since midnight';
+
+    if (!recent || recent.length === 0) {
+      document.getElementById('searches-tbody').innerHTML =
+        '<tr><td colspan="7"><div class="empty-state"><span class="empty-icon">🔍</span>No searches yet.</div></td></tr>';
+      return;
+    }
+
+    document.getElementById('searches-tbody').innerHTML = recent.map(s => {
+      const userName = s.profiles?.full_name || s.profiles?.email || '—';
+      const company = s.profiles?.company_name || '—';
+      const address = s.address || s.query || '—';
+      const detections = s.detection_count ?? s.detections_count ?? (Array.isArray(s.results) ? s.results.length : null);
+      const source = s.source || s.provider || '—';
+      const ms = s.duration_ms ?? s.processing_ms ?? s.ms ?? null;
+      return `
+        <tr>
+          <td class="td-muted" style="white-space:nowrap">${timeAgo(s.created_at)}</td>
+          <td>${esc(userName)}</td>
+          <td class="td-muted">${esc(company)}</td>
+          <td style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(address)}">${esc(address)}</td>
+          <td style="text-align:center">${detections !== null ? `<span class="det-count">${fmt(detections)}</span>` : '<span class="td-muted">—</span>'}</td>
+          <td>${source !== '—' ? `<span class="badge-source">${esc(source)}</span>` : '<span class="td-muted">—</span>'}</td>
+          <td class="td-muted td-mono">${ms !== null ? fmt(ms) : '—'}</td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  // ─── Daily chart ───
+  async function loadDailyChart() {
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+    const { data: daily, error } = await sb
+      .from('searches')
+      .select('created_at')
+      .gte('created_at', thirtyDaysAgo);
+
+    if (error) { console.error('daily chart error', error); return; }
+
+    // Build date → count map for last 30 days
+    const dayMap = {};
+    for (let i = 29; i >= 0; i--) {
+      const d = new Date(Date.now() - i * 24 * 60 * 60 * 1000);
+      const key = d.toISOString().slice(0, 10);
+      dayMap[key] = 0;
+    }
+    (daily || []).forEach(row => {
+      const key = row.created_at.slice(0, 10);
+      if (key in dayMap) dayMap[key]++;
+    });
+
+    const labels = Object.keys(dayMap);
+    const values = Object.values(dayMap);
+    drawChart(labels, values);
+  }
+
+  function drawChart(labels, values) {
+    const canvas = document.getElementById('volume-chart');
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = canvas.parentElement.clientWidth - 44; // card padding
+    const cssH = 160;
+    canvas.style.width = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    canvas.width = cssW * dpr;
+    canvas.height = cssH * dpr;
+
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const W = cssW, H = cssH;
+    const padL = 36, padR = 12, padT = 14, padB = 36;
+    const chartW = W - padL - padR;
+    const chartH = H - padT - padB;
+
+    const maxVal = Math.max(...values, 1);
+    const yTicks = 4;
+
+    // Clear
+    ctx.clearRect(0, 0, W, H);
+
+    // Grid lines + Y labels
+    ctx.font = '10px -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'middle';
+    for (let i = 0; i <= yTicks; i++) {
+      const val = Math.round((maxVal / yTicks) * i);
+      const y = padT + chartH - (i / yTicks) * chartH;
+      ctx.strokeStyle = '#1e2d45';
+      ctx.lineWidth = 1;
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + chartW, y);
+      ctx.stroke();
+      ctx.fillStyle = '#64748b';
+      ctx.fillText(val, padL - 6, y);
+    }
+
+    // Bars
+    const n = labels.length;
+    const barGap = 3;
+    const barW = Math.max(2, (chartW - barGap * (n - 1)) / n);
+
+    values.forEach((v, i) => {
+      const x = padL + i * (barW + barGap);
+      const barH = (v / maxVal) * chartH;
+      const y = padT + chartH - barH;
+
+      // Bar gradient
+      const grad = ctx.createLinearGradient(0, y, 0, padT + chartH);
+      grad.addColorStop(0, 'rgba(59,130,246,0.85)');
+      grad.addColorStop(1, 'rgba(59,130,246,0.25)');
+      ctx.fillStyle = grad;
+      const radius = Math.min(3, barW / 2, barH / 2);
+      roundRect(ctx, x, y, barW, barH, radius);
+      ctx.fill();
+    });
+
+    // X axis labels — show every ~5th day
+    ctx.fillStyle = '#64748b';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const step = Math.ceil(n / 7);
+    labels.forEach((lbl, i) => {
+      if (i % step !== 0 && i !== n - 1) return;
+      const x = padL + i * (barW + barGap) + barW / 2;
+      const short = lbl.slice(5); // MM-DD
+      ctx.fillText(short, x, padT + chartH + 6);
+    });
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    if (h <= 0) return;
+    r = Math.min(r, h, w / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h);
+    ctx.lineTo(x, y + h);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  // Redraw chart on resize
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (document.getElementById('dashboard').style.display !== 'none') {
+        loadDailyChart();
+      }
+    }, 200);
+  });
+</script>
+</body>
+</html>

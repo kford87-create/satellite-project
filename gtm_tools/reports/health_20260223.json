@@ -1,0 +1,30 @@
+{
+  "run_date": "2026-02-23T21:42:07.569172+00:00",
+  "mode": "live",
+  "signal_filter": "all",
+  "customers_analyzed": 1,
+  "upsell_opportunities": 0,
+  "churn_risks": 1,
+  "expansion_candidates": 0,
+  "healthy": 0,
+  "mrr_at_risk": 99.0,
+  "upsell_potential_mrr": 0.0,
+  "customers": [
+    {
+      "user_id": "920189c9-d09e-49a3-9696-0c490ec5567b",
+      "email": "t***@satellite-demo.com",
+      "full_name": "",
+      "company_name": "",
+      "plan": "starter",
+      "searches_this_month": 0,
+      "searches_limit": 200,
+      "usage_rate_pct": 0.0,
+      "health_score": 15,
+      "signal": "churn_risk",
+      "days_since_last_search": 30.0,
+      "draft_email_subject": "Quick check-in from Kestrel AI",
+      "draft_email_body": "Hi there,\n\nWe noticed you haven't run a search in 30 days \u2014 wanted to check in.\n\nIs there anything blocking you? A feature missing? Something not working as expected?\n\nI'm happy to jump on a quick 15-min call to help, or answer questions by email.\n\nReply here or book a call: https://satellite-detector-demo.vercel.app\n\nBest,\nKahlil @ Kestrel AI"
+    }
+  ],
+  "summary": "0 upsell opportunities ($0 MRR potential). 1 churn risks ($99 MRR at risk)."
+}

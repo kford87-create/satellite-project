@@ -1,0 +1,130 @@
+{
+  "run_date": "2026-02-23T21:38:14.267505+00:00",
+  "mode": "live",
+  "total_queries": 12,
+  "kestrel_citations": 0,
+  "citation_rate_pct": 0.0,
+  "competitor_citations": {
+    "Google Earth Engine": 5,
+    "Planet Labs": 4,
+    "Maxar": 3,
+    "Picterra": 1
+  },
+  "results": [
+    {
+      "query": "What is the best affordable satellite object detection API?",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [
+        "Planet Labs",
+        "Google Earth Engine"
+      ],
+      "response_snippet": "# Best Affordable Satellite Object Detection APIs  Great question! Here are some solid options depending on your needs and budget:  ---  ## \ud83c\udfc6 Top Recommendations  ### 1. **Google Earth Engine** *(Best"
+    },
+    {
+      "query": "alternatives to Maxar and Planet Labs for small business",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [
+        "Maxar",
+        "Planet Labs",
+        "Google Earth Engine"
+      ],
+      "response_snippet": "# Satellite Imagery Alternatives to Maxar & Planet Labs for Small Businesses  Here are some solid options worth considering:  ---  ## \ud83d\udef0\ufe0f Commercial Satellite Imagery Providers  ### More Affordable Opt"
+    },
+    {
+      "query": "satellite imagery AI for insurance companies",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [],
+      "response_snippet": "# Satellite Imagery AI for Insurance Companies  ## What It Is AI-powered analysis of satellite and aerial imagery to help insurers **assess risk, process claims, and detect fraud** more efficiently th"
+    },
+    {
+      "query": "how to detect buildings from satellite images automatically",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [],
+      "response_snippet": "# Detecting Buildings from Satellite Images Automatically  Great question! This is a classic problem in **remote sensing and computer vision**. Here's a comprehensive overview:  ---  ## \ud83d\udee0\ufe0f Main Approa"
+    },
+    {
+      "query": "geospatial AI API for insurtech startups",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [],
+      "response_snippet": "# Geospatial AI APIs for Insurtech Startups  Here's a comprehensive breakdown to help you find the right solution:  ---  ## \ud83c\udfc6 Top Geospatial AI APIs for Insurtech  ### **Property & Risk Assessment** |"
+    },
+    {
+      "query": "satellite change detection software for real estate",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [
+        "Planet Labs",
+        "Google Earth Engine"
+      ],
+      "response_snippet": "# Satellite Change Detection Software for Real Estate  Great question! Here's a breakdown of the best options and use cases:  ---  ## \ud83c\udfe0 What It's Used For in Real Estate - Detecting new construction o"
+    },
+    {
+      "query": "YOLOv8 satellite detection service",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [],
+      "response_snippet": "# YOLOv8 Satellite Detection Service  Here's a comprehensive overview of building/using a YOLOv8-based satellite detection service:  ---  ## \ud83d\udef0\ufe0f What It Does Detects objects in satellite/aerial imagery"
+    },
+    {
+      "query": "affordable aerial object detection for construction",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [],
+      "response_snippet": "# Affordable Aerial Object Detection for Construction  Great topic! Here's a practical breakdown of cost-effective solutions:  ---  ## \ud83d\ude81 Drone/UAV Options (Hardware)  | Option | Cost | Best For | |---"
+    },
+    {
+      "query": "satellite AI for government contracts SBIR",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [],
+      "response_snippet": "# Satellite AI for Government Contracts (SBIR)  Great topic! Here's a practical breakdown to help you navigate this space:  ---  ## \ud83d\udef0\ufe0f What This Space Looks Like  **Satellite AI + SBIR** is a high-opp"
+    },
+    {
+      "query": "best satellite detection API under $500 per month",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [
+        "Maxar",
+        "Planet Labs",
+        "Google Earth Engine"
+      ],
+      "response_snippet": "# Best Satellite Detection APIs Under $500/Month  Here's a practical breakdown based on your likely use case:  ---  ## \ud83d\udef0\ufe0f Top Options by Category  ### **Object/Change Detection** | Provider | Price | "
+    },
+    {
+      "query": "Picterra alternative satellite detection",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [
+        "Picterra",
+        "Maxar",
+        "Google Earth Engine"
+      ],
+      "response_snippet": "# Picterra Alternatives for Satellite Image Detection  Here are the best alternatives to Picterra for satellite/aerial image detection and analysis:  ## \ud83d\udef0\ufe0f Direct Competitors (No-Code/Low-Code ML Dete"
+    },
+    {
+      "query": "satellite building detection API comparison",
+      "cited_kestrel": false,
+      "kestrel_rank": null,
+      "sentiment": "n/a",
+      "competitors_mentioned": [],
+      "response_snippet": "# Satellite Building Detection API Comparison  Here's a comprehensive comparison of the major APIs and services for detecting buildings from satellite imagery:  ---  ## \ud83c\udfe2 Major Providers  ### 1. **Goo"
+    }
+  ],
+  "summary": "Kestrel cited in 0/12 queries (0.0%). Top competitors: Google Earth Engine (5), Planet Labs (4), Maxar (3)."
+}

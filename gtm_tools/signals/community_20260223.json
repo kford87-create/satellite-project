@@ -1,0 +1,55 @@
+{
+  "run_date": "2026-02-23T21:53:21.802716+00:00",
+  "mode": "live",
+  "platform_filter": "all",
+  "min_score": 0.1,
+  "threads_surfaced": 4,
+  "avg_relevance_score": 0.1,
+  "threads": [
+    {
+      "platform": "reddit",
+      "title": "Making anatomically accurate videos for educational purposes",
+      "url": "https://reddit.com/r/generativeAI/comments/1rcuppc/making_anatomically_accurate_videos_for/",
+      "score": 1,
+      "comments": 1,
+      "relevance_score": 0.1,
+      "engagement_opportunity": "medium",
+      "keywords_matched": [],
+      "subreddit": "gis"
+    },
+    {
+      "platform": "reddit",
+      "title": "Emstrata Image Showcase of the Week",
+      "url": "https://reddit.com/r/Emstrata/comments/1rctesu/emstrata_image_showcase_of_the_week/",
+      "score": 1,
+      "comments": 0,
+      "relevance_score": 0.1,
+      "engagement_opportunity": "medium",
+      "keywords_matched": [],
+      "subreddit": "gis"
+    },
+    {
+      "platform": "reddit",
+      "title": "Office of the Privacy Commissioner | Joint statement on AI Generated Imagery",
+      "url": "https://reddit.com/r/newzealand/comments/1rcssfb/office_of_the_privacy_commissioner_joint/",
+      "score": 7,
+      "comments": 9,
+      "relevance_score": 0.1,
+      "engagement_opportunity": "medium",
+      "keywords_matched": [],
+      "subreddit": "gis"
+    },
+    {
+      "platform": "reddit",
+      "title": "AI pictures of humans are terribly involved with scandals, so it's problem is defying safety controls rather than endangerment",
+      "url": "https://reddit.com/r/u_Lopsided_Promise9771/comments/1rcmgyf/ai_pictures_of_humans_are_terribly_involved_with/",
+      "score": 1,
+      "comments": 0,
+      "relevance_score": 0.1,
+      "engagement_opportunity": "medium",
+      "keywords_matched": [],
+      "subreddit": "gis"
+    }
+  ],
+  "summary": "4 high-relevance threads found. reddit: 4."
+}
