@@ -1,0 +1,28 @@
+{
+  "run_date": "2026-02-26T12:17:17.335557+00:00",
+  "mode": "live",
+  "signal_filter": "all",
+  "customers_analyzed": 1,
+  "upsell_opportunities": 0,
+  "churn_risks": 0,
+  "expansion_candidates": 0,
+  "healthy": 1,
+  "mrr_at_risk": 0.0,
+  "upsell_potential_mrr": 0.0,
+  "customers": [
+    {
+      "user_id": "920189c9-d09e-49a3-9696-0c490ec5567b",
+      "email": "t***@satellite-demo.com",
+      "full_name": "",
+      "company_name": "",
+      "plan": "starter",
+      "searches_this_month": 0,
+      "searches_limit": 200,
+      "usage_rate_pct": 0.0,
+      "health_score": 45,
+      "signal": "healthy",
+      "days_since_last_search": 2.4
+    }
+  ],
+  "summary": "0 upsell opportunities ($0 MRR potential). 0 churn risks ($0 MRR at risk)."
+}
