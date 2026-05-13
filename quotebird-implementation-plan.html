@@ -279,8 +279,8 @@
   <h1>Quotebird — prompt-to-quote for trade shops</h1>
   <p class="tagline">A 10-session build plan for an AI-native quoting + invoicing app for 1–5 person HVAC, plumbing, and electrical shops. Per-tenant learning loop, branded PDFs, manual payments, mobile-first PWA.</p>
   <div class="stat-row">
-    <div class="stat"><div class="v">~45 hrs</div><div class="k">est. build</div></div>
-    <div class="stat"><div class="v">10 sessions</div><div class="k">claude code</div></div>
+    <div class="stat"><div class="v">~52 hrs</div><div class="k">est. build</div></div>
+    <div class="stat"><div class="v">11 sessions</div><div class="k">claude code</div></div>
     <div class="stat"><div class="v">$99 – $249</div><div class="k">pricing band</div></div>
     <div class="stat"><div class="v">~$2.50</div><div class="k">ai cost / contractor / mo</div></div>
     <div class="stat"><div class="v">93%+</div><div class="k">gross margin</div></div>
@@ -298,7 +298,8 @@
     <li><a href="#arch">3 · System architecture</a></li>
     <li><a href="#schema">4 · Data model</a></li>
     <li><a href="#flow-quote">5 · Prompt → Quote flow</a></li>
-    <li><a href="#rag">6 · AI learning loop</a></li>
+    <li><a href="#skus">5.5 · SKU catalog ingestion</a></li>
+    <li><a href="#rag">6 · Per-tenant memory</a></li>
     <li><a href="#flow-invoice">7 · Quote → Invoice flow</a></li>
     <li><a href="#mocks">8 · UI mockups</a></li>
     <li><a href="#code">9 · Key code snippets</a></li>
@@ -322,12 +323,13 @@
       <ul class="bullets">
         <li>Email + password auth, <strong>multi-user with role-based permissions</strong> (1 / 3–4 / 5–10 users per plan tier)</li>
         <li>Setup wizard: rate, markup, tax, logo, service area, trade</li>
-        <li><strong>Prompt-to-Quote</strong> screen — NL → structured quote</li>
+        <li><strong>SKU catalog ingestion</strong> — upload photos / PDFs of supplier price sheets; Claude Vision extracts SKU code, description, unit, price; contractor reviews and approves into catalog</li>
+        <li><strong>Prompt-to-Quote</strong> screen — NL → quote that uses the contractor's <em>actual catalog prices</em>, not generic estimates</li>
         <li>Editable line-item review &amp; branded PDF</li>
         <li>Email delivery via Resend</li>
         <li><strong>Quote → Invoice</strong> conversion w/ change tracking</li>
         <li>Manual payment status + nightly overdue cron</li>
-        <li><strong>Per-tenant RAG learning loop</strong> (shared across team members on Crew/Shop)</li>
+        <li><strong>Per-tenant memory</strong>: catalog (primary) + past-quote patterns (secondary)</li>
         <li>Mobile-first responsive PWA</li>
       </ul>
     </div>
@@ -444,7 +446,7 @@
       <!-- External services -->
       <rect class="node-ai" x="290" y="320" width="200" height="60" rx="10"/>
       <text class="node-label" x="390" y="350" text-anchor="middle">Anthropic API</text>
-      <text class="node-sub"   x="390" y="368" text-anchor="middle">Claude Sonnet 4</text>
+      <text class="node-sub"   x="390" y="368" text-anchor="middle">Claude Sonnet 4 (text + vision)</text>
 
       <rect class="node-ai" x="510" y="320" width="200" height="60" rx="10"/>
       <text class="node-label" x="610" y="350" text-anchor="middle">Voyage AI</text>
@@ -500,6 +502,24 @@
       <p style="margin:0;color:var(--muted);font-size:12.5px">Vercel Cron @ 02:00 UTC daily flips <code class="inline">sent / partial_paid</code> → <code class="inline">overdue</code> when <code class="inline">due_date &lt; today</code>.</p>
     </div>
   </div>
+
+  <div class="grid-3" style="margin-top:14px;">
+    <div class="card card-tight">
+      <span class="tag">onboarding</span>
+      <h4 style="margin:8px 0 4px">SKU extraction</h4>
+      <p style="margin:0;color:var(--muted);font-size:12.5px">Contractor uploads price sheet → Storage → graphile-worker → Claude Vision → review screen → bulk insert into <code class="inline">skus</code> → embed each. One-time onboarding cost ~$0.50–$1 per contractor.</p>
+    </div>
+    <div class="card card-tight">
+      <span class="tag gray">retrieval</span>
+      <h4 style="margin:8px 0 4px">Per-quote SKU lookup</h4>
+      <p style="margin:0;color:var(--muted);font-size:12.5px">Every generation: embed prompt → top-10 SKU vector search + top-3 past-quote vector search → both injected. Catalog gives prices; past quotes give style.</p>
+    </div>
+    <div class="card card-tight">
+      <span class="tag ok">trust gate</span>
+      <h4 style="margin:8px 0 4px">No fabricated prices</h4>
+      <p style="margin:0;color:var(--muted);font-size:12.5px">When the AI can't find a matching SKU, it returns the line with <code class="inline">unit_price = null</code> and a note to the contractor — never a guessed number.</p>
+    </div>
+  </div>
 </section>
 
 <!-- ============== 4. DATA MODEL ============== -->
@@ -532,13 +552,13 @@
       <text class="node-sub" x="252" y="168">trade_type, plan_id</text>
       <text class="node-sub" x="252" y="188">quotes_used_this_period</text>
 
-      <!-- company_context -->
+      <!-- skus (catalog) -->
       <rect class="node-ai" x="510" y="20" width="220" height="120" rx="8"/>
-      <text class="node-label" x="620" y="44" text-anchor="middle">company_context</text>
-      <text class="node-sub" x="522" y="68">company_id (pk, fk)</text>
-      <text class="node-sub" x="522" y="88">price_overrides (jsonb)</text>
-      <text class="node-sub" x="522" y="108">default_phrases (text[])</text>
-      <text class="node-sub" x="522" y="128">avg_job_duration, win_rate</text>
+      <text class="node-label" x="620" y="44" text-anchor="middle">skus (catalog)</text>
+      <text class="node-sub" x="522" y="68">id (pk), company_id (fk)</text>
+      <text class="node-sub" x="522" y="88">sku_code, description, category</text>
+      <text class="node-sub" x="522" y="108">unit, unit_price, supplier</text>
+      <text class="node-sub" x="522" y="128">embedding (1024) ← HNSW</text>
 
       <!-- plans -->
       <rect class="node-db" x="780" y="20" width="200" height="100" rx="8"/>
@@ -590,6 +610,54 @@
       <text class="arrow-label" x="620" y="312" text-anchor="middle">1 : 1 (per accepted quote)</text>
     </svg>
   </div>
+
+  <h3>SKU catalog — the contractor's source of truth</h3>
+<pre class="code"><span class="c">-- Each SKU is one line item the contractor can quote.</span>
+<span class="c">-- Loaded once via photo / PDF upload, used forever.</span>
+<span class="k">create table</span> skus (
+  id              uuid <span class="k">primary key</span> <span class="k">default</span> gen_random_uuid(),
+  company_id      uuid <span class="k">not null</span> <span class="k">references</span> companies(id) <span class="k">on delete cascade</span>,
+  sku_code        text,                              <span class="c">-- "XR16-036" (supplier code, optional)</span>
+  description     text <span class="k">not null</span>,                  <span class="c">-- "3-Ton 16 SEER R-410A Condenser, XR16"</span>
+  category        text <span class="k">check</span> (category <span class="k">in</span>
+                    (<span class="s">'equipment'</span>,<span class="s">'labor'</span>,<span class="s">'materials'</span>,<span class="s">'permits'</span>,<span class="s">'other'</span>)),
+  unit            text <span class="k">not null</span> <span class="k">default</span> <span class="s">'each'</span>,
+  unit_price      numeric(12,2) <span class="k">not null</span>,
+  supplier        text,                              <span class="c">-- "Carrier Distribution"</span>
+  notes           text,
+  source_doc_id   uuid <span class="k">references</span> sku_documents(id),
+  embedding       vector(1024),                      <span class="c">-- for semantic match at quote time</span>
+  active          boolean <span class="k">not null</span> <span class="k">default</span> true,
+  created_at      timestamptz <span class="k">default</span> now(),
+  updated_at      timestamptz <span class="k">default</span> now()
+);
+
+<span class="c">-- HNSW index for semantic SKU lookup ("3-ton condenser" → matches XR16-036)</span>
+<span class="k">create index on</span> skus <span class="k">using</span> hnsw (embedding vector_cosine_ops);
+<span class="k">create index on</span> skus(company_id, active);
+
+<span class="c">-- The uploaded source document (photo or PDF) — kept for audit / re-extraction</span>
+<span class="k">create table</span> sku_documents (
+  id              uuid <span class="k">primary key</span> <span class="k">default</span> gen_random_uuid(),
+  company_id      uuid <span class="k">not null</span> <span class="k">references</span> companies(id) <span class="k">on delete cascade</span>,
+  uploaded_by     uuid <span class="k">references</span> auth.users(id),
+  file_url        text <span class="k">not null</span>,                   <span class="c">-- Supabase Storage</span>
+  file_type       text <span class="k">check</span> (file_type <span class="k">in</span> (<span class="s">'image'</span>,<span class="s">'pdf'</span>)),
+  page_count      int,
+  status          text <span class="k">check</span> (status <span class="k">in</span>
+                    (<span class="s">'processing'</span>,<span class="s">'review'</span>,<span class="s">'approved'</span>,<span class="s">'failed'</span>))
+                  <span class="k">default</span> <span class="s">'processing'</span>,
+  extraction_log  jsonb,                             <span class="c">-- raw Claude Vision response for audit</span>
+  created_at      timestamptz <span class="k">default</span> now()
+);
+
+<span class="c">-- RLS — team-scoped (same pattern as everywhere else)</span>
+<span class="k">alter table</span> skus <span class="k">enable row level security</span>;
+<span class="k">alter table</span> sku_documents <span class="k">enable row level security</span>;
+<span class="k">create policy</span> <span class="s">"team skus"</span> <span class="k">on</span> skus <span class="k">for all</span>
+  <span class="k">using</span> (company_id <span class="k">in</span> (<span class="k">select</span> company_id <span class="k">from</span> company_users <span class="k">where</span> user_id = auth.uid()));
+<span class="k">create policy</span> <span class="s">"team sku_documents"</span> <span class="k">on</span> sku_documents <span class="k">for all</span>
+  <span class="k">using</span> (company_id <span class="k">in</span> (<span class="k">select</span> company_id <span class="k">from</span> company_users <span class="k">where</span> user_id = auth.uid()));</pre>
 
   <h3>Multi-user — the <code class="inline">company_users</code> join table</h3>
 <pre class="code"><span class="c">-- One user can belong to ONE company in v0 (no agency / multi-shop yet)</span>
@@ -647,7 +715,7 @@
 <!-- ============== 5. PROMPT → QUOTE FLOW ============== -->
 <section id="flow-quote">
   <h2><span class="num">05</span> Prompt → Quote flow</h2>
-  <p class="lede">The hot path. From "Generate Quote" tap to PDF on screen in under 30 seconds, with every quote both learning from and contributing to the contractor's private RAG corpus.</p>
+  <p class="lede">The hot path. From "Generate Quote" tap to PDF on screen in under 30 seconds. Every quote pulls exact prices from the contractor's pre-loaded SKU catalog (§5.5) and matches structural patterns from their past accepted quotes.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 1000 580" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Prompt to quote flow">
@@ -671,12 +739,16 @@
       <text class="node-sub"   x="880" y="86" text-anchor="middle">voyage-3-large 1024-d</text>
 
       <rect class="node-ai" x="780" y="140" width="200" height="60" rx="8"/>
-      <text class="node-label" x="880" y="168" text-anchor="middle">4 · Vector search</text>
-      <text class="node-sub"   x="880" y="186" text-anchor="middle">top-3 past accepted</text>
+      <text class="node-label" x="880" y="168" text-anchor="middle">4a · SKU lookup</text>
+      <text class="node-sub"   x="880" y="186" text-anchor="middle">top-10 skus (catalog)</text>
+
+      <rect class="node-ai" x="780" y="210" width="200" height="50" rx="8"/>
+      <text class="node-label" x="880" y="234" text-anchor="middle">4b · Past-quote lookup</text>
+      <text class="node-sub"   x="880" y="250" text-anchor="middle">top-3 accepted</text>
 
       <rect class="node-ai" x="520" y="180" width="200" height="60" rx="8"/>
       <text class="node-label" x="620" y="208" text-anchor="middle">5 · Build prompt</text>
-      <text class="node-sub"   x="620" y="226" text-anchor="middle">few-shot + rules</text>
+      <text class="node-sub"   x="620" y="226" text-anchor="middle">catalog SKUs + few-shot</text>
 
       <rect class="node-ai" x="260" y="180" width="200" height="60" rx="8"/>
       <text class="node-label" x="360" y="208" text-anchor="middle">6 · Claude Sonnet</text>
@@ -740,7 +812,8 @@
         <tbody>
           <tr><td>Load settings + context</td><td style="text-align:right">~100 ms</td></tr>
           <tr><td>Embed prompt (Voyage)</td><td style="text-align:right">~250 ms</td></tr>
-          <tr><td>pgvector top-3 lookup</td><td style="text-align:right">~30 ms</td></tr>
+          <tr><td>pgvector SKU top-10 lookup</td><td style="text-align:right">~30 ms</td></tr>
+          <tr><td>pgvector past-quote top-3 lookup</td><td style="text-align:right">~30 ms</td></tr>
           <tr><td>Claude Sonnet generation</td><td style="text-align:right">~6–10 s</td></tr>
           <tr><td>Validate + math + insert</td><td style="text-align:right">~80 ms</td></tr>
           <tr><td><strong>Total p95 target</strong></td><td style="text-align:right"><strong>&lt; 12 s</strong></td></tr>
@@ -760,30 +833,205 @@
   </div>
 </section>
 
+<!-- ============== 5.5 SKU INGESTION ============== -->
+<section id="skus">
+  <h2><span class="num">5.5</span> SKU catalog ingestion — the onboarding-day workflow</h2>
+  <p class="lede">Before quoting a single customer, the contractor uploads supplier price sheets (photos or PDFs). Claude Sonnet 4's vision capability extracts every line item — SKU code, description, unit, price — and the contractor approves the extracted catalog in one review pass. From that moment on, every quote pulls <em>exact</em> prices from the contractor's catalog. No generic estimates, no after-the-fact corrections.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SKU ingestion flow">
+      <rect class="node-ui" x="20" y="40" width="180" height="80" rx="8"/>
+      <text class="node-label" x="110" y="74" text-anchor="middle">1 · Owner uploads</text>
+      <text class="node-sub"   x="110" y="92" text-anchor="middle">photo or PDF</text>
+      <text class="node-sub"   x="110" y="108" text-anchor="middle">("Carrier_2026.pdf")</text>
+
+      <rect class="node-ext" x="240" y="40" width="180" height="80" rx="8"/>
+      <text class="node-label" x="330" y="74" text-anchor="middle">2 · Supabase Storage</text>
+      <text class="node-sub"   x="330" y="92" text-anchor="middle">file_url returned</text>
+      <text class="node-sub"   x="330" y="108" text-anchor="middle">sku_documents row</text>
+
+      <rect class="node-box" x="460" y="40" width="180" height="80" rx="8"/>
+      <text class="node-label" x="550" y="74" text-anchor="middle">3 · Enqueue job</text>
+      <text class="node-sub"   x="550" y="92" text-anchor="middle">graphile-worker</text>
+      <text class="node-sub"   x="550" y="108" text-anchor="middle">extract-skus</text>
+
+      <rect class="node-ai" x="680" y="40" width="180" height="80" rx="8"/>
+      <text class="node-label" x="770" y="74" text-anchor="middle">4 · Claude Vision</text>
+      <text class="node-sub"   x="770" y="92" text-anchor="middle">Sonnet 4 + image/PDF</text>
+      <text class="node-sub"   x="770" y="108" text-anchor="middle">structured JSON out</text>
+
+      <rect class="node-box" x="460" y="170" width="180" height="80" rx="8"/>
+      <text class="node-label" x="550" y="204" text-anchor="middle">5 · Zod validate</text>
+      <text class="node-sub"   x="550" y="222" text-anchor="middle">drop malformed rows</text>
+      <text class="node-sub"   x="550" y="238" text-anchor="middle">status → 'review'</text>
+
+      <rect class="node-ui" x="240" y="170" width="180" height="80" rx="8"/>
+      <text class="node-label" x="330" y="204" text-anchor="middle">6 · Owner reviews</text>
+      <text class="node-sub"   x="330" y="222" text-anchor="middle">/catalog/review/[doc_id]</text>
+      <text class="node-sub"   x="330" y="238" text-anchor="middle">edit · approve · reject</text>
+
+      <rect class="node-db" x="20" y="170" width="180" height="80" rx="8"/>
+      <text class="node-label" x="110" y="204" text-anchor="middle">7 · Insert skus rows</text>
+      <text class="node-sub"   x="110" y="222" text-anchor="middle">one per approved item</text>
+
+      <rect class="node-ai" x="20" y="300" width="180" height="80" rx="8"/>
+      <text class="node-label" x="110" y="334" text-anchor="middle">8 · Embed each SKU</text>
+      <text class="node-sub"   x="110" y="352" text-anchor="middle">voyage-3-large</text>
+      <text class="node-sub"   x="110" y="368" text-anchor="middle">background job</text>
+
+      <rect class="node-db" x="240" y="300" width="180" height="80" rx="8"/>
+      <text class="node-label" x="330" y="334" text-anchor="middle">9 · Catalog ready</text>
+      <text class="node-sub"   x="330" y="352" text-anchor="middle">HNSW indexed</text>
+      <text class="node-sub"   x="330" y="368" text-anchor="middle">searchable in &lt;30 ms</text>
+
+      <rect class="node-ui" x="500" y="300" width="460" height="80" rx="8"/>
+      <text class="node-label" x="730" y="334" text-anchor="middle">10 · Every future quote retrieves matching SKUs from this catalog</text>
+      <text class="node-sub"   x="730" y="352" text-anchor="middle">Claude composes the quote using contractor's exact prices</text>
+      <text class="node-sub"   x="730" y="368" text-anchor="middle">(falls back to "no SKU match" suggestion only when truly unknown)</text>
+
+      <path class="arrow-hot" d="M200 80 L240 80"/>
+      <path class="arrow-hot" d="M420 80 L460 80"/>
+      <path class="arrow-hot" d="M640 80 L680 80"/>
+      <path class="arrow-hot" d="M770 120 L550 170"/>
+      <path class="arrow-hot" d="M460 210 L420 210"/>
+      <path class="arrow-hot" d="M240 210 L200 210"/>
+      <path class="arrow-hot" d="M110 250 L110 300"/>
+      <path class="arrow-hot" d="M200 340 L240 340"/>
+      <path class="arrow-hot" d="M420 340 L500 340"/>
+    </svg>
+  </div>
+
+  <h3>The vision extraction call</h3>
+<pre class="code"><span class="c">// /lib/workers/extract-skus.ts — runs in graphile-worker</span>
+<span class="k">export async function</span> <span class="fn">extractSkus</span>(payload: { doc_id: string }) {
+  <span class="k">const</span> doc      = <span class="k">await</span> db.sku_documents.findUnique({ where: { id: payload.doc_id }});
+  <span class="k">const</span> fileData = <span class="k">await</span> supabase.storage.from(<span class="s">'sku-docs'</span>).download(doc.file_url);
+  <span class="k">const</span> base64   = Buffer.from(<span class="k">await</span> fileData.arrayBuffer()).toString(<span class="s">'base64'</span>);
+
+  <span class="k">const</span> mediaType = doc.file_type === <span class="s">'pdf'</span> ? <span class="s">'application/pdf'</span> : <span class="s">'image/jpeg'</span>;
+
+  <span class="k">const</span> response = <span class="k">await</span> claude.messages.create({
+    model: <span class="s">'claude-sonnet-4'</span>,
+    max_tokens: 4096,
+    system: [{ type: <span class="s">'text'</span>, text: SKU_EXTRACTION_PROMPT,
+               cache_control: { type: <span class="s">'ephemeral'</span> } }],
+    messages: [{
+      role: <span class="s">'user'</span>,
+      content: [
+        { type: <span class="s">'document'</span>, source: { type: <span class="s">'base64'</span>,
+                                          media_type: mediaType,
+                                          data: base64 } },
+        { type: <span class="s">'text'</span>, text: <span class="s">'Extract every SKU from this price sheet as JSON.'</span> },
+      ],
+    }],
+  });
+
+  <span class="k">const</span> extracted = SkuListSchema.parse(<span class="fn">JSON</span>.parse(response.content[0].text));
+
+  <span class="c">// Status flips to 'review' — UI now shows the extracted rows for owner approval</span>
+  <span class="k">await</span> db.sku_documents.update({
+    where: { id: doc.id },
+    data:  { status: <span class="s">'review'</span>, extraction_log: extracted, page_count: response.usage.page_count }
+  });
+}</pre>
+
+  <h3>The extraction prompt (system block)</h3>
+<pre class="code"><span class="k">export const</span> SKU_EXTRACTION_PROMPT = `
+You are extracting SKU line items from a contractor's supplier price sheet
+(could be a photo of a printed catalog page or a PDF spec sheet).
+
+For EVERY distinct item you can identify, return one row with:
+  - sku_code:    the supplier's part / model number if visible (else null)
+  - description: human-readable description as a contractor would say it
+                 (include size / capacity / model where shown)
+  - category:    one of equipment | labor | materials | permits | other
+  - unit:        each | linear ft | sq ft | hour | lb | gallon | lot
+  - unit_price:  the price in USD as a number (no $ symbol)
+  - supplier:    brand or distributor name if visible
+  - notes:       anything important (e.g. "discontinued", "special order")
+
+Rules:
+ 1. NEVER fabricate prices or SKU codes you cannot read clearly. If unsure,
+    set unit_price to null and put your concern in notes.
+ 2. Skip headers, footers, page numbers, marketing text.
+ 3. If the same item appears at multiple prices (e.g. tiered), emit one row
+    per tier with the tier name in notes.
+ 4. Normalize units — "ea" → "each", "lf" → "linear ft", "hr" → "hour".
+ 5. Return ONLY a JSON array. No prose.
+`;</pre>
+
+  <h3>Review screen (the trust gate)</h3>
+  <p style="color:var(--muted);max-width:720px">OCR + vision extraction is not perfect — the contractor sees every extracted row before it enters the catalog. They can edit any field, mark rows as "skip," or accept the batch as-is. Approved rows insert into <code class="inline">skus</code>; rejected rows go to a "needs human" pile (also flips <code class="inline">sku_documents.status</code> to <code class="inline">approved</code>).</p>
+
+  <div class="callout warn">
+    <strong>Don't skip the review step.</strong> Inserting un-reviewed extracted SKUs is the fastest way to lose contractor trust. A wrong price on a $2,400 condenser is a much bigger problem than typing it in by hand.
+  </div>
+
+  <h3>Retrieval at quote time</h3>
+<pre class="code"><span class="c">// /lib/context/load.ts — now retrieves SKUs AS WELL AS past-quote patterns</span>
+<span class="k">const</span> queryEmb = <span class="k">await</span> <span class="fn">embedQuery</span>(userPrompt);
+
+<span class="c">// 1) PRIMARY: matching SKUs from the contractor's catalog (top-10 by similarity)</span>
+<span class="hl"><span class="k">const</span> matchedSkus = <span class="k">await</span> db.$queryRaw`</span>
+<span class="hl">  <span class="k">SELECT</span> sku_code, description, category, unit, unit_price, supplier</span>
+<span class="hl">  <span class="k">FROM</span> skus</span>
+<span class="hl">  <span class="k">WHERE</span> company_id = ${companyId} <span class="k">AND</span> active = true</span>
+<span class="hl">  <span class="k">ORDER BY</span> embedding &lt;=&gt; ${queryEmb}::vector</span>
+<span class="hl">  <span class="k">LIMIT</span> 10;</span>
+<span class="hl">`;</span>
+
+<span class="c">// 2) SECONDARY: top-3 similar past accepted quotes (for style / bundling patterns)</span>
+<span class="k">const</span> fewShot = <span class="k">await</span> db.$queryRaw`
+  <span class="k">SELECT</span> q.job_summary, q.line_items
+  <span class="k">FROM</span> quote_embeddings qe <span class="k">JOIN</span> quotes q <span class="k">ON</span> q.id = qe.quote_id
+  <span class="k">WHERE</span> qe.company_id = ${companyId} <span class="k">AND</span> qe.outcome <span class="k">IN</span> (<span class="s">'sent'</span>,<span class="s">'accepted'</span>)
+  <span class="k">ORDER BY</span> qe.job_description_emb &lt;=&gt; ${queryEmb}::vector
+  <span class="k">LIMIT</span> 3;
+`;
+
+<span class="c">// Both injected into Claude system prompt — see §07 for the template</span></pre>
+
+  <h3>Cost &amp; storage per upload</h3>
+  <table class="t">
+    <thead><tr><th>Per uploaded document</th><th>Cost</th><th>Storage</th></tr></thead>
+    <tbody>
+      <tr><td>1 photo (~1024×1024)</td><td>~$0.005 Claude Vision · ~$0.0001 embeds</td><td>~200 KB</td></tr>
+      <tr><td>1 PDF, 2 pages</td><td>~$0.02 Claude Vision · ~$0.0002 embeds</td><td>~400 KB</td></tr>
+      <tr><td>1 PDF, 20 pages (~200 SKUs)</td><td>~$0.20 Claude Vision · ~$0.002 embeds</td><td>~2 MB</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>One-time cost during onboarding.</strong> A typical contractor uploads 3–5 supplier sheets to bootstrap their catalog → <strong>~$0.50–$1.00 total spend per contractor, paid once</strong>. At your projected scale (35 contractors), entire fleet onboarding cost: <strong>under $30, one-time</strong>. After that, the catalog is local — every future quote uses zero vision spend.
+  </div>
+</section>
+
 <!-- ============== 6. RAG ============== -->
 <section id="rag">
-  <h2><span class="num">06</span> AI learning loop (per-tenant RAG)</h2>
-  <p class="lede">Claude is stateless. Each contractor's "personalized AI" is their own historical data, scoped by <code class="inline">company_id</code>, injected at generation time. Memory lives in our database.</p>
+  <h2><span class="num">06</span> Per-tenant memory — catalog + pattern recall</h2>
+  <p class="lede">Claude is stateless. Each contractor's "personalized AI" is their own data, scoped by <code class="inline">company_id</code>, injected at generation time. Memory lives in our database in <strong>two distinct stores with different jobs</strong>.</p>
 
   <div class="grid-2">
-    <div class="card">
-      <h4 style="margin-top:0">Two memory stores</h4>
-      <p style="margin:6px 0 4px"><span class="tag">structured</span> <strong>company_context</strong></p>
-      <p style="margin:0 0 12px;color:var(--muted);font-size:13px">Price overrides, default phrases, avg job duration, win-rate buckets, learned warranty text. Updated on every edit.</p>
-      <p style="margin:6px 0 4px"><span class="tag">semantic</span> <strong>quote_embeddings</strong></p>
-      <p style="margin:0;color:var(--muted);font-size:13px">1024-dim <code class="inline">voyage-3-large</code> embedding of each <code class="inline">job_summary + raw_prompt</code>, with the outcome label. Retrieved as few-shot examples.</p>
+    <div class="card" style="border-color:var(--accent);border-width:2px">
+      <span class="tag">primary</span>
+      <h4 style="margin:6px 0 4px">SKU catalog · <code class="inline">skus</code></h4>
+      <p style="margin:0 0 8px;color:var(--muted);font-size:13px">The contractor's actual price book — ingested up-front from photos / PDFs (see §5.5). Every quote retrieves matching SKUs by vector similarity and Claude composes the quote using these <em>exact prices</em>. This is the source of truth for $$$.</p>
+      <p style="margin:0;color:var(--ink);font-size:12.5px"><strong>Role:</strong> tells the AI <em>what things cost</em>.</p>
     </div>
     <div class="card">
-      <h4 style="margin-top:0">The learning signal</h4>
-      <ul class="bullets" style="font-size:13.5px">
-        <li>Contractor edits AI-generated quote → <strong>price overrides update</strong></li>
-        <li>Contractor marks accepted → <strong>outcome flips, gets preferred in retrieval</strong></li>
-        <li>After ~10 quotes, recompute avg job duration per service type</li>
-        <li>After ~10 accepted, warranty text settles on contractor's wording</li>
-      </ul>
-      <p style="margin-top:10px;color:var(--muted);font-size:13px">After ~10 quotes the AI feels eerily like the contractor — because it IS pattern-matching their own past work.</p>
+      <span class="tag gray">secondary</span>
+      <h4 style="margin:6px 0 4px">Past-quote patterns · <code class="inline">quote_embeddings</code></h4>
+      <p style="margin:0 0 8px;color:var(--muted);font-size:13px">1024-dim <code class="inline">voyage-3-large</code> embedding of each <code class="inline">job_summary + raw_prompt</code>, with outcome. Top-3 similar accepted quotes get retrieved as few-shot examples.</p>
+      <p style="margin:0;color:var(--ink);font-size:12.5px"><strong>Role:</strong> tells the AI <em>how this contractor structures a quote</em> — bundling, line ordering, warranty wording, permit lines, labor estimates.</p>
     </div>
   </div>
+
+  <div class="callout">
+    <strong>The clean division of labor.</strong> Catalog gives prices. Past quotes give style. Both are scoped to the contractor by RLS. No generic estimates, no "guess and let the user fix it" — the AI only quotes prices that exist in the contractor's catalog.
+  </div>
+
+  <h3>Falling back when there's no SKU match</h3>
+  <p style="color:var(--muted);max-width:720px">If the contractor's prompt mentions something not in their catalog (e.g. "tear out and dispose of old shed"), the AI surfaces it as a line item with <code class="inline">unit_price = null</code> and a flag: <em>"No SKU in your catalog for this. Add a price, or we'll skip it."</em> The contractor sets the price in line; saving offers to also persist it as a new SKU. This way the catalog grows organically without ever inserting un-reviewed prices.</p>
 
   <h3>Embedding model choice — <code class="inline">voyage-3-large</code> over <code class="inline">voyage-3</code></h3>
   <p style="color:var(--muted);max-width:720px">Quotebird optimizes for retrieval <em>quality</em> over cost. With a small per-contractor corpus (10–100 quotes) every retrieved few-shot example has outsized influence on the generated quote — accuracy matters more than saving a few cents.</p>
@@ -826,30 +1074,27 @@
   <span class="k">LIMIT</span> 3;
 `;</pre>
 
-  <h3>The update loop (after every edit)</h3>
-<pre class="code"><span class="c">// /lib/context/update.ts — runs after Save Draft or Send</span>
-<span class="k">export async function</span> <span class="fn">applyContractorEdits</span>(quoteId: string) {
-  <span class="k">const</span> quote = <span class="k">await</span> db.quotes.findUnique({ where: { id: quoteId }});
-  <span class="k">const</span> ctx   = <span class="k">await</span> db.company_context.findUnique({
-    where: { company_id: quote.company_id },
-  });
-
-  <span class="c">// 1. Detect price overrides — any line item whose unit_price differs from</span>
-  <span class="c">//    the AI's original suggestion gets stored as a sticky override.</span>
-  <span class="k">const</span> overrides = { ...ctx.price_overrides };
-  <span class="k">for</span> (<span class="k">const</span> li <span class="k">of</span> quote.line_items) {
-    <span class="k">if</span> (li.unit_price !== li.ai_suggested_price) {
-      overrides[li.description] = li.unit_price;
-    }
+  <h3>Sync-to-catalog on line edits (the secondary loop)</h3>
+<pre class="code"><span class="c">// /lib/catalog/sync.ts — invoked when contractor confirms "update catalog?"</span>
+<span class="k">export async function</span> <span class="fn">syncEditToCatalog</span>(input: {
+  company_id: string;
+  sku_id?:    string;          <span class="c">// present when line was matched to an existing SKU</span>
+  description: string;
+  unit:        string;
+  unit_price:  number;
+  category:    SkuCategory;
+}) {
+  <span class="k">if</span> (input.sku_id) {
+    <span class="c">// existing SKU — update price, re-embed only if description also changed</span>
+    <span class="k">await</span> db.skus.update({
+      where: { id: input.sku_id },
+      data:  { unit_price: input.unit_price, updated_at: <span class="k">new</span> <span class="fn">Date</span>() },
+    });
+  } <span class="k">else</span> {
+    <span class="c">// new SKU — insert + enqueue embedding job</span>
+    <span class="k">const</span> sku = <span class="k">await</span> db.skus.create({ data: { ...input, active: true } });
+    <span class="k">await</span> queue.enqueue(<span class="s">'embed-sku'</span>, { sku_id: sku.id });
   }
-
-  <span class="c">// 2. After 10+ accepted quotes per service type, recompute median duration</span>
-  <span class="c">// 3. Capture warranty/payment-terms wording if changed</span>
-
-  <span class="k">await</span> db.company_context.update({
-    where: { company_id: quote.company_id },
-    data:  { price_overrides: overrides, updated_at: <span class="k">new</span> <span class="fn">Date</span>() },
-  });
 }</pre>
 
   <div class="callout">
@@ -895,52 +1140,18 @@
     <strong>Honest cost estimate.</strong> At 850 quotes/mo across all contractors, prompt caching saves only the rules portion (~1,500 tokens, ~$0.004/quote) → about <strong>$3.40/mo (~$41/yr)</strong>. At this scale, prompt caching is a <em>speed feature</em>, not a margin lever. It becomes a real cost lever at 10× volume.
   </div>
 
-  <h3>Where your contractors' SKUs live</h3>
-  <p style="color:var(--muted);max-width:720px">A contractor's price catalog is built passively — every time they edit a line item on a quote and save, that line's price is written to their <code class="inline">company_context.price_overrides</code>. The next time the AI sees a similar item, it pulls the contractor's actual price, not a generic estimate. No separate "manage SKUs" screen needed for v0 — though that's a clear v0.5 enhancement.</p>
-
-  <div class="diagram" style="padding:14px 18px">
-    <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SKU flow">
-      <rect class="node-ui" x="20" y="80" width="170" height="80" rx="8"/>
-      <text class="node-label" x="105" y="112" text-anchor="middle">Owner edits line</text>
-      <text class="node-sub"   x="105" y="130" text-anchor="middle">"3-ton condenser:</text>
-      <text class="node-sub"   x="105" y="146" text-anchor="middle">$2,400 → $2,650"</text>
-
-      <rect class="node-box" x="230" y="80" width="180" height="80" rx="8"/>
-      <text class="node-label" x="320" y="112" text-anchor="middle">Save Draft / Send</text>
-      <text class="node-sub"   x="320" y="130" text-anchor="middle">enqueue context update</text>
-
-      <rect class="node-ai" x="450" y="80" width="180" height="80" rx="8"/>
-      <text class="node-label" x="540" y="112" text-anchor="middle">applyContractorEdits</text>
-      <text class="node-sub"   x="540" y="130" text-anchor="middle">graphile-worker job</text>
-
-      <rect class="node-db" x="670" y="80" width="290" height="80" rx="8"/>
-      <text class="node-label" x="815" y="108" text-anchor="middle">company_context.price_overrides</text>
-      <text class="node-sub"   x="815" y="126" text-anchor="middle">{"3-ton condenser": 2650,</text>
-      <text class="node-sub"   x="815" y="142" text-anchor="middle">"50gal water heater": 1850, …}</text>
-
-      <rect class="node-ai" x="20" y="190" width="940" height="40" rx="8"/>
-      <text class="node-label" x="490" y="216" text-anchor="middle">Next generation injects these into the system prompt — AI uses contractor's prices, not generic estimates</text>
-
-      <defs>
-        <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
-          <path d="M0 0 L10 5 L0 10 z" fill="#0f766e"/>
-        </marker>
-      </defs>
-      <path d="M190 120 L230 120" stroke="#0f766e" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
-      <path d="M410 120 L450 120" stroke="#0f766e" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
-      <path d="M630 120 L670 120" stroke="#0f766e" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
-      <path d="M815 160 L815 190" stroke="#a21caf" stroke-width="1.8" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow2)"/>
-    </svg>
-  </div>
+  <h3>Editing an SKU price in line (the secondary path)</h3>
+  <p style="color:var(--muted);max-width:720px">The contractor manages their catalog primarily through <code class="inline">/catalog</code> (search, edit, add, deactivate). But when reviewing a quote, every line item is still editable in place — if they tweak a price, the system asks <em>"Update the SKU price in your catalog too?"</em> One tap → catalog stays in sync without leaving the quote.</p>
 
   <h3>What gets stored, and how much space it takes</h3>
   <table class="t">
     <thead><tr><th>Data</th><th>Where</th><th>~Size each</th><th>Per contractor / yr (this scale)</th></tr></thead>
     <tbody>
-      <tr><td>Price overrides (entire SKU catalog)</td><td><code class="inline">company_context.price_overrides</code> jsonb</td><td>~5–50 KB total</td><td><strong>&lt; 1 MB</strong></td></tr>
+      <tr><td><strong>SKU rows + embeddings</strong> (catalog)</td><td><code class="inline">skus</code> table · 4 KB embedding + row</td><td>~5 KB / SKU</td><td><strong>~1–2 MB</strong> (200–400 SKUs typical)</td></tr>
+      <tr><td><strong>Source price-sheet uploads</strong></td><td>Supabase Storage <code class="inline">sku-docs/</code></td><td>~200 KB–2 MB / doc</td><td>~5–20 MB (3–5 onboarding docs)</td></tr>
       <tr><td>Quote rows (line items, totals, etc.)</td><td><code class="inline">quotes</code> table</td><td>~3 KB / quote</td><td>~700 KB (Solo / Crew) · ~1.8 MB (Shop)</td></tr>
       <tr><td>Invoice rows + change deltas</td><td><code class="inline">invoices</code> table</td><td>~3 KB / invoice</td><td>~700 KB · ~1.8 MB</td></tr>
-      <tr><td>Voyage-3-large embeddings</td><td><code class="inline">quote_embeddings</code> · 1024 floats × 4B</td><td>~4 KB / quote</td><td>~1 MB · ~2.4 MB</td></tr>
+      <tr><td>Voyage-3-large quote embeddings</td><td><code class="inline">quote_embeddings</code> · 1024 floats × 4B</td><td>~4 KB / quote</td><td>~1 MB · ~2.4 MB</td></tr>
       <tr><td>Branded PDFs (90-day expiry then prunable)</td><td>Supabase Storage</td><td>~200–400 KB / PDF</td><td>~70 MB · ~180 MB</td></tr>
     </tbody>
   </table>
@@ -1258,6 +1469,113 @@
       </div></div>
       <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Invoice list · F11</p>
     </div>
+
+    <!-- Catalog upload + review -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:46</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div>
+            <div class="mock-title">Review extracted SKUs</div>
+            <div class="mock-sub">Carrier_2026.pdf · 28 found</div>
+          </div>
+        </div>
+        <div class="mock-body" style="font-size:9.5px">
+          <div style="background:#ecfeff;border-radius:6px;padding:6px 8px;margin-bottom:6px;font-size:9px;color:#0e7490">
+            Claude Vision extracted 28 items. Review &amp; approve to add to your catalog.
+          </div>
+          <div class="mock-row" style="background:#f8fafc;padding:6px 8px;border-radius:6px;border:0;margin-bottom:4px">
+            <div>
+              <div><strong>XR16-036</strong></div>
+              <div style="color:var(--muted);font-size:8.5px">3-Ton 16 SEER R-410A Condenser</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:700">$2,650</div>
+              <div style="color:var(--muted);font-size:8.5px">each</div>
+            </div>
+          </div>
+          <div class="mock-row" style="background:#f8fafc;padding:6px 8px;border-radius:6px;border:0;margin-bottom:4px">
+            <div>
+              <div><strong>XR16-048</strong></div>
+              <div style="color:var(--muted);font-size:8.5px">4-Ton 16 SEER Condenser</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font-weight:700">$2,950</div>
+              <div style="color:var(--muted);font-size:8.5px">each</div>
+            </div>
+          </div>
+          <div class="mock-row" style="background:#fef3c7;padding:6px 8px;border-radius:6px;border:0;margin-bottom:4px">
+            <div>
+              <div><strong>?? unclear</strong></div>
+              <div style="color:var(--muted);font-size:8.5px">Line set kit · 25 ft</div>
+            </div>
+            <div style="text-align:right;color:var(--warn);font-size:8.5px">price unreadable<br>edit?</div>
+          </div>
+          <div class="mock-row" style="background:#f8fafc;padding:6px 8px;border-radius:6px;border:0;margin-bottom:4px">
+            <div>
+              <div style="color:var(--muted);font-size:8.5px">…25 more items</div>
+            </div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
+            <div class="mock-btn ghost" style="font-size:10px">Edit all</div>
+            <div class="mock-btn" style="font-size:10px">Approve 27</div>
+          </div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">SKU review · F12 (new)</p>
+    </div>
+
+    <!-- Catalog list -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:47</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div><div class="mock-title">Catalog</div><div class="mock-sub">342 SKUs · 5 suppliers</div></div>
+          <div style="font-size:14px;color:var(--accent);font-weight:700">+</div>
+        </div>
+        <div class="mock-body" style="font-size:9.5px">
+          <div class="mock-input" style="display:flex;align-items:center;gap:4px">
+            <span style="color:var(--muted)">🔍</span><span style="color:var(--muted)">Search by name or SKU…</span>
+          </div>
+          <div style="margin:4px 0 6px">
+            <span class="mock-chip" style="background:var(--accent);color:#fff">Equipment</span>
+            <span class="mock-chip">Materials</span>
+            <span class="mock-chip">Labor</span>
+            <span class="mock-chip">Permits</span>
+          </div>
+          <div class="mock-row" style="padding:6px 0">
+            <div>
+              <div><strong>XR16-036</strong></div>
+              <div style="color:var(--muted);font-size:8.5px">3-Ton 16 SEER Condenser · Carrier</div>
+            </div>
+            <span style="font-weight:700">$2,650</span>
+          </div>
+          <div class="mock-row" style="padding:6px 0">
+            <div>
+              <div><strong>WH-50G-GAS</strong></div>
+              <div style="color:var(--muted);font-size:8.5px">50gal gas water heater · Rheem</div>
+            </div>
+            <span style="font-weight:700">$1,850</span>
+          </div>
+          <div class="mock-row" style="padding:6px 0">
+            <div>
+              <div><strong>LBR-INSTALL</strong></div>
+              <div style="color:var(--muted);font-size:8.5px">Standard install labor · 1 hr</div>
+            </div>
+            <span style="font-weight:700">$125</span>
+          </div>
+          <div class="mock-row" style="padding:6px 0">
+            <div>
+              <div><strong>PRM-MECH</strong></div>
+              <div style="color:var(--muted);font-size:8.5px">Mechanical permit fee</div>
+            </div>
+            <span style="font-weight:700">$135</span>
+          </div>
+          <div class="mock-btn" style="margin-top:6px;font-size:10px">📷 Upload price sheet</div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Catalog list · F13 (new)</p>
+    </div>
   </div>
 </section>
 
@@ -1330,7 +1648,7 @@
   });
 }</pre>
 
-  <h3>9d · The system prompt (abridged)</h3>
+  <h3>9d · The system prompt (abridged) — catalog-driven</h3>
 <pre class="code"><span class="c">// /lib/claude/prompts.ts</span>
 <span class="k">export const</span> <span class="fn">buildSystem</span> = (c: Ctx) =&gt; `
 You are a quoting assistant for a ${c.trade_type} contracting business in the US.
@@ -1340,29 +1658,37 @@ Company configuration:
 - Material markup:   ${c.markup}%
 - Sales tax rate:    ${c.tax}%
 
-This contractor's price overrides (use these when relevant):
-${<span class="fn">fmt</span>(c.price_overrides)}
+<span class="hl">═════════════════════════════════════════════════════════════</span>
+<span class="hl">CONTRACTOR'S CATALOG — these are their REAL prices. Use them.</span>
+<span class="hl">═════════════════════════════════════════════════════════════</span>
+<span class="hl">${<span class="fn">fmt</span>(c.matched_skus)}</span>
+<span class="hl"></span>
+<span class="hl">Format above: [sku_code | description | category | unit | unit_price | supplier]</span>
 
-Past similar quotes from THIS contractor (use as style/pricing reference):
+Past similar quotes from THIS contractor (use as STYLE/STRUCTURE reference):
 ${<span class="fn">fmt</span>(c.few_shot)}
 
 Rules:
  1. Break job into line items grouped by category.
- 2. LABOR: round up hours to nearest 0.5; use the hourly rate above.
- 3. Prefer contractor's price overrides over generic estimates.
- 4. Apply markup % to MATERIALS only (not equipment, labor, permits).
- 5. NEVER include sales tax in line items — computed separately.
- 6. NEVER fabricate brand/model numbers not in the prompt.
- 7. Match the style of past quotes shown above.
- 8. Default warranty: "1-year parts and labor on installation…"
- 9. Default payment terms: "50% deposit, balance on completion."
-10. Return ONLY the JSON object. No prose.`;</pre>
+<span class="hl"> 2. PRICES MUST come from the catalog above whenever an item matches.</span>
+<span class="hl">    If a matching SKU exists, use its EXACT unit_price and copy its sku_code</span>
+<span class="hl">    into the line item's notes field.</span>
+<span class="hl"> 3. If no SKU in the catalog matches, set unit_price = null and add a note:</span>
+<span class="hl">    "No catalog match — owner to set price". NEVER fabricate a price.</span>
+ 4. LABOR: round up hours to nearest 0.5; use the hourly rate above.
+ 5. Apply markup % to MATERIALS only (not equipment, labor, permits).
+ 6. NEVER include sales tax in line items — computed separately.
+ 7. NEVER fabricate brand/model numbers not in the prompt or catalog.
+ 8. Match the style of past quotes shown above (bundling, line ordering).
+ 9. Default warranty: "1-year parts and labor on installation…"
+10. Default payment terms: "50% deposit, balance on completion."
+11. Return ONLY the JSON object. No prose.`;</pre>
 </section>
 
 <!-- ============== 10. TIMELINE ============== -->
 <section id="timeline">
-  <h2><span class="num">10</span> Build timeline — 10 sessions</h2>
-  <p class="lede">Each session has a single clear goal and an acceptance test. Don't move on until the test passes. Total: ~45 hours of focused work (~3 hrs added for multi-user / invite flow), ~3–4 weeks at 10–15 hrs/week.</p>
+  <h2><span class="num">10</span> Build timeline — 11 sessions</h2>
+  <p class="lede">Each session has a single clear goal and an acceptance test. Don't move on until the test passes. Total: <strong>~52 hours of focused work</strong> (+7 hrs added for SKU catalog ingestion vs the prior plan), ~4 weeks at 10–15 hrs/week.</p>
 
   <div class="card">
     <div class="timeline">
@@ -1377,7 +1703,7 @@ Rules:
       <div class="step">
         <div class="title">Session 2 · DB, RLS &amp; pgvector</div>
         <div class="meta">4 hrs · data foundations</div>
-        <div class="desc">Run all SQL migrations. Enable <code class="inline">vector</code> extension. Create companies / <strong>company_users</strong> / quotes / invoices / company_context / quote_embeddings with RLS keyed on the <code class="inline">company_users</code> subquery. Plan-tier seat-cap trigger. Quote &amp; invoice number sequences.</div>
+        <div class="desc">Run all SQL migrations. Enable <code class="inline">vector</code> extension. Create companies / <strong>company_users</strong> / quotes / invoices / company_context / quote_embeddings / <strong>skus / sku_documents</strong> with RLS keyed on the <code class="inline">company_users</code> subquery. Plan-tier seat-cap trigger. Quote &amp; invoice number sequences. HNSW index on <code class="inline">skus.embedding</code> for catalog retrieval.</div>
         <div class="test">✓ Can't read another company's rows even when a member of company A queries with B's id. <code class="inline">&lt;=&gt;</code> cosine works. Seat-cap trigger refuses a 4th invite on Solo. <code class="inline">next_invoice_number()</code> returns I-2026-0001.</div>
       </div>
 
@@ -1385,53 +1711,62 @@ Rules:
         <div class="title">Session 3 · Setup wizard + Team screen</div>
         <div class="meta">4 hrs · onboarding</div>
         <div class="desc">Single-screen setup form, logo upload to Supabase Storage, insert <code class="inline">companies</code> + first <code class="inline">company_users</code> row (admin) + empty <code class="inline">company_context</code>. <strong>/settings/team page</strong>: see members, invite by email (capped by plan), change role, remove member.</div>
-        <div class="test">✓ Fresh signup → forced to setup → lands on quotes empty state. Admin can invite up to plan limit; over-limit invites show plan-upgrade nudge.</div>
+        <div class="test">✓ Fresh signup → forced to setup → lands on <strong>catalog upload</strong> prompt (not quotes). Admin can invite up to plan limit; over-limit invites show plan-upgrade nudge.</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 4 · Prompt-to-Quote agent</div>
+        <div class="title">Session 4 · SKU catalog ingestion <span class="tag">new</span></div>
+        <div class="meta">7 hrs · the contractor's price book</div>
+        <div class="desc">
+          <strong>The contractor onboarding's second act.</strong> Build: (a) <code class="inline">/catalog</code> + <code class="inline">/catalog/upload</code> screens, (b) <code class="inline">/api/upload-sku-doc</code> server action that stores file in <code class="inline">sku-docs/</code> bucket and inserts <code class="inline">sku_documents</code> row, (c) <code class="inline">extract-skus</code> graphile-worker job calling Claude Sonnet 4 with vision on the uploaded image/PDF, (d) Zod schema for extracted SKU shape, (e) <code class="inline">/catalog/review/[doc_id]</code> screen where owner approves/edits each extracted row, (f) on approve: bulk-insert into <code class="inline">skus</code> + enqueue Voyage embedding job per SKU.
+        </div>
+        <div class="test">✓ Upload a 1–2 page HVAC supplier PDF → within ~30 s, review screen lists ≥10 extracted SKUs with reasonable accuracy → owner approves → catalog page now shows them, searchable, with HNSW index populated. Cost &lt; $0.10 for the test extraction. Unreadable items are flagged, not fabricated.</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 5 · Prompt-to-Quote agent</div>
         <div class="meta">5–6 hrs · the hard one</div>
-        <div class="desc">/quotes/new + /api/generate-quote. Install @anthropic-ai/sdk + voyageai. Context loader, embed, retrieve top-3, build prompt, Zod, server-side math, insert draft. <strong>Enable Anthropic prompt caching with <code class="inline">cache_control: { type: 'ephemeral' }</code> on the static rules block and the per-contractor config block</strong> — instant speed win on repeat-use sessions, ~$40/yr savings at current scale, free headroom to grow the prompt later.</div>
-        <div class="test">✓ Real HVAC prompt → sensible quote in &lt; 30 s with 3+ line items and correct math. Second quote in the same session generates noticeably faster; API response includes <code class="inline">cache_read_input_tokens &gt; 0</code> in the usage block.</div>
+        <div class="desc">/quotes/new + /api/generate-quote. Install @anthropic-ai/sdk + voyageai. <strong>Context loader retrieves top-10 SKUs from the contractor's catalog AND top-3 past accepted quotes</strong> by vector similarity. Build prompt with catalog injected as the primary price source. Zod validate, server-side math, insert draft. <strong>Enable Anthropic prompt caching with <code class="inline">cache_control: { type: 'ephemeral' }</code> on the static rules block and per-contractor config block</strong> — instant speed win on repeat-use sessions, ~$40/yr savings at current scale, free headroom to grow the prompt later.</div>
+        <div class="test">✓ Real HVAC prompt → quote in &lt; 30 s, line items use EXACT prices from the seeded catalog (verify <code class="inline">sku_code</code> appears in <code class="inline">notes</code> of matched lines). Items with no catalog match show <code class="inline">unit_price = null</code> with the "owner to set price" note — never a fabricated number. Second quote in same session generates noticeably faster; usage block shows <code class="inline">cache_read_input_tokens &gt; 0</code>.</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 5 · Quote review &amp; edit</div>
+        <div class="title">Session 6 · Quote review &amp; edit</div>
         <div class="meta">4 hrs · the editor</div>
-        <div class="desc">Inline editable line items, auto-recalc, save draft. Enqueue context update job on save.</div>
-        <div class="test">✓ Edit qty, totals recalc, persists. <code class="inline">price_overrides</code> reflects edits.</div>
+        <div class="desc">Inline editable line items, auto-recalc, save draft. <strong>When the contractor edits a line tied to an existing SKU, show "Also update SKU price in catalog?" inline confirm</strong> — one tap to keep the catalog in sync.</div>
+        <div class="test">✓ Edit qty, totals recalc, persists. Editing a matched-SKU line's price and confirming "sync to catalog" updates the <code class="inline">skus.unit_price</code>; next quote uses the new price.</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 6 · PDF generation</div>
+        <div class="title">Session 7 · PDF generation</div>
         <div class="meta">3 hrs · the deliverable</div>
         <div class="desc">@react-pdf/renderer. QuoteDocument component. /api/pdf/[id] streams inline/attachment.</div>
         <div class="test">✓ PDF looks professional; logo renders; math matches DB</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 7 · Email + embedding pipeline + list</div>
+        <div class="title">Session 8 · Email + embedding pipeline + list</div>
         <div class="meta">4 hrs · close the loop</div>
         <div class="desc">Resend send. graphile-worker on Vercel cron. Embed job fires on sent/accepted. Quote list with status filter.</div>
         <div class="test">✓ Send to own email; within 60s a row appears in quote_embeddings; marking accepted updates outcome</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 8 · Learning-loop verification</div>
-        <div class="meta">2 hrs · prove it learns</div>
-        <div class="desc">Seed 5–10 test quotes. Generate similar one. Verify retrieval + that a stored price override flows through.</div>
-        <div class="test">✓ Seeded $1,850 water heater override → next water heater quote uses $1,850, not AI default</div>
+        <div class="title">Session 9 · Catalog &amp; learning-loop verification</div>
+        <div class="meta">3 hrs · prove the catalog drives the AI</div>
+        <div class="desc">Seed two contractors with different catalogs. Generate the same prompt for each. Verify each gets their OWN catalog's prices. Seed 5–10 past quotes; generate a similar prompt and verify both catalog matches AND past-quote few-shots show up in the system prompt. Test the "no SKU match" fallback path.</div>
+        <div class="test">✓ Contractor A's catalog has water heater at $1,850 · Contractor B's has it at $2,100 → identical prompt gives each contractor THEIR price. A prompt mentioning an unknown item ("dispose of old shed") returns a line with <code class="inline">unit_price = null</code> + "owner to set price" note. RLS isolation proof: query of contractor A's catalog from contractor B's session returns zero rows.</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 9 · Invoicing end-to-end</div>
+        <div class="title">Session 10 · Invoicing end-to-end</div>
         <div class="meta">~10 hrs · the second half</div>
         <div class="desc">Convert API. Invoice review w/ live changes preview. <code class="inline">diffLineItems</code>. InvoiceDocument PDF w/ "Changes from original quote". Send. Mark paid / partial / void. Overdue cron.</div>
         <div class="test">✓ Accept → Convert → add $95 valve → preview shows changes → send → mark paid → outstanding widget updates → back-dated cron flips to overdue</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 10 · Polish &amp; deploy</div>
+        <div class="title">Session 11 · Polish &amp; deploy</div>
         <div class="meta">3 hrs · ship it</div>
         <div class="desc">PWA manifest + icons. Empty states. Error states (rate-limit graceful, Voyage fallback, PDF retry). Deploy to Vercel. Custom domain. Smoke test on iPhone + Android.</div>
         <div class="test">✓ Phone end-to-end: signup → quote → email → accept → invoice → edit → send → paid, in &lt; 7 min</div>
