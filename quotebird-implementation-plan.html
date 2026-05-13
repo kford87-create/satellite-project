@@ -1,0 +1,1362 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quotebird v0 — Implementation Plan</title>
+<style>
+  :root {
+    --bg: #f7f5f1;
+    --panel: #ffffff;
+    --ink: #1a1d23;
+    --muted: #5b6470;
+    --line: #e5e1d8;
+    --accent: #0f766e;
+    --accent-soft: #d1faf3;
+    --warn: #b45309;
+    --warn-soft: #fef3c7;
+    --bad: #b91c1c;
+    --bad-soft: #fee2e2;
+    --ok: #15803d;
+    --ok-soft: #dcfce7;
+    --code-bg: #0f172a;
+    --code-ink: #e2e8f0;
+    --code-key: #93c5fd;
+    --code-str: #86efac;
+    --code-cmt: #94a3b8;
+    --code-fn:  #fcd34d;
+    --shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 24px rgba(0,0,0,.04);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", system-ui, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  /* ===== Layout ===== */
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 32px 28px 120px; }
+  .layout { display: grid; grid-template-columns: 220px 1fr; gap: 48px; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } nav.toc { position: static !important; } }
+
+  /* ===== Hero ===== */
+  header.hero {
+    margin: 0 0 40px;
+    padding: 36px 36px 32px;
+    background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%);
+    color: #f1f5f9;
+    border-radius: 18px;
+    box-shadow: var(--shadow);
+  }
+  header.hero .eyebrow {
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: #5eead4; font-weight: 600; margin-bottom: 8px;
+  }
+  header.hero h1 { font-size: 34px; line-height: 1.1; margin: 0 0 8px; font-weight: 700; }
+  header.hero p.tagline { font-size: 17px; color: #cbd5e1; margin: 0 0 20px; max-width: 720px; }
+  header.hero .stat-row { display: flex; flex-wrap: wrap; gap: 32px; margin-top: 12px; }
+  header.hero .stat .v { font-size: 22px; font-weight: 700; color: #f1f5f9; }
+  header.hero .stat .k { font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: #94a3b8; }
+
+  /* ===== TOC ===== */
+  nav.toc {
+    position: sticky; top: 24px; align-self: start;
+    font-size: 13px;
+  }
+  nav.toc h4 {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin: 0 0 12px; font-weight: 600;
+  }
+  nav.toc ol { list-style: none; padding: 0; margin: 0; }
+  nav.toc ol li { margin-bottom: 4px; }
+  nav.toc ol li a {
+    display: block; padding: 6px 10px; border-radius: 6px;
+    color: var(--ink); border-left: 2px solid transparent;
+  }
+  nav.toc ol li a:hover { background: rgba(15,118,110,.06); text-decoration: none; }
+
+  /* ===== Sections ===== */
+  section { margin-bottom: 56px; scroll-margin-top: 24px; }
+  section > h2 {
+    font-size: 22px; font-weight: 700; margin: 0 0 4px;
+    display: flex; align-items: baseline; gap: 12px;
+  }
+  section > h2 .num {
+    font-size: 12px; letter-spacing: .12em; color: var(--accent);
+    font-weight: 700; font-variant-numeric: tabular-nums;
+  }
+  section > p.lede { color: var(--muted); margin: 0 0 24px; max-width: 720px; }
+
+  h3 { font-size: 17px; margin: 28px 0 12px; font-weight: 700; }
+  h4 { font-size: 14px; margin: 18px 0 8px; font-weight: 700; color: var(--ink); }
+
+  /* ===== Cards ===== */
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 20px 22px;
+    box-shadow: var(--shadow);
+  }
+  .card + .card { margin-top: 14px; }
+  .card-tight { padding: 14px 16px; }
+
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+  @media (max-width: 760px) { .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; } }
+
+  /* ===== Pills / tags ===== */
+  .tag {
+    display: inline-block; padding: 2px 8px; border-radius: 999px;
+    font-size: 11px; font-weight: 600; letter-spacing: .04em;
+    background: var(--accent-soft); color: var(--accent);
+  }
+  .tag.warn { background: var(--warn-soft); color: var(--warn); }
+  .tag.bad  { background: var(--bad-soft);  color: var(--bad); }
+  .tag.ok   { background: var(--ok-soft);   color: var(--ok); }
+  .tag.gray { background: #eef2f7; color: #475569; }
+
+  /* ===== Code blocks ===== */
+  pre.code {
+    background: var(--code-bg);
+    color: var(--code-ink);
+    border-radius: 10px;
+    padding: 16px 18px;
+    overflow-x: auto;
+    font: 12.5px/1.55 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    margin: 12px 0;
+  }
+  pre.code .k { color: var(--code-key); }
+  pre.code .s { color: var(--code-str); }
+  pre.code .c { color: var(--code-cmt); font-style: italic; }
+  pre.code .fn{ color: var(--code-fn); }
+  pre.code .hl { background: rgba(94, 234, 212, .14); display: block; margin: 0 -18px; padding: 0 18px; }
+  code.inline {
+    font: 12.5px/1.4 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    background: rgba(15,118,110,.08); color: var(--accent);
+    padding: 1px 6px; border-radius: 4px;
+  }
+
+  /* ===== Tables ===== */
+  table.t {
+    width: 100%; border-collapse: collapse; margin: 12px 0;
+    font-size: 13.5px;
+  }
+  table.t th, table.t td {
+    text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--line);
+    vertical-align: top;
+  }
+  table.t th { font-weight: 700; color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase; }
+  table.t tr:last-child td { border-bottom: 0; }
+
+  /* ===== UI Mockups ===== */
+  .phone {
+    background: #1a1d23;
+    border-radius: 28px;
+    padding: 10px;
+    width: 290px;
+    box-shadow: 0 12px 36px rgba(0,0,0,.15);
+    margin: 0 auto;
+  }
+  .phone .screen {
+    background: #fff; border-radius: 20px; overflow: hidden;
+    aspect-ratio: 9 / 19;
+    display: flex; flex-direction: column;
+    font-size: 11px;
+  }
+  .phone .bar {
+    height: 28px; background: #f7f5f1;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 0 14px; font-size: 9px; color: #1a1d23; font-weight: 600;
+  }
+  .mock-app-bar {
+    padding: 8px 12px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff;
+  }
+  .mock-title { font-weight: 700; font-size: 12px; }
+  .mock-sub { color: var(--muted); font-size: 9px; }
+  .mock-body { padding: 10px 12px; flex: 1; overflow: hidden; }
+  .mock-input {
+    background: #f1f5f9; border-radius: 8px; padding: 6px 8px;
+    font-size: 10px; color: #475569; margin-bottom: 6px;
+  }
+  .mock-textarea {
+    background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px; font-size: 9.5px; color: #1a1d23; min-height: 80px;
+    line-height: 1.4;
+  }
+  .mock-btn {
+    background: var(--accent); color: #fff;
+    padding: 9px; border-radius: 8px; text-align: center;
+    font-size: 11px; font-weight: 600; margin-top: 8px;
+  }
+  .mock-btn.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+  .mock-chip {
+    display: inline-block; background: #eef2f7; color: #334155;
+    padding: 3px 7px; border-radius: 999px; font-size: 8.5px; margin: 2px 2px 2px 0;
+  }
+  .mock-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 6px 0; border-bottom: 1px dashed var(--line);
+    font-size: 10px;
+  }
+  .mock-row:last-child { border-bottom: 0; }
+  .mock-pill {
+    font-size: 8.5px; padding: 2px 6px; border-radius: 999px; font-weight: 600;
+  }
+  .pill-draft  { background: #e2e8f0; color: #475569; }
+  .pill-sent   { background: #dbeafe; color: #1d4ed8; }
+  .pill-accept { background: #dcfce7; color: #15803d; }
+  .pill-paid   { background: #dcfce7; color: #15803d; }
+  .pill-overdue{ background: #fee2e2; color: #b91c1c; }
+  .pill-partial{ background: #fef3c7; color: #b45309; }
+
+  /* ===== SVG diagram styling ===== */
+  .diagram { background: #fff; border: 1px solid var(--line); border-radius: 12px; padding: 18px; box-shadow: var(--shadow); }
+  svg { max-width: 100%; height: auto; display: block; }
+  .node-box { fill: #ffffff; stroke: #0f766e; stroke-width: 1.5; }
+  .node-db  { fill: #ecfeff; stroke: #0e7490; stroke-width: 1.5; }
+  .node-ai  { fill: #fdf4ff; stroke: #a21caf; stroke-width: 1.5; }
+  .node-ext { fill: #fff7ed; stroke: #c2410c; stroke-width: 1.5; }
+  .node-ui  { fill: #f0fdf4; stroke: #15803d; stroke-width: 1.5; }
+  .node-label { font: 600 12px -apple-system, system-ui, sans-serif; fill: #1a1d23; }
+  .node-sub   { font: 11px -apple-system, system-ui, sans-serif; fill: #5b6470; }
+  .arrow      { stroke: #5b6470; stroke-width: 1.6; fill: none; marker-end: url(#arrow); }
+  .arrow-hot  { stroke: #0f766e; stroke-width: 2; fill: none; marker-end: url(#arrow-hot); }
+  .arrow-ai   { stroke: #a21caf; stroke-width: 1.8; stroke-dasharray: 4 3; fill: none; marker-end: url(#arrow-ai); }
+  .arrow-label{ font: 600 10px -apple-system, system-ui, sans-serif; fill: #475569; }
+
+  /* ===== Callouts ===== */
+  .callout {
+    border-left: 3px solid var(--accent);
+    padding: 12px 16px;
+    background: rgba(15,118,110,.04);
+    border-radius: 0 8px 8px 0;
+    margin: 14px 0;
+    font-size: 13.5px;
+  }
+  .callout.warn { border-left-color: var(--warn); background: rgba(180,83,9,.05); }
+  .callout.bad  { border-left-color: var(--bad);  background: rgba(185,28,28,.05); }
+  .callout strong { color: var(--ink); }
+
+  /* ===== Timeline ===== */
+  .timeline { position: relative; padding-left: 28px; }
+  .timeline::before {
+    content: ""; position: absolute; left: 9px; top: 4px; bottom: 4px;
+    width: 2px; background: var(--line);
+  }
+  .timeline .step { position: relative; padding-bottom: 18px; }
+  .timeline .step::before {
+    content: ""; position: absolute; left: -28px; top: 4px;
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--bg); border: 2px solid var(--accent);
+  }
+  .timeline .step .title { font-weight: 700; font-size: 14px; }
+  .timeline .step .meta { font-size: 11px; color: var(--muted); margin: 2px 0 6px; letter-spacing: .04em; text-transform: uppercase; }
+  .timeline .step .desc { font-size: 13.5px; color: var(--ink); }
+  .timeline .step .test { font-size: 12.5px; color: var(--ok); margin-top: 4px; }
+
+  ul.bullets { margin: 6px 0 6px 18px; padding: 0; }
+  ul.bullets li { margin: 4px 0; }
+
+  /* ===== Footer ===== */
+  footer { color: var(--muted); font-size: 12px; text-align: center; margin-top: 60px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+<!-- ======================= HERO ======================= -->
+<header class="hero">
+  <div class="eyebrow">Implementation Plan · v0</div>
+  <h1>Quotebird — prompt-to-quote for trade shops</h1>
+  <p class="tagline">A 10-session build plan for an AI-native quoting + invoicing app for 1–5 person HVAC, plumbing, and electrical shops. Per-tenant learning loop, branded PDFs, manual payments, mobile-first PWA.</p>
+  <div class="stat-row">
+    <div class="stat"><div class="v">~42 hrs</div><div class="k">est. build</div></div>
+    <div class="stat"><div class="v">10 sessions</div><div class="k">claude code</div></div>
+    <div class="stat"><div class="v">$99 – $249</div><div class="k">pricing band</div></div>
+    <div class="stat"><div class="v">~$2.50</div><div class="k">ai cost / contractor / mo</div></div>
+    <div class="stat"><div class="v">93%+</div><div class="k">gross margin</div></div>
+  </div>
+</header>
+
+<div class="layout">
+
+<!-- ======================= TOC ======================= -->
+<nav class="toc">
+  <h4>Contents</h4>
+  <ol>
+    <li><a href="#scope">1 · Scope &amp; goals</a></li>
+    <li><a href="#stack">2 · Tech stack</a></li>
+    <li><a href="#arch">3 · System architecture</a></li>
+    <li><a href="#schema">4 · Data model</a></li>
+    <li><a href="#flow-quote">5 · Prompt → Quote flow</a></li>
+    <li><a href="#rag">6 · AI learning loop</a></li>
+    <li><a href="#flow-invoice">7 · Quote → Invoice flow</a></li>
+    <li><a href="#mocks">8 · UI mockups</a></li>
+    <li><a href="#code">9 · Key code snippets</a></li>
+    <li><a href="#timeline">10 · Build timeline</a></li>
+    <li><a href="#pricing">11 · Pricing &amp; margins</a></li>
+    <li><a href="#risks">12 · Risks &amp; open Qs</a></li>
+  </ol>
+</nav>
+
+<!-- ======================= CONTENT ======================= -->
+<main>
+
+<!-- ============== 1. SCOPE ============== -->
+<section id="scope">
+  <h2><span class="num">01</span> Scope &amp; goals</h2>
+  <p class="lede">Replace the spreadsheet-plus-email quoting workflow of small trade shops with a single AI-native prompt-to-quote app. Owner dictates the job, app returns a branded PDF in &lt; 30 seconds, customer accepts by email reply.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4 style="margin-top:0">In scope for v0</h4>
+      <ul class="bullets">
+        <li>Email + password auth, single user per company</li>
+        <li>Setup wizard: rate, markup, tax, logo, service area, trade</li>
+        <li><strong>Prompt-to-Quote</strong> screen — NL → structured quote</li>
+        <li>Editable line-item review &amp; branded PDF</li>
+        <li>Email delivery via Resend</li>
+        <li><strong>Quote → Invoice</strong> conversion w/ change tracking</li>
+        <li>Manual payment status + nightly overdue cron</li>
+        <li><strong>Per-tenant RAG learning loop</strong></li>
+        <li>Mobile-first responsive PWA</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0">Out of scope (defer)</h4>
+      <ul class="bullets">
+        <li>QuickBooks sync, Stripe Connect, online payments</li>
+        <li>SMS, voice input, photo recognition</li>
+        <li>E-signature, customer portal</li>
+        <li>Good / better / best tiering</li>
+        <li>Multi-user, scheduling, dispatch, inventory</li>
+        <li>Native iOS / Android apps</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Definition of done.</strong> A real contractor can sign up, set up, generate a quote, send it, get it accepted, convert it to an invoice, edit one line, send it, and mark it paid — entirely from a phone — in under 7 minutes. Total infra cost &lt; $50/mo.
+  </div>
+</section>
+
+<!-- ============== 2. STACK ============== -->
+<section id="stack">
+  <h2><span class="num">02</span> Tech stack</h2>
+  <p class="lede">All managed services, no servers to babysit. Every layer has a free tier that covers v0.</p>
+
+  <table class="t">
+    <thead><tr><th>Layer</th><th>Choice</th><th>Why</th></tr></thead>
+    <tbody>
+      <tr><td>Framework</td><td>Next.js 14 (App Router)</td><td>Server actions remove need for a separate API</td></tr>
+      <tr><td>Language</td><td>TypeScript</td><td>Type safety pairs well with codegen / Claude Code</td></tr>
+      <tr><td>UI</td><td>Tailwind + shadcn/ui</td><td>Fastest path to polished UI</td></tr>
+      <tr><td>Auth</td><td>Supabase Auth</td><td>Email/password, generous free tier</td></tr>
+      <tr><td>Database</td><td>Supabase Postgres</td><td>500 MB free, plenty for v0</td></tr>
+      <tr><td>Vector search</td><td><strong>pgvector</strong> in Supabase</td><td>Same DB → no extra vendor, RLS-scoped</td></tr>
+      <tr><td>File storage</td><td>Supabase Storage</td><td>Logo + generated PDFs</td></tr>
+      <tr><td>AI</td><td>Claude Sonnet 4 via <code class="inline">@anthropic-ai/sdk</code></td><td>Structured output + prompt caching</td></tr>
+      <tr><td>Embeddings</td><td>OpenAI <code class="inline">text-embedding-3-small</code></td><td>$0.02 / 1M tokens, 1536 dims</td></tr>
+      <tr><td>Background jobs</td><td><strong>graphile-worker</strong></td><td>Postgres-based, no Redis required</td></tr>
+      <tr><td>PDF</td><td><code class="inline">@react-pdf/renderer</code></td><td>No headless Chromium cold start</td></tr>
+      <tr><td>Email</td><td>Resend</td><td>Clean API, 3K emails/mo free</td></tr>
+      <tr><td>Hosting</td><td>Vercel</td><td>Native Next.js, edge + cron built in</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- ============== 3. ARCHITECTURE ============== -->
+<section id="arch">
+  <h2><span class="num">03</span> System architecture</h2>
+  <p class="lede">One Next.js app on Vercel, one Supabase project, two external APIs (Claude + OpenAI + Resend). Background work runs on Postgres via graphile-worker; Vercel Cron triggers nightly overdue sweeps.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 1000 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="System architecture">
+      <defs>
+        <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#5b6470"/>
+        </marker>
+        <marker id="arrow-hot" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#0f766e"/>
+        </marker>
+        <marker id="arrow-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#a21caf"/>
+        </marker>
+      </defs>
+
+      <!-- Client -->
+      <rect class="node-ui" x="20" y="40" width="180" height="80" rx="10"/>
+      <text class="node-label" x="110" y="72" text-anchor="middle">Mobile PWA</text>
+      <text class="node-sub"   x="110" y="92" text-anchor="middle">Next.js · shadcn/ui</text>
+      <text class="node-sub"   x="110" y="108" text-anchor="middle">installed to home screen</text>
+
+      <!-- Vercel -->
+      <rect class="node-box" x="290" y="40" width="280" height="200" rx="10"/>
+      <text class="node-label" x="430" y="68" text-anchor="middle">Next.js on Vercel</text>
+
+      <rect class="node-box" x="310" y="88" width="116" height="42" rx="6"/>
+      <text class="node-sub" x="368" y="113" text-anchor="middle">Server Actions</text>
+
+      <rect class="node-box" x="434" y="88" width="116" height="42" rx="6"/>
+      <text class="node-sub" x="492" y="113" text-anchor="middle">API routes</text>
+
+      <rect class="node-box" x="310" y="140" width="116" height="42" rx="6"/>
+      <text class="node-sub" x="368" y="165" text-anchor="middle">React-PDF render</text>
+
+      <rect class="node-box" x="434" y="140" width="116" height="42" rx="6"/>
+      <text class="node-sub" x="492" y="165" text-anchor="middle">Vercel Cron</text>
+
+      <rect class="node-box" x="310" y="192" width="240" height="38" rx="6"/>
+      <text class="node-sub" x="430" y="216" text-anchor="middle">graphile-worker (jobs)</text>
+
+      <!-- Supabase -->
+      <rect class="node-db" x="660" y="40" width="320" height="200" rx="10"/>
+      <text class="node-label" x="820" y="68" text-anchor="middle">Supabase</text>
+
+      <rect class="node-db" x="680" y="88" width="138" height="42" rx="6"/>
+      <text class="node-sub" x="749" y="113" text-anchor="middle">Postgres + RLS</text>
+
+      <rect class="node-db" x="826" y="88" width="138" height="42" rx="6"/>
+      <text class="node-sub" x="895" y="113" text-anchor="middle">pgvector</text>
+
+      <rect class="node-db" x="680" y="140" width="138" height="42" rx="6"/>
+      <text class="node-sub" x="749" y="165" text-anchor="middle">Auth</text>
+
+      <rect class="node-db" x="826" y="140" width="138" height="42" rx="6"/>
+      <text class="node-sub" x="895" y="165" text-anchor="middle">Storage (PDFs/logos)</text>
+
+      <rect class="node-db" x="680" y="192" width="284" height="38" rx="6"/>
+      <text class="node-sub" x="822" y="216" text-anchor="middle">graphile-worker queue tables</text>
+
+      <!-- External services -->
+      <rect class="node-ai" x="290" y="320" width="200" height="60" rx="10"/>
+      <text class="node-label" x="390" y="350" text-anchor="middle">Anthropic API</text>
+      <text class="node-sub"   x="390" y="368" text-anchor="middle">Claude Sonnet 4</text>
+
+      <rect class="node-ai" x="510" y="320" width="200" height="60" rx="10"/>
+      <text class="node-label" x="610" y="350" text-anchor="middle">OpenAI API</text>
+      <text class="node-sub"   x="610" y="368" text-anchor="middle">text-embedding-3-small</text>
+
+      <rect class="node-ext" x="730" y="320" width="200" height="60" rx="10"/>
+      <text class="node-label" x="830" y="350" text-anchor="middle">Resend</text>
+      <text class="node-sub"   x="830" y="368" text-anchor="middle">email + signed PDF link</text>
+
+      <!-- Customer email -->
+      <rect class="node-ui" x="730" y="440" width="200" height="60" rx="10"/>
+      <text class="node-label" x="830" y="470" text-anchor="middle">Customer inbox</text>
+      <text class="node-sub"   x="830" y="488" text-anchor="middle">replies "I accept"</text>
+
+      <!-- Arrows -->
+      <path class="arrow-hot" d="M200 80 L290 80"/>
+      <text class="arrow-label" x="245" y="74" text-anchor="middle">HTTPS</text>
+
+      <path class="arrow-hot" d="M570 110 L660 110"/>
+      <text class="arrow-label" x="615" y="104" text-anchor="middle">SQL / RLS</text>
+
+      <path class="arrow-ai" d="M368 130 L388 320"/>
+      <text class="arrow-label" x="334" y="220">Claude</text>
+
+      <path class="arrow-ai" d="M492 130 L608 320"/>
+      <text class="arrow-label" x="572" y="220">embed</text>
+
+      <path class="arrow" d="M555 200 L730 320"/>
+      <text class="arrow-label" x="664" y="262">send PDF</text>
+
+      <path class="arrow" d="M830 380 L830 440"/>
+      <text class="arrow-label" x="838" y="414">email</text>
+
+      <path class="arrow" d="M555 211 L555 240 L450 240 L450 211" stroke-dasharray="3 3"/>
+      <text class="arrow-label" x="500" y="258" text-anchor="middle">enqueue jobs</text>
+    </svg>
+  </div>
+
+  <div class="grid-3" style="margin-top:14px;">
+    <div class="card card-tight">
+      <span class="tag">hot path</span>
+      <h4 style="margin:8px 0 4px">Generate quote</h4>
+      <p style="margin:0;color:var(--muted);font-size:12.5px">PWA → server action → load context → embed → retrieve top-3 → Claude → Zod → insert draft. p95 target &lt; 12s.</p>
+    </div>
+    <div class="card card-tight">
+      <span class="tag gray">async</span>
+      <h4 style="margin:8px 0 4px">Embed sent/accepted quote</h4>
+      <p style="margin:0;color:var(--muted);font-size:12.5px">graphile-worker job fires on status flip, upserts <code class="inline">quote_embeddings</code>. Doesn't block UX.</p>
+    </div>
+    <div class="card card-tight">
+      <span class="tag warn">scheduled</span>
+      <h4 style="margin:8px 0 4px">Overdue sweep</h4>
+      <p style="margin:0;color:var(--muted);font-size:12.5px">Vercel Cron @ 02:00 UTC daily flips <code class="inline">sent / partial_paid</code> → <code class="inline">overdue</code> when <code class="inline">due_date &lt; today</code>.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 4. DATA MODEL ============== -->
+<section id="schema">
+  <h2><span class="num">04</span> Data model</h2>
+  <p class="lede">All multi-tenant data scoped by <code class="inline">company_id</code> with row-level security. Vector search MUST include the company filter — RLS is the safety net.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 1000 460" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Database schema">
+      <!-- auth.users -->
+      <rect class="node-db" x="20" y="40" width="170" height="60" rx="8"/>
+      <text class="node-label" x="105" y="64" text-anchor="middle">auth.users</text>
+      <text class="node-sub"   x="105" y="84" text-anchor="middle">supabase auth</text>
+
+      <!-- companies -->
+      <rect class="node-box" x="240" y="20" width="220" height="180" rx="8"/>
+      <text class="node-label" x="350" y="44" text-anchor="middle">companies</text>
+      <text class="node-sub" x="252" y="68">id (pk)</text>
+      <text class="node-sub" x="252" y="88">user_id (fk → auth.users)</text>
+      <text class="node-sub" x="252" y="108">name, logo_url</text>
+      <text class="node-sub" x="252" y="128">hourly_rate, markup_pct</text>
+      <text class="node-sub" x="252" y="148">sales_tax_rate_pct</text>
+      <text class="node-sub" x="252" y="168">trade_type, plan_id</text>
+      <text class="node-sub" x="252" y="188">quotes_used_this_period</text>
+
+      <!-- company_context -->
+      <rect class="node-ai" x="510" y="20" width="220" height="120" rx="8"/>
+      <text class="node-label" x="620" y="44" text-anchor="middle">company_context</text>
+      <text class="node-sub" x="522" y="68">company_id (pk, fk)</text>
+      <text class="node-sub" x="522" y="88">price_overrides (jsonb)</text>
+      <text class="node-sub" x="522" y="108">default_phrases (text[])</text>
+      <text class="node-sub" x="522" y="128">avg_job_duration, win_rate</text>
+
+      <!-- plans -->
+      <rect class="node-db" x="780" y="20" width="200" height="100" rx="8"/>
+      <text class="node-label" x="880" y="44" text-anchor="middle">plans</text>
+      <text class="node-sub" x="792" y="68">id (solo|crew|shop)</text>
+      <text class="node-sub" x="792" y="88">max_users, quote_cap</text>
+      <text class="node-sub" x="792" y="108">stripe_price_id_*</text>
+
+      <!-- quotes -->
+      <rect class="node-box" x="240" y="240" width="220" height="180" rx="8"/>
+      <text class="node-label" x="350" y="264" text-anchor="middle">quotes</text>
+      <text class="node-sub" x="252" y="288">id (pk)</text>
+      <text class="node-sub" x="252" y="308">company_id (fk)</text>
+      <text class="node-sub" x="252" y="328">quote_number (Q-2026-####)</text>
+      <text class="node-sub" x="252" y="348">customer_*, raw_prompt</text>
+      <text class="node-sub" x="252" y="368">line_items (jsonb)</text>
+      <text class="node-sub" x="252" y="388">subtotal / tax / total</text>
+      <text class="node-sub" x="252" y="408">status, sent_at, pdf_url</text>
+
+      <!-- quote_embeddings -->
+      <rect class="node-ai" x="510" y="240" width="220" height="120" rx="8"/>
+      <text class="node-label" x="620" y="264" text-anchor="middle">quote_embeddings</text>
+      <text class="node-sub" x="522" y="288">quote_id (pk, fk)</text>
+      <text class="node-sub" x="522" y="308">company_id (fk) ← scoped</text>
+      <text class="node-sub" x="522" y="328">job_description_emb (1536)</text>
+      <text class="node-sub" x="522" y="348">outcome (sent|accepted|…)</text>
+
+      <!-- invoices -->
+      <rect class="node-box" x="780" y="240" width="200" height="200" rx="8"/>
+      <text class="node-label" x="880" y="264" text-anchor="middle">invoices</text>
+      <text class="node-sub" x="792" y="288">id (pk)</text>
+      <text class="node-sub" x="792" y="308">company_id (fk)</text>
+      <text class="node-sub" x="792" y="328">quote_id (fk, nullable)</text>
+      <text class="node-sub" x="792" y="348">invoice_number I-####</text>
+      <text class="node-sub" x="792" y="368">line_items (jsonb)</text>
+      <text class="node-sub" x="792" y="388">changes_from_quote (jsonb)</text>
+      <text class="node-sub" x="792" y="408">amount_paid, due_date</text>
+      <text class="node-sub" x="792" y="428">status, paid_at</text>
+
+      <!-- arrows -->
+      <path class="arrow" d="M190 70 L240 70"/>
+      <path class="arrow" d="M460 110 L510 80"/>
+      <path class="arrow" d="M460 110 L780 70"/>
+      <path class="arrow" d="M350 200 L350 240"/>
+      <text class="arrow-label" x="358" y="222">1 : N</text>
+      <path class="arrow" d="M460 320 L510 300"/>
+      <text class="arrow-label" x="470" y="304">1 : 1</text>
+      <path class="arrow" d="M460 320 L780 320"/>
+      <text class="arrow-label" x="620" y="312" text-anchor="middle">1 : 1 (per accepted quote)</text>
+    </svg>
+  </div>
+
+  <h3>Key SQL — vector + RLS</h3>
+<pre class="code"><span class="c">-- Enable pgvector (one-time)</span>
+<span class="k">create extension if not exists</span> vector;
+
+<span class="c">-- Per-quote embedding, RLS-scoped to company_id</span>
+<span class="k">create table</span> quote_embeddings (
+  quote_id            uuid <span class="k">primary key</span> <span class="k">references</span> quotes(id) <span class="k">on delete cascade</span>,
+  company_id          uuid <span class="k">not null</span> <span class="k">references</span> companies(id) <span class="k">on delete cascade</span>,
+  job_description_emb vector(1536) <span class="k">not null</span>,
+  outcome             text <span class="k">not null</span>,
+  created_at          timestamptz <span class="k">default</span> now()
+);
+
+<span class="c">-- HNSW index for fast cosine similarity</span>
+<span class="k">create index on</span> quote_embeddings
+  <span class="k">using</span> hnsw (job_description_emb vector_cosine_ops);
+
+<span class="c">-- RLS: queries that forget the filter return zero rows</span>
+<span class="k">alter table</span> quote_embeddings <span class="k">enable row level security</span>;
+<span class="k">create policy</span> <span class="s">"own embeddings"</span> <span class="k">on</span> quote_embeddings <span class="k">for all</span>
+  <span class="k">using</span> (company_id <span class="k">in</span> (<span class="k">select</span> id <span class="k">from</span> companies <span class="k">where</span> user_id = auth.uid()));</pre>
+
+  <div class="callout warn">
+    <strong>Isolation proof.</strong> Pre-beta checklist must include running a cross-tenant vector query — a query from company A using company B's typical job description should return zero rows. RLS makes this automatic, but verify it with a real test.
+  </div>
+</section>
+
+<!-- ============== 5. PROMPT → QUOTE FLOW ============== -->
+<section id="flow-quote">
+  <h2><span class="num">05</span> Prompt → Quote flow</h2>
+  <p class="lede">The hot path. From "Generate Quote" tap to PDF on screen in under 30 seconds, with every quote both learning from and contributing to the contractor's private RAG corpus.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 1000 580" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Prompt to quote flow">
+      <!-- nodes -->
+      <rect class="node-ui"  x="20"  y="40"  width="180" height="60" rx="8"/>
+      <text class="node-label" x="110" y="68" text-anchor="middle">1 · Owner types prompt</text>
+      <text class="node-sub" x="110" y="86" text-anchor="middle">"Replace 3-ton condenser…"</text>
+
+      <rect class="node-box" x="260" y="40" width="200" height="60" rx="8"/>
+      <text class="node-label" x="360" y="68" text-anchor="middle">2 · Server action</text>
+      <text class="node-sub"   x="360" y="86" text-anchor="middle">/api/generate-quote</text>
+
+      <rect class="node-db" x="520" y="20" width="200" height="50" rx="8"/>
+      <text class="node-sub" x="620" y="50" text-anchor="middle">load company settings</text>
+
+      <rect class="node-ai" x="520" y="80" width="200" height="50" rx="8"/>
+      <text class="node-sub" x="620" y="110" text-anchor="middle">load company_context</text>
+
+      <rect class="node-ai" x="780" y="40" width="200" height="60" rx="8"/>
+      <text class="node-label" x="880" y="68" text-anchor="middle">3 · Embed prompt</text>
+      <text class="node-sub"   x="880" y="86" text-anchor="middle">OpenAI 1536-d</text>
+
+      <rect class="node-ai" x="780" y="140" width="200" height="60" rx="8"/>
+      <text class="node-label" x="880" y="168" text-anchor="middle">4 · Vector search</text>
+      <text class="node-sub"   x="880" y="186" text-anchor="middle">top-3 past accepted</text>
+
+      <rect class="node-ai" x="520" y="180" width="200" height="60" rx="8"/>
+      <text class="node-label" x="620" y="208" text-anchor="middle">5 · Build prompt</text>
+      <text class="node-sub"   x="620" y="226" text-anchor="middle">few-shot + rules</text>
+
+      <rect class="node-ai" x="260" y="180" width="200" height="60" rx="8"/>
+      <text class="node-label" x="360" y="208" text-anchor="middle">6 · Claude Sonnet</text>
+      <text class="node-sub"   x="360" y="226" text-anchor="middle">structured JSON output</text>
+
+      <rect class="node-box" x="260" y="280" width="200" height="60" rx="8"/>
+      <text class="node-label" x="360" y="308" text-anchor="middle">7 · Zod validate</text>
+      <text class="node-sub"   x="360" y="326" text-anchor="middle">reject on bad shape</text>
+
+      <rect class="node-box" x="520" y="280" width="200" height="60" rx="8"/>
+      <text class="node-label" x="620" y="308" text-anchor="middle">8 · Compute math</text>
+      <text class="node-sub"   x="620" y="326" text-anchor="middle">subtotal · tax · total</text>
+
+      <rect class="node-db" x="780" y="280" width="200" height="60" rx="8"/>
+      <text class="node-label" x="880" y="308" text-anchor="middle">9 · Insert draft</text>
+      <text class="node-sub"   x="880" y="326" text-anchor="middle">quotes (status = draft)</text>
+
+      <rect class="node-ui" x="780" y="400" width="200" height="60" rx="8"/>
+      <text class="node-label" x="880" y="428" text-anchor="middle">10 · Redirect</text>
+      <text class="node-sub"   x="880" y="446" text-anchor="middle">/quotes/[id]</text>
+
+      <rect class="node-ui" x="520" y="400" width="200" height="60" rx="8"/>
+      <text class="node-label" x="620" y="428" text-anchor="middle">11 · Owner reviews / edits</text>
+      <text class="node-sub"   x="620" y="446" text-anchor="middle">inline line item editor</text>
+
+      <rect class="node-ext" x="260" y="400" width="200" height="60" rx="8"/>
+      <text class="node-label" x="360" y="428" text-anchor="middle">12 · Send via Resend</text>
+      <text class="node-sub"   x="360" y="446" text-anchor="middle">PDF link, email body</text>
+
+      <rect class="node-ai" x="20" y="400" width="200" height="60" rx="8"/>
+      <text class="node-label" x="120" y="428" text-anchor="middle">13 · Enqueue embed job</text>
+      <text class="node-sub"   x="120" y="446" text-anchor="middle">status → sent</text>
+
+      <rect class="node-ai" x="20" y="500" width="960" height="60" rx="8"/>
+      <text class="node-label" x="500" y="528" text-anchor="middle">14 · graphile-worker: embed quote, upsert quote_embeddings, RAG corpus grows</text>
+      <text class="node-sub"   x="500" y="548" text-anchor="middle">when contractor marks accepted, outcome field updates — future retrieval prefers accepted quotes</text>
+
+      <!-- arrows -->
+      <path class="arrow-hot" d="M200 70 L260 70"/>
+      <path class="arrow-hot" d="M460 70 L520 45"/>
+      <path class="arrow-hot" d="M460 70 L520 105"/>
+      <path class="arrow-hot" d="M720 70 L780 70"/>
+      <path class="arrow-hot" d="M880 100 L880 140"/>
+      <path class="arrow-hot" d="M780 170 L720 200"/>
+      <path class="arrow-hot" d="M520 210 L460 210"/>
+      <path class="arrow-hot" d="M360 240 L360 280"/>
+      <path class="arrow-hot" d="M460 310 L520 310"/>
+      <path class="arrow-hot" d="M720 310 L780 310"/>
+      <path class="arrow-hot" d="M880 340 L880 400"/>
+      <path class="arrow-hot" d="M780 430 L720 430"/>
+      <path class="arrow-hot" d="M520 430 L460 430"/>
+      <path class="arrow-hot" d="M260 430 L220 430"/>
+      <path class="arrow-ai"  d="M120 460 L120 500"/>
+    </svg>
+  </div>
+
+  <div class="grid-2" style="margin-top:14px">
+    <div class="card card-tight">
+      <h4 style="margin-top:0">Hot path latency budget</h4>
+      <table class="t" style="margin:0">
+        <tbody>
+          <tr><td>Load settings + context</td><td style="text-align:right">~100 ms</td></tr>
+          <tr><td>Embed prompt (OpenAI)</td><td style="text-align:right">~250 ms</td></tr>
+          <tr><td>pgvector top-3 lookup</td><td style="text-align:right">~30 ms</td></tr>
+          <tr><td>Claude Sonnet generation</td><td style="text-align:right">~6–10 s</td></tr>
+          <tr><td>Validate + math + insert</td><td style="text-align:right">~80 ms</td></tr>
+          <tr><td><strong>Total p95 target</strong></td><td style="text-align:right"><strong>&lt; 12 s</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card card-tight">
+      <h4 style="margin-top:0">Failure modes &amp; fallbacks</h4>
+      <ul class="bullets" style="font-size:13px">
+        <li><strong>OpenAI down</strong> → skip retrieval, use static cold-start few-shot</li>
+        <li><strong>Claude rate-limit</strong> → keep typed prompt in localStorage, retry once</li>
+        <li><strong>Zod validation fails</strong> → retry once with stricter "JSON ONLY" reminder</li>
+        <li><strong>PDF render fails</strong> → save draft, surface "Preview unavailable, retry"</li>
+        <li><strong>Embed job fails</strong> → log + retry; never blocks quote send</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 6. RAG ============== -->
+<section id="rag">
+  <h2><span class="num">06</span> AI learning loop (per-tenant RAG)</h2>
+  <p class="lede">Claude is stateless. Each contractor's "personalized AI" is their own historical data, scoped by <code class="inline">company_id</code>, injected at generation time. Memory lives in our database.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4 style="margin-top:0">Two memory stores</h4>
+      <p style="margin:6px 0 4px"><span class="tag">structured</span> <strong>company_context</strong></p>
+      <p style="margin:0 0 12px;color:var(--muted);font-size:13px">Price overrides, default phrases, avg job duration, win-rate buckets, learned warranty text. Updated on every edit.</p>
+      <p style="margin:6px 0 4px"><span class="tag">semantic</span> <strong>quote_embeddings</strong></p>
+      <p style="margin:0;color:var(--muted);font-size:13px">1536-dim embedding of each <code class="inline">job_summary + raw_prompt</code>, with the outcome label. Retrieved as few-shot examples.</p>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0">The learning signal</h4>
+      <ul class="bullets" style="font-size:13.5px">
+        <li>Contractor edits AI-generated quote → <strong>price overrides update</strong></li>
+        <li>Contractor marks accepted → <strong>outcome flips, gets preferred in retrieval</strong></li>
+        <li>After ~10 quotes, recompute avg job duration per service type</li>
+        <li>After ~10 accepted, warranty text settles on contractor's wording</li>
+      </ul>
+      <p style="margin-top:10px;color:var(--muted);font-size:13px">After ~10 quotes the AI feels eerily like the contractor — because it IS pattern-matching their own past work.</p>
+    </div>
+  </div>
+
+  <h3>Retrieval at generation time</h3>
+<pre class="code"><span class="c">// /lib/context/load.ts</span>
+<span class="k">const</span> { embedding: queryEmb } = <span class="k">await</span> openai.embeddings.create({
+  model: <span class="s">'text-embedding-3-small'</span>,
+  input: userPrompt,
+});
+
+<span class="c">// Top-3 most similar PAST quotes from THIS company only.</span>
+<span class="c">// RLS adds the company filter automatically, but we include it explicitly</span>
+<span class="c">// as defense-in-depth — never rely on a single layer of isolation.</span>
+<span class="k">const</span> fewShot = <span class="k">await</span> db.$queryRaw`
+  <span class="k">SELECT</span> q.job_summary, q.line_items, q.total, qe.outcome
+  <span class="k">FROM</span> quote_embeddings qe
+  <span class="k">JOIN</span> quotes q <span class="k">ON</span> q.id = qe.quote_id
+  <span class="hl">  <span class="k">WHERE</span> qe.company_id = ${companyId}</span>
+    <span class="k">AND</span> qe.outcome <span class="k">IN</span> (<span class="s">'sent'</span>, <span class="s">'accepted'</span>)
+  <span class="k">ORDER BY</span> qe.job_description_emb &lt;=&gt; ${queryEmb}::vector
+  <span class="k">LIMIT</span> 3;
+`;</pre>
+
+  <h3>The update loop (after every edit)</h3>
+<pre class="code"><span class="c">// /lib/context/update.ts — runs after Save Draft or Send</span>
+<span class="k">export async function</span> <span class="fn">applyContractorEdits</span>(quoteId: string) {
+  <span class="k">const</span> quote = <span class="k">await</span> db.quotes.findUnique({ where: { id: quoteId }});
+  <span class="k">const</span> ctx   = <span class="k">await</span> db.company_context.findUnique({
+    where: { company_id: quote.company_id },
+  });
+
+  <span class="c">// 1. Detect price overrides — any line item whose unit_price differs from</span>
+  <span class="c">//    the AI's original suggestion gets stored as a sticky override.</span>
+  <span class="k">const</span> overrides = { ...ctx.price_overrides };
+  <span class="k">for</span> (<span class="k">const</span> li <span class="k">of</span> quote.line_items) {
+    <span class="k">if</span> (li.unit_price !== li.ai_suggested_price) {
+      overrides[li.description] = li.unit_price;
+    }
+  }
+
+  <span class="c">// 2. After 10+ accepted quotes per service type, recompute median duration</span>
+  <span class="c">// 3. Capture warranty/payment-terms wording if changed</span>
+
+  <span class="k">await</span> db.company_context.update({
+    where: { company_id: quote.company_id },
+    data:  { price_overrides: overrides, updated_at: <span class="k">new</span> <span class="fn">Date</span>() },
+  });
+}</pre>
+
+  <div class="callout">
+    <strong>Cost reality check.</strong> 50 quotes/mo × Claude Sonnet ≈ $2.50. 50 embeddings × OpenAI ≈ $0.001. pgvector storage is free on Supabase. Total AI cost per contractor is ~$2.50/mo against $99–$249 in revenue → <strong>97%+ gross margin on AI</strong>.
+  </div>
+</section>
+
+<!-- ============== 7. QUOTE → INVOICE ============== -->
+<section id="flow-invoice">
+  <h2><span class="num">07</span> Quote → Invoice flow</h2>
+  <p class="lede">Accepted quotes convert to invoices with one click. Line items copy verbatim, contractor edits to reflect unforeseen changes, and the system auto-diffs against the original quote — that delta becomes a transparent "Changes from original quote" section on the invoice PDF.</p>
+
+  <div class="diagram">
+    <svg viewBox="0 0 1000 360" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Quote to invoice flow">
+      <rect class="node-box" x="20"  y="40" width="180" height="60" rx="8"/>
+      <text class="node-label" x="110" y="68" text-anchor="middle">Quote marked</text>
+      <text class="node-sub"   x="110" y="86" text-anchor="middle">status = accepted</text>
+
+      <rect class="node-ui" x="240" y="40" width="180" height="60" rx="8"/>
+      <text class="node-label" x="330" y="68" text-anchor="middle">"Convert to Invoice"</text>
+      <text class="node-sub"   x="330" y="86" text-anchor="middle">button visible</text>
+
+      <rect class="node-box" x="460" y="40" width="180" height="60" rx="8"/>
+      <text class="node-label" x="550" y="68" text-anchor="middle">POST /convert-to-invoice</text>
+      <text class="node-sub"   x="550" y="86" text-anchor="middle">copy line_items verbatim</text>
+
+      <rect class="node-db" x="680" y="40" width="200" height="60" rx="8"/>
+      <text class="node-label" x="780" y="68" text-anchor="middle">Insert invoice (draft)</text>
+      <text class="node-sub"   x="780" y="86" text-anchor="middle">quote_id linked back</text>
+
+      <rect class="node-ui" x="680" y="160" width="200" height="60" rx="8"/>
+      <text class="node-label" x="780" y="188" text-anchor="middle">Owner edits a line</text>
+      <text class="node-sub"   x="780" y="206" text-anchor="middle">e.g. add $95 shutoff valve</text>
+
+      <rect class="node-box" x="460" y="160" width="180" height="60" rx="8"/>
+      <text class="node-label" x="550" y="188" text-anchor="middle">diffLineItems()</text>
+      <text class="node-sub"   x="550" y="206" text-anchor="middle">added · modified · removed</text>
+
+      <rect class="node-db" x="240" y="160" width="180" height="60" rx="8"/>
+      <text class="node-label" x="330" y="188" text-anchor="middle">changes_from_quote</text>
+      <text class="node-sub"   x="330" y="206" text-anchor="middle">jsonb on invoice row</text>
+
+      <rect class="node-box" x="20"  y="160" width="180" height="60" rx="8"/>
+      <text class="node-label" x="110" y="188" text-anchor="middle">PDF render</text>
+      <text class="node-sub"   x="110" y="206" text-anchor="middle">"Changes from original quote"</text>
+
+      <rect class="node-ext" x="20"  y="280" width="180" height="60" rx="8"/>
+      <text class="node-label" x="110" y="308" text-anchor="middle">Email via Resend</text>
+      <text class="node-sub"   x="110" y="326" text-anchor="middle">signed PDF link</text>
+
+      <rect class="node-ui" x="240" y="280" width="180" height="60" rx="8"/>
+      <text class="node-label" x="330" y="308" text-anchor="middle">Owner marks paid</text>
+      <text class="node-sub"   x="330" y="326" text-anchor="middle">amount_paid, paid_at</text>
+
+      <rect class="node-box" x="460" y="280" width="180" height="60" rx="8"/>
+      <text class="node-label" x="550" y="308" text-anchor="middle">Nightly cron</text>
+      <text class="node-sub"   x="550" y="326" text-anchor="middle">flip overdue</text>
+
+      <rect class="node-ui" x="680" y="280" width="200" height="60" rx="8"/>
+      <text class="node-label" x="780" y="308" text-anchor="middle">Dashboard widget</text>
+      <text class="node-sub"   x="780" y="326" text-anchor="middle">$X outstanding · Y overdue</text>
+
+      <path class="arrow-hot" d="M200 70 L240 70"/>
+      <path class="arrow-hot" d="M420 70 L460 70"/>
+      <path class="arrow-hot" d="M640 70 L680 70"/>
+      <path class="arrow-hot" d="M780 100 L780 160"/>
+      <path class="arrow-hot" d="M680 190 L640 190"/>
+      <path class="arrow-hot" d="M460 190 L420 190"/>
+      <path class="arrow-hot" d="M240 190 L200 190"/>
+      <path class="arrow-hot" d="M110 220 L110 280"/>
+      <path class="arrow-hot" d="M200 310 L240 310"/>
+      <path class="arrow-hot" d="M420 310 L460 310"/>
+      <path class="arrow-hot" d="M640 310 L680 310"/>
+    </svg>
+  </div>
+
+  <h3>The delta calculator</h3>
+<pre class="code"><span class="c">// /lib/invoices/changes.ts</span>
+<span class="k">type</span> LineItem = { description: string; qty: number; price: number };
+
+<span class="k">export function</span> <span class="fn">diffLineItems</span>(
+  original: LineItem[],
+  current:  LineItem[],
+): ChangesFromQuote {
+  <span class="k">const</span> byDesc = (arr: LineItem[]) =&gt; <span class="k">new</span> <span class="fn">Map</span>(arr.map(li =&gt; [li.description, li]));
+  <span class="k">const</span> A = <span class="fn">byDesc</span>(original), B = <span class="fn">byDesc</span>(current);
+
+  <span class="k">const</span> added    = current.filter(li =&gt; !A.has(li.description));
+  <span class="k">const</span> removed  = original.filter(li =&gt; !B.has(li.description));
+  <span class="k">const</span> modified = current.flatMap(li =&gt; {
+    <span class="k">const</span> prev = A.get(li.description);
+    <span class="k">if</span> (!prev) <span class="k">return</span> [];
+    <span class="k">if</span> (prev.qty !== li.qty || prev.price !== li.price) {
+      <span class="k">return</span> [{ description: li.description,
+                from_qty: prev.qty, to_qty: li.qty,
+                from_price: prev.price, to_price: li.price }];
+    }
+    <span class="k">return</span> [];
+  });
+
+  <span class="k">return</span> { added, modified, removed };
+}</pre>
+
+  <h3>How the contractor sees it</h3>
+  <p style="color:var(--muted)">When the contractor saves an edited invoice, the "Changes from original quote" preview appears live in the UI — exactly what the customer will see on the PDF. No surprise reveals. Transparency is the moat against the contractor-customer trust gap.</p>
+</section>
+
+<!-- ============== 8. MOCKUPS ============== -->
+<section id="mocks">
+  <h2><span class="num">08</span> UI mockups</h2>
+  <p class="lede">Mobile-first. Phone is the device a contractor pulls out at the customer's house. Six screens shown — these are wireframes, not pixel-final.</p>
+
+  <div class="grid-3">
+
+    <!-- Setup -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:41</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div>
+            <div class="mock-title">Set up your shop</div>
+            <div class="mock-sub">Step 1 of 1 · 60 sec</div>
+          </div>
+        </div>
+        <div class="mock-body">
+          <div style="font-size:9.5px;color:var(--muted);margin-bottom:3px">Company name</div>
+          <div class="mock-input">Ridgeway HVAC</div>
+          <div style="font-size:9.5px;color:var(--muted);margin-bottom:3px">Hourly rate</div>
+          <div class="mock-input">$125 / hour</div>
+          <div style="font-size:9.5px;color:var(--muted);margin-bottom:3px">Material markup</div>
+          <div class="mock-input">25%</div>
+          <div style="font-size:9.5px;color:var(--muted);margin-bottom:3px">Sales tax</div>
+          <div class="mock-input">7.000%</div>
+          <div style="font-size:9.5px;color:var(--muted);margin-bottom:3px">Trade</div>
+          <div style="margin-bottom:8px">
+            <span class="mock-chip" style="background:var(--accent);color:#fff">HVAC</span>
+            <span class="mock-chip">Plumbing</span>
+            <span class="mock-chip">Electrical</span>
+            <span class="mock-chip">Mixed</span>
+          </div>
+          <div class="mock-btn ghost" style="font-size:10px">+ Upload logo (optional)</div>
+          <div class="mock-btn">Save &amp; continue</div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Setup wizard · F2</p>
+    </div>
+
+    <!-- Prompt -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:42</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div>
+            <div class="mock-title">New quote</div>
+            <div class="mock-sub">describe the job</div>
+          </div>
+          <div style="font-size:9px;color:var(--accent);font-weight:700">×</div>
+        </div>
+        <div class="mock-body">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:6px">
+            <div class="mock-input">Customer name</div>
+            <div class="mock-input">Email</div>
+            <div class="mock-input">Phone</div>
+            <div class="mock-input">Address</div>
+          </div>
+          <div class="mock-textarea">
+            Replace 3-ton AC condenser, 16 SEER, second floor attic access. Customer has R-22 system from 1998. Will reuse line set if leak test passes.
+          </div>
+          <div style="margin:6px 0 4px;font-size:9px;color:var(--muted)">Try an example:</div>
+          <div>
+            <span class="mock-chip">Replace 3-ton condenser…</span>
+            <span class="mock-chip">Install 50gal water heater…</span>
+            <span class="mock-chip">Run 220V circuit for range…</span>
+          </div>
+          <div class="mock-btn">⚡ Generate quote</div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Prompt-to-Quote · F3</p>
+    </div>
+
+    <!-- Quote review -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:42</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div>
+            <div class="mock-title">Q-2026-0042</div>
+            <div class="mock-sub">draft · J. Patel</div>
+          </div>
+          <span class="mock-pill pill-draft">DRAFT</span>
+        </div>
+        <div class="mock-body" style="font-size:9.5px">
+          <div style="font-weight:700;margin-bottom:4px">Line items</div>
+          <div class="mock-row"><span>3-ton 16 SEER condenser</span><span>$2,400</span></div>
+          <div class="mock-row"><span>Install labor · 6 hr</span><span>$750</span></div>
+          <div class="mock-row"><span>Leak test · 1.5 hr</span><span>$188</span></div>
+          <div class="mock-row"><span>Refrigerant + fittings</span><span>$225</span></div>
+          <div class="mock-row"><span>Mechanical permit</span><span>$125</span></div>
+          <div style="height:8px"></div>
+          <div class="mock-row" style="border:0"><span>Subtotal</span><span>$3,688</span></div>
+          <div class="mock-row" style="border:0"><span>Tax (7%)</span><span>$258</span></div>
+          <div class="mock-row" style="border:0;font-weight:700"><span>Total</span><span>$3,946</span></div>
+          <div style="height:6px"></div>
+          <div class="mock-btn ghost" style="margin-top:4px">+ Add line</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:4px">
+            <div class="mock-btn ghost" style="font-size:10px">Preview PDF</div>
+            <div class="mock-btn" style="font-size:10px">Send</div>
+          </div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Quote review · F4</p>
+    </div>
+
+    <!-- Quote list -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:43</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div><div class="mock-title">Quotes</div><div class="mock-sub">12 this month</div></div>
+          <div style="font-size:14px;color:var(--accent);font-weight:700">+</div>
+        </div>
+        <div class="mock-body">
+          <div style="margin-bottom:6px">
+            <span class="mock-chip" style="background:var(--accent);color:#fff">All</span>
+            <span class="mock-chip">Sent</span>
+            <span class="mock-chip">Accepted</span>
+            <span class="mock-chip">Draft</span>
+          </div>
+          <div class="mock-row"><div><strong>Q-2026-0042</strong><br><span style="color:var(--muted)">J. Patel · $3,946</span></div><span class="mock-pill pill-sent">SENT</span></div>
+          <div class="mock-row"><div><strong>Q-2026-0041</strong><br><span style="color:var(--muted)">M. Rivera · $1,850</span></div><span class="mock-pill pill-accept">ACCEPTED</span></div>
+          <div class="mock-row"><div><strong>Q-2026-0040</strong><br><span style="color:var(--muted)">D. Choi · $5,212</span></div><span class="mock-pill pill-sent">SENT</span></div>
+          <div class="mock-row"><div><strong>Q-2026-0039</strong><br><span style="color:var(--muted)">P. Singh · $750</span></div><span class="mock-pill pill-draft">DRAFT</span></div>
+          <div class="mock-row"><div><strong>Q-2026-0038</strong><br><span style="color:var(--muted)">K. O'Brien · $2,100</span></div><span class="mock-pill pill-accept">ACCEPTED</span></div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Quote list · F7</p>
+    </div>
+
+    <!-- Invoice review w/ changes -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:44</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div>
+            <div class="mock-title">I-2026-0019</div>
+            <div class="mock-sub">from Q-2026-0041</div>
+          </div>
+          <span class="mock-pill pill-draft">DRAFT</span>
+        </div>
+        <div class="mock-body" style="font-size:9.5px">
+          <div class="mock-row"><span>Water heater · 50 gal</span><span>$1,250</span></div>
+          <div class="mock-row"><span>Install labor · 4 hr</span><span>$500</span></div>
+          <div class="mock-row" style="background:#dcfce7;border-radius:6px;padding:6px 8px;border:0">
+            <span>+ Shutoff valve replaced</span><span style="font-weight:700">$95</span>
+          </div>
+          <div style="background:#f8fafc;padding:6px 8px;border-radius:6px;margin-top:6px">
+            <div style="font-weight:700;font-size:9.5px;margin-bottom:3px">Changes from original quote</div>
+            <div style="color:var(--muted);font-size:9px">+ Added: Shutoff valve ($95) — found during install</div>
+          </div>
+          <div style="height:6px"></div>
+          <div class="mock-row" style="border:0;font-weight:700"><span>Total</span><span>$1,945</span></div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-top:6px">
+            <div class="mock-btn ghost" style="font-size:10px">Preview PDF</div>
+            <div class="mock-btn" style="font-size:10px">Send invoice</div>
+          </div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Invoice w/ changes · F9</p>
+    </div>
+
+    <!-- Invoice list / outstanding -->
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="bar"><span>9:45</span><span>●●● 5G</span></div>
+        <div class="mock-app-bar">
+          <div><div class="mock-title">Invoices</div><div class="mock-sub">8 this month</div></div>
+        </div>
+        <div class="mock-body">
+          <div style="background:linear-gradient(135deg,#0f766e,#134e4a);color:#fff;padding:10px;border-radius:8px;margin-bottom:8px">
+            <div style="font-size:9px;letter-spacing:.1em;opacity:.8">OUTSTANDING</div>
+            <div style="font-size:18px;font-weight:700;margin:2px 0">$11,420</div>
+            <div style="font-size:9px;opacity:.9">3 invoices · 1 overdue</div>
+          </div>
+          <div class="mock-row"><div><strong>I-2026-0019</strong><br><span style="color:var(--muted)">M. Rivera · $1,945</span></div><span class="mock-pill pill-sent">SENT</span></div>
+          <div class="mock-row"><div><strong>I-2026-0018</strong><br><span style="color:var(--muted)">L. Tran · $3,200</span></div><span class="mock-pill pill-overdue">OVERDUE</span></div>
+          <div class="mock-row"><div><strong>I-2026-0017</strong><br><span style="color:var(--muted)">A. Brooks · $6,275</span></div><span class="mock-pill pill-partial">PARTIAL</span></div>
+          <div class="mock-row"><div><strong>I-2026-0016</strong><br><span style="color:var(--muted)">K. O'Brien · $2,100</span></div><span class="mock-pill pill-paid">PAID</span></div>
+        </div>
+      </div></div>
+      <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Invoice list · F11</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 9. CODE ============== -->
+<section id="code">
+  <h2><span class="num">09</span> Key code snippets</h2>
+  <p class="lede">The four moments that matter most. Server-side math, structured output, the diff function, and the embedding job.</p>
+
+  <h3>9a · Zod schema for AI output</h3>
+<pre class="code"><span class="c">// /lib/claude/schema.ts</span>
+<span class="k">import</span> { z } <span class="k">from</span> <span class="s">'zod'</span>;
+
+<span class="k">export const</span> LineItemSchema = z.object({
+  category:   z.enum([<span class="s">'equipment'</span>, <span class="s">'labor'</span>, <span class="s">'materials'</span>, <span class="s">'permits'</span>, <span class="s">'other'</span>]),
+  description:z.string(),
+  quantity:   z.number().positive(),
+  unit:       z.string(),
+  unit_price: z.number().nonnegative(),
+  total:      z.number().nonnegative(),
+  notes:      z.string().optional(),
+});
+
+<span class="k">export const</span> QuoteOutputSchema = z.object({
+  job_summary:      z.string(),
+  line_items:       z.array(LineItemSchema).min(1),
+  warranty_terms:   z.string(),
+  payment_terms:    z.string(),
+  valid_until_days: z.number().int().positive().default(30),
+});</pre>
+
+  <h3>9b · Server-side math (NEVER trust the model)</h3>
+<pre class="code"><span class="c">// /app/api/generate-quote/route.ts (excerpt)</span>
+<span class="k">const</span> raw    = <span class="k">await</span> claude.messages.create({ /* ... */ });
+<span class="k">const</span> parsed = QuoteOutputSchema.parse(<span class="fn">JSON</span>.parse(raw.content[0].text));
+
+<span class="hl"><span class="k">const</span> subtotal = parsed.line_items.reduce((s, li) =&gt; s + li.total, 0);</span>
+<span class="hl"><span class="k">const</span> tax      = subtotal * (company.sales_tax_rate_pct / 100);</span>
+<span class="hl"><span class="k">const</span> total    = subtotal + tax;</span>
+
+<span class="k">const</span> { id } = <span class="k">await</span> supabase.from(<span class="s">'quotes'</span>).insert({
+  company_id:     company.id,
+  quote_number:   <span class="k">await</span> <span class="fn">nextQuoteNumber</span>(company.id),
+  raw_prompt:     userPrompt,
+  job_summary:    parsed.job_summary,
+  line_items:     parsed.line_items,
+  subtotal, tax_amount: tax, total,
+  warranty_terms: parsed.warranty_terms,
+  payment_terms:  parsed.payment_terms,
+  valid_until:    addDays(<span class="k">new</span> <span class="fn">Date</span>(), parsed.valid_until_days),
+  status:         <span class="s">'draft'</span>,
+}).select(<span class="s">'id'</span>).single();</pre>
+
+  <h3>9c · Background embed job (graphile-worker)</h3>
+<pre class="code"><span class="c">// /lib/workers/embed-quote.ts — runs on every status flip to sent/accepted</span>
+<span class="k">export async function</span> <span class="fn">embedQuote</span>(payload: { quote_id: string }) {
+  <span class="k">const</span> q = <span class="k">await</span> db.quotes.findUnique({ where: { id: payload.quote_id }});
+  <span class="k">if</span> (!q) <span class="k">return</span>;
+
+  <span class="k">const</span> { data: [{ embedding }] } = <span class="k">await</span> openai.embeddings.create({
+    model: <span class="s">'text-embedding-3-small'</span>,
+    input: `${q.job_summary}\n\n${q.raw_prompt}`,
+  });
+
+  <span class="k">await</span> db.quote_embeddings.upsert({
+    where:  { quote_id: q.id },
+    create: { quote_id: q.id, company_id: q.company_id,
+              job_description_emb: embedding, outcome: q.status },
+    update: { job_description_emb: embedding, outcome: q.status },
+  });
+}</pre>
+
+  <h3>9d · The system prompt (abridged)</h3>
+<pre class="code"><span class="c">// /lib/claude/prompts.ts</span>
+<span class="k">export const</span> <span class="fn">buildSystem</span> = (c: Ctx) =&gt; `
+You are a quoting assistant for a ${c.trade_type} contracting business in the US.
+
+Company configuration:
+- Hourly labor rate: $${c.hourly_rate}/hour
+- Material markup:   ${c.markup}%
+- Sales tax rate:    ${c.tax}%
+
+This contractor's price overrides (use these when relevant):
+${<span class="fn">fmt</span>(c.price_overrides)}
+
+Past similar quotes from THIS contractor (use as style/pricing reference):
+${<span class="fn">fmt</span>(c.few_shot)}
+
+Rules:
+ 1. Break job into line items grouped by category.
+ 2. LABOR: round up hours to nearest 0.5; use the hourly rate above.
+ 3. Prefer contractor's price overrides over generic estimates.
+ 4. Apply markup % to MATERIALS only (not equipment, labor, permits).
+ 5. NEVER include sales tax in line items — computed separately.
+ 6. NEVER fabricate brand/model numbers not in the prompt.
+ 7. Match the style of past quotes shown above.
+ 8. Default warranty: "1-year parts and labor on installation…"
+ 9. Default payment terms: "50% deposit, balance on completion."
+10. Return ONLY the JSON object. No prose.`;</pre>
+</section>
+
+<!-- ============== 10. TIMELINE ============== -->
+<section id="timeline">
+  <h2><span class="num">10</span> Build timeline — 10 sessions</h2>
+  <p class="lede">Each session has a single clear goal and an acceptance test. Don't move on until the test passes. Total: ~42 hours of focused work, ~3–4 weeks at 10–15 hrs/week.</p>
+
+  <div class="card">
+    <div class="timeline">
+
+      <div class="step">
+        <div class="title">Session 1 · Scaffold &amp; Auth</div>
+        <div class="meta">3–4 hrs · foundations</div>
+        <div class="desc">Next.js 14 + TS + Tailwind + shadcn. Supabase project, env vars. Login / signup, middleware redirects.</div>
+        <div class="test">✓ Sign up, log in, log out, redirect logic correct</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 2 · DB, RLS &amp; pgvector</div>
+        <div class="meta">3.5 hrs · data foundations</div>
+        <div class="desc">Run all SQL migrations. Enable <code class="inline">vector</code> extension. Create companies / quotes / invoices / company_context / quote_embeddings with RLS. Quote &amp; invoice number sequences.</div>
+        <div class="test">✓ Can't read another user's rows. <code class="inline">&lt;=&gt;</code> cosine works. <code class="inline">next_invoice_number()</code> returns I-2026-0001.</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 3 · Setup wizard</div>
+        <div class="meta">3 hrs · onboarding</div>
+        <div class="desc">Single-screen form, logo upload to Supabase Storage, insert <code class="inline">companies</code> + empty <code class="inline">company_context</code>.</div>
+        <div class="test">✓ Fresh signup → forced to setup → lands on quotes empty state</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 4 · Prompt-to-Quote agent</div>
+        <div class="meta">5–6 hrs · the hard one</div>
+        <div class="desc">/quotes/new + /api/generate-quote. Install @anthropic-ai/sdk + openai. Context loader, embed, retrieve top-3, build prompt, Zod, server-side math, insert draft.</div>
+        <div class="test">✓ Real HVAC prompt → sensible quote in &lt; 30 s with 3+ line items and correct math</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 5 · Quote review &amp; edit</div>
+        <div class="meta">4 hrs · the editor</div>
+        <div class="desc">Inline editable line items, auto-recalc, save draft. Enqueue context update job on save.</div>
+        <div class="test">✓ Edit qty, totals recalc, persists. <code class="inline">price_overrides</code> reflects edits.</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 6 · PDF generation</div>
+        <div class="meta">3 hrs · the deliverable</div>
+        <div class="desc">@react-pdf/renderer. QuoteDocument component. /api/pdf/[id] streams inline/attachment.</div>
+        <div class="test">✓ PDF looks professional; logo renders; math matches DB</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 7 · Email + embedding pipeline + list</div>
+        <div class="meta">4 hrs · close the loop</div>
+        <div class="desc">Resend send. graphile-worker on Vercel cron. Embed job fires on sent/accepted. Quote list with status filter.</div>
+        <div class="test">✓ Send to own email; within 60s a row appears in quote_embeddings; marking accepted updates outcome</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 8 · Learning-loop verification</div>
+        <div class="meta">2 hrs · prove it learns</div>
+        <div class="desc">Seed 5–10 test quotes. Generate similar one. Verify retrieval + that a stored price override flows through.</div>
+        <div class="test">✓ Seeded $1,850 water heater override → next water heater quote uses $1,850, not AI default</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 9 · Invoicing end-to-end</div>
+        <div class="meta">~10 hrs · the second half</div>
+        <div class="desc">Convert API. Invoice review w/ live changes preview. <code class="inline">diffLineItems</code>. InvoiceDocument PDF w/ "Changes from original quote". Send. Mark paid / partial / void. Overdue cron.</div>
+        <div class="test">✓ Accept → Convert → add $95 valve → preview shows changes → send → mark paid → outstanding widget updates → back-dated cron flips to overdue</div>
+      </div>
+
+      <div class="step">
+        <div class="title">Session 10 · Polish &amp; deploy</div>
+        <div class="meta">3 hrs · ship it</div>
+        <div class="desc">PWA manifest + icons. Empty states. Error states (rate-limit graceful, OpenAI fallback, PDF retry). Deploy to Vercel. Custom domain. Smoke test on iPhone + Android.</div>
+        <div class="test">✓ Phone end-to-end: signup → quote → email → accept → invoice → edit → send → paid, in &lt; 7 min</div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ============== 11. PRICING ============== -->
+<section id="pricing">
+  <h2><span class="num">11</span> Pricing &amp; margins</h2>
+  <p class="lede">Per-seat-band pricing, monthly only. Gate on seats and quote volume — not features. No free trial by default; trials issued via Stripe coupons.</p>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="tag">Solo</div>
+      <h3 style="margin:6px 0 4px;font-size:28px">$99<span style="font-size:13px;color:var(--muted);font-weight:400"> / mo</span></h3>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 8px">1 user · 100 quotes/mo</p>
+      <ul class="bullets" style="font-size:12.5px">
+        <li>AI learning system</li>
+        <li>Branded PDFs</li>
+        <li>Email delivery</li>
+        <li>Catalog &amp; price overrides</li>
+        <li>Basic reports</li>
+      </ul>
+      <p style="margin-top:10px;color:var(--ok);font-size:12px;font-weight:600">~$7 cost · 93% margin</p>
+    </div>
+    <div class="card" style="border-color:var(--accent);border-width:2px">
+      <div class="tag">Crew · popular</div>
+      <h3 style="margin:6px 0 4px;font-size:28px">$139<span style="font-size:13px;color:var(--muted);font-weight:400"> / mo</span></h3>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 8px">2–3 users · 300 quotes/mo</p>
+      <ul class="bullets" style="font-size:12.5px">
+        <li>Everything in Solo</li>
+        <li>Shared team catalog</li>
+        <li>Role permissions</li>
+        <li>Team activity feed</li>
+      </ul>
+      <p style="margin-top:10px;color:var(--ok);font-size:12px;font-weight:600">~$12 cost · 92% margin</p>
+    </div>
+    <div class="card">
+      <div class="tag">Shop</div>
+      <h3 style="margin:6px 0 4px;font-size:28px">$249<span style="font-size:13px;color:var(--muted);font-weight:400"> / mo</span></h3>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 8px">4–10 users · unlimited quotes</p>
+      <ul class="bullets" style="font-size:12.5px">
+        <li>Everything in Crew</li>
+        <li>Multiple service areas</li>
+        <li>Custom email domain</li>
+        <li>Advanced reports</li>
+        <li>API access (v0.5)</li>
+        <li>Priority support</li>
+      </ul>
+      <p style="margin-top:10px;color:var(--ok);font-size:12px;font-weight:600">~$28 cost · 89% margin</p>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Overage policy.</strong> Hard-stop never. Hitting the cap shows a banner: <em>"You've hit your limit. Upgrade or pay $0.50 per extra quote this month."</em> Worst time to lose a customer is when they're paying you the most attention.
+  </div>
+</section>
+
+<!-- ============== 12. RISKS ============== -->
+<section id="risks">
+  <h2><span class="num">12</span> Risks &amp; open questions</h2>
+  <p class="lede">The places to slow down and re-check before each session, and the questions worth raising with the first 3 customers.</p>
+
+  <div class="grid-2">
+    <div class="card">
+      <h4 style="margin-top:0">Technical risks</h4>
+      <ul class="bullets" style="font-size:13.5px">
+        <li><strong>Claude latency.</strong> Sonnet 4 + 3 few-shots can creep past 12s. Watch prompt size; cache the system prompt.</li>
+        <li><strong>RLS forgetting.</strong> A raw SQL query that bypasses the policy is the one bug that ends the company. Always include explicit <code class="inline">company_id</code> filter as belt &amp; suspenders.</li>
+        <li><strong>graphile-worker on Vercel.</strong> Need to confirm it runs reliably from a Vercel Cron trigger; if not, fall back to a tiny Render or Railway box.</li>
+        <li><strong>React-PDF styling.</strong> Less flexible than HTML/Chromium. Have a fallback plan: <code class="inline">@vercel/og</code> + Playwright on a separate service if PDFs look amateur.</li>
+        <li><strong>Embedding model lock-in.</strong> 1536 dims is OpenAI-specific. Re-embedding the corpus is fine at our scale but worth noting before swapping providers.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h4 style="margin-top:0">Product / GTM open questions</h4>
+      <ul class="bullets" style="font-size:13.5px">
+        <li>Will contractors trust an AI-generated price enough to send it without heavy edits? (First 3 customers answer this.)</li>
+        <li>Is email-reply acceptance ("reply 'I accept'") a real customer signal, or do we need lightweight e-sign sooner?</li>
+        <li>How often do contractors actually edit invoices after sending the quote? (Drives how prominent "Changes from original quote" should be.)</li>
+        <li>QuickBooks copy-paste — is it tolerable, or is QBO sync a v0 must-have to close the first customer?</li>
+        <li>What's the right cap for Solo? 100 quotes/mo might be too high for the lowest-volume customers and too low for the busiest.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="callout warn" style="margin-top:18px">
+    <strong>Scope discipline.</strong> The spec calls out 6 things explicitly out of scope (QBO, SMS, e-sign, Stripe Connect, voice, photos). Each will sound essential when a prospect asks for it. The answer for v0 is "v0.5" — for all of them. Resist scope creep.
+  </div>
+</section>
+
+</main>
+</div>
+
+<footer>
+  Quotebird v0 — implementation plan · prepared for review · single-page HTML
+</footer>
+
+</div>
+</body>
+</html>
