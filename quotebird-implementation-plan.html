@@ -279,7 +279,7 @@
   <h1>Quotebird — prompt-to-quote for trade shops</h1>
   <p class="tagline">A 10-session build plan for an AI-native quoting + invoicing app for 1–5 person HVAC, plumbing, and electrical shops. Per-tenant learning loop, branded PDFs, manual payments, mobile-first PWA.</p>
   <div class="stat-row">
-    <div class="stat"><div class="v">~42 hrs</div><div class="k">est. build</div></div>
+    <div class="stat"><div class="v">~45 hrs</div><div class="k">est. build</div></div>
     <div class="stat"><div class="v">10 sessions</div><div class="k">claude code</div></div>
     <div class="stat"><div class="v">$99 – $249</div><div class="k">pricing band</div></div>
     <div class="stat"><div class="v">~$2.50</div><div class="k">ai cost / contractor / mo</div></div>
@@ -320,14 +320,14 @@
     <div class="card">
       <h4 style="margin-top:0">In scope for v0</h4>
       <ul class="bullets">
-        <li>Email + password auth, single user per company</li>
+        <li>Email + password auth, <strong>multi-user with role-based permissions</strong> (1 / 3–4 / 5–10 users per plan tier)</li>
         <li>Setup wizard: rate, markup, tax, logo, service area, trade</li>
         <li><strong>Prompt-to-Quote</strong> screen — NL → structured quote</li>
         <li>Editable line-item review &amp; branded PDF</li>
         <li>Email delivery via Resend</li>
         <li><strong>Quote → Invoice</strong> conversion w/ change tracking</li>
         <li>Manual payment status + nightly overdue cron</li>
-        <li><strong>Per-tenant RAG learning loop</strong></li>
+        <li><strong>Per-tenant RAG learning loop</strong> (shared across team members on Crew/Shop)</li>
         <li>Mobile-first responsive PWA</li>
       </ul>
     </div>
@@ -338,7 +338,7 @@
         <li>SMS, voice input, photo recognition</li>
         <li>E-signature, customer portal</li>
         <li>Good / better / best tiering</li>
-        <li>Multi-user, scheduling, dispatch, inventory</li>
+        <li>Scheduling, dispatch, inventory, time tracking</li>
         <li>Native iOS / Android apps</li>
       </ul>
     </div>
@@ -346,6 +346,10 @@
 
   <div class="callout">
     <strong>Definition of done.</strong> A real contractor can sign up, set up, generate a quote, send it, get it accepted, convert it to an invoice, edit one line, send it, and mark it paid — entirely from a phone — in under 7 minutes. Total infra cost &lt; $50/mo.
+  </div>
+
+  <div class="callout warn">
+    <strong>Scope note — multi-user is now in v0.</strong> Originally deferred to v0.5, multi-user with role-based permissions has been pulled into v0 to match the pricing tiers (Solo 1 · Crew 3–4 · Shop 5–10). This adds a <code class="inline">company_users</code> join table, an invite flow, plan-tier seat caps, and team-scoped RLS — roughly +3 hours of build time and a one-time data-model rewrite of every RLS policy. See §04 and §10 for the implications.
   </div>
 </section>
 
@@ -365,7 +369,7 @@
       <tr><td>Vector search</td><td><strong>pgvector</strong> in Supabase</td><td>Same DB → no extra vendor, RLS-scoped</td></tr>
       <tr><td>File storage</td><td>Supabase Storage</td><td>Logo + generated PDFs</td></tr>
       <tr><td>AI</td><td>Claude Sonnet 4 via <code class="inline">@anthropic-ai/sdk</code></td><td>Structured output + prompt caching</td></tr>
-      <tr><td>Embeddings</td><td>OpenAI <code class="inline">text-embedding-3-small</code></td><td>$0.02 / 1M tokens, 1536 dims</td></tr>
+      <tr><td>Embeddings</td><td>Voyage AI <code class="inline">voyage-3-large</code></td><td>Anthropic-owned · highest-quality retrieval · 1024 dims · $0.18 / 1M tokens</td></tr>
       <tr><td>Background jobs</td><td><strong>graphile-worker</strong></td><td>Postgres-based, no Redis required</td></tr>
       <tr><td>PDF</td><td><code class="inline">@react-pdf/renderer</code></td><td>No headless Chromium cold start</td></tr>
       <tr><td>Email</td><td>Resend</td><td>Clean API, 3K emails/mo free</td></tr>
@@ -377,7 +381,7 @@
 <!-- ============== 3. ARCHITECTURE ============== -->
 <section id="arch">
   <h2><span class="num">03</span> System architecture</h2>
-  <p class="lede">One Next.js app on Vercel, one Supabase project, two external APIs (Claude + OpenAI + Resend). Background work runs on Postgres via graphile-worker; Vercel Cron triggers nightly overdue sweeps.</p>
+  <p class="lede">One Next.js app on Vercel, one Supabase project, three external APIs (Claude + Voyage + Resend — all Anthropic-aligned). Background work runs on Postgres via graphile-worker; Vercel Cron triggers nightly overdue sweeps.</p>
 
   <div class="diagram">
     <svg viewBox="0 0 1000 540" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="System architecture">
@@ -443,8 +447,8 @@
       <text class="node-sub"   x="390" y="368" text-anchor="middle">Claude Sonnet 4</text>
 
       <rect class="node-ai" x="510" y="320" width="200" height="60" rx="10"/>
-      <text class="node-label" x="610" y="350" text-anchor="middle">OpenAI API</text>
-      <text class="node-sub"   x="610" y="368" text-anchor="middle">text-embedding-3-small</text>
+      <text class="node-label" x="610" y="350" text-anchor="middle">Voyage AI</text>
+      <text class="node-sub"   x="610" y="368" text-anchor="middle">voyage-3-large · 1024-d</text>
 
       <rect class="node-ext" x="730" y="320" width="200" height="60" rx="10"/>
       <text class="node-label" x="830" y="350" text-anchor="middle">Resend</text>
@@ -510,11 +514,18 @@
       <text class="node-label" x="105" y="64" text-anchor="middle">auth.users</text>
       <text class="node-sub"   x="105" y="84" text-anchor="middle">supabase auth</text>
 
+      <!-- company_users (join) -->
+      <rect class="node-ai" x="20" y="130" width="170" height="100" rx="8"/>
+      <text class="node-label" x="105" y="154" text-anchor="middle">company_users</text>
+      <text class="node-sub" x="32" y="176">company_id (fk)</text>
+      <text class="node-sub" x="32" y="194">user_id (fk)</text>
+      <text class="node-sub" x="32" y="212">role: admin|manager|member</text>
+
       <!-- companies -->
       <rect class="node-box" x="240" y="20" width="220" height="180" rx="8"/>
       <text class="node-label" x="350" y="44" text-anchor="middle">companies</text>
       <text class="node-sub" x="252" y="68">id (pk)</text>
-      <text class="node-sub" x="252" y="88">user_id (fk → auth.users)</text>
+      <text class="node-sub" x="252" y="88">owner_id (fk → auth.users)</text>
       <text class="node-sub" x="252" y="108">name, logo_url</text>
       <text class="node-sub" x="252" y="128">hourly_rate, markup_pct</text>
       <text class="node-sub" x="252" y="148">sales_tax_rate_pct</text>
@@ -552,7 +563,7 @@
       <text class="node-label" x="620" y="264" text-anchor="middle">quote_embeddings</text>
       <text class="node-sub" x="522" y="288">quote_id (pk, fk)</text>
       <text class="node-sub" x="522" y="308">company_id (fk) ← scoped</text>
-      <text class="node-sub" x="522" y="328">job_description_emb (1536)</text>
+      <text class="node-sub" x="522" y="328">job_description_emb (1024)</text>
       <text class="node-sub" x="522" y="348">outcome (sent|accepted|…)</text>
 
       <!-- invoices -->
@@ -580,15 +591,35 @@
     </svg>
   </div>
 
-  <h3>Key SQL — vector + RLS</h3>
+  <h3>Multi-user — the <code class="inline">company_users</code> join table</h3>
+<pre class="code"><span class="c">-- One user can belong to ONE company in v0 (no agency / multi-shop yet)</span>
+<span class="c">-- The company creator becomes the first admin automatically.</span>
+<span class="k">create table</span> company_users (
+  company_id  uuid <span class="k">not null</span> <span class="k">references</span> companies(id) <span class="k">on delete cascade</span>,
+  user_id     uuid <span class="k">not null</span> <span class="k">references</span> auth.users(id) <span class="k">on delete cascade</span>,
+  role        text <span class="k">not null</span> <span class="k">check</span> (role <span class="k">in</span> (<span class="s">'admin'</span>, <span class="s">'manager'</span>, <span class="s">'member'</span>)),
+  invited_by  uuid <span class="k">references</span> auth.users(id),
+  invited_at  timestamptz <span class="k">default</span> now(),
+  joined_at   timestamptz,
+  <span class="k">primary key</span> (company_id, user_id)
+);
+
+<span class="c">-- companies.user_id is replaced by an owner_id (creator) for plan/billing</span>
+<span class="k">alter table</span> companies
+  <span class="k">rename column</span> user_id <span class="k">to</span> owner_id;
+
+<span class="c">-- Membership cap enforced by trigger against plan.max_users.</span>
+<span class="c">-- See /lib/auth/invite.ts for the application-level check before insert.</span></pre>
+
+  <h3>Key SQL — vector + RLS (updated for multi-user)</h3>
 <pre class="code"><span class="c">-- Enable pgvector (one-time)</span>
 <span class="k">create extension if not exists</span> vector;
 
-<span class="c">-- Per-quote embedding, RLS-scoped to company_id</span>
+<span class="c">-- Per-quote embedding, RLS-scoped to the user's company memberships</span>
 <span class="k">create table</span> quote_embeddings (
   quote_id            uuid <span class="k">primary key</span> <span class="k">references</span> quotes(id) <span class="k">on delete cascade</span>,
   company_id          uuid <span class="k">not null</span> <span class="k">references</span> companies(id) <span class="k">on delete cascade</span>,
-  job_description_emb vector(1536) <span class="k">not null</span>,
+  job_description_emb vector(1024) <span class="k">not null</span>,
   outcome             text <span class="k">not null</span>,
   created_at          timestamptz <span class="k">default</span> now()
 );
@@ -597,10 +628,16 @@
 <span class="k">create index on</span> quote_embeddings
   <span class="k">using</span> hnsw (job_description_emb vector_cosine_ops);
 
-<span class="c">-- RLS: queries that forget the filter return zero rows</span>
-<span class="k">alter table</span> quote_embeddings <span class="k">enable row level security</span>;
-<span class="k">create policy</span> <span class="s">"own embeddings"</span> <span class="k">on</span> quote_embeddings <span class="k">for all</span>
-  <span class="k">using</span> (company_id <span class="k">in</span> (<span class="k">select</span> id <span class="k">from</span> companies <span class="k">where</span> user_id = auth.uid()));</pre>
+<span class="c">-- RLS: every member of a company can read that company's rows</span>
+<span class="hl"><span class="k">alter table</span> quote_embeddings <span class="k">enable row level security</span>;</span>
+<span class="hl"><span class="k">create policy</span> <span class="s">"team embeddings"</span> <span class="k">on</span> quote_embeddings <span class="k">for all</span></span>
+<span class="hl">  <span class="k">using</span> (company_id <span class="k">in</span> (</span>
+<span class="hl">    <span class="k">select</span> company_id <span class="k">from</span> company_users <span class="k">where</span> user_id = auth.uid()</span>
+<span class="hl">  ));</span>
+
+<span class="c">-- The same RLS pattern applies to companies, quotes, invoices,</span>
+<span class="c">-- company_context — replace "user_id = auth.uid()" everywhere with the</span>
+<span class="c">-- company_users subquery above.</span></pre>
 
   <div class="callout warn">
     <strong>Isolation proof.</strong> Pre-beta checklist must include running a cross-tenant vector query — a query from company A using company B's typical job description should return zero rows. RLS makes this automatic, but verify it with a real test.
@@ -631,7 +668,7 @@
 
       <rect class="node-ai" x="780" y="40" width="200" height="60" rx="8"/>
       <text class="node-label" x="880" y="68" text-anchor="middle">3 · Embed prompt</text>
-      <text class="node-sub"   x="880" y="86" text-anchor="middle">OpenAI 1536-d</text>
+      <text class="node-sub"   x="880" y="86" text-anchor="middle">voyage-3-large 1024-d</text>
 
       <rect class="node-ai" x="780" y="140" width="200" height="60" rx="8"/>
       <text class="node-label" x="880" y="168" text-anchor="middle">4 · Vector search</text>
@@ -702,7 +739,7 @@
       <table class="t" style="margin:0">
         <tbody>
           <tr><td>Load settings + context</td><td style="text-align:right">~100 ms</td></tr>
-          <tr><td>Embed prompt (OpenAI)</td><td style="text-align:right">~250 ms</td></tr>
+          <tr><td>Embed prompt (Voyage)</td><td style="text-align:right">~250 ms</td></tr>
           <tr><td>pgvector top-3 lookup</td><td style="text-align:right">~30 ms</td></tr>
           <tr><td>Claude Sonnet generation</td><td style="text-align:right">~6–10 s</td></tr>
           <tr><td>Validate + math + insert</td><td style="text-align:right">~80 ms</td></tr>
@@ -713,7 +750,7 @@
     <div class="card card-tight">
       <h4 style="margin-top:0">Failure modes &amp; fallbacks</h4>
       <ul class="bullets" style="font-size:13px">
-        <li><strong>OpenAI down</strong> → skip retrieval, use static cold-start few-shot</li>
+        <li><strong>Voyage down</strong> → skip retrieval, use static cold-start few-shot</li>
         <li><strong>Claude rate-limit</strong> → keep typed prompt in localStorage, retry once</li>
         <li><strong>Zod validation fails</strong> → retry once with stricter "JSON ONLY" reminder</li>
         <li><strong>PDF render fails</strong> → save draft, surface "Preview unavailable, retry"</li>
@@ -734,7 +771,7 @@
       <p style="margin:6px 0 4px"><span class="tag">structured</span> <strong>company_context</strong></p>
       <p style="margin:0 0 12px;color:var(--muted);font-size:13px">Price overrides, default phrases, avg job duration, win-rate buckets, learned warranty text. Updated on every edit.</p>
       <p style="margin:6px 0 4px"><span class="tag">semantic</span> <strong>quote_embeddings</strong></p>
-      <p style="margin:0;color:var(--muted);font-size:13px">1536-dim embedding of each <code class="inline">job_summary + raw_prompt</code>, with the outcome label. Retrieved as few-shot examples.</p>
+      <p style="margin:0;color:var(--muted);font-size:13px">1024-dim <code class="inline">voyage-3-large</code> embedding of each <code class="inline">job_summary + raw_prompt</code>, with the outcome label. Retrieved as few-shot examples.</p>
     </div>
     <div class="card">
       <h4 style="margin-top:0">The learning signal</h4>
@@ -748,11 +785,32 @@
     </div>
   </div>
 
+  <h3>Embedding model choice — <code class="inline">voyage-3-large</code> over <code class="inline">voyage-3</code></h3>
+  <p style="color:var(--muted);max-width:720px">Quotebird optimizes for retrieval <em>quality</em> over cost. With a small per-contractor corpus (10–100 quotes) every retrieved few-shot example has outsized influence on the generated quote — accuracy matters more than saving a few cents.</p>
+
+  <table class="t">
+    <thead><tr><th></th><th><code class="inline">voyage-3</code></th><th><code class="inline">voyage-3-large</code> <span class="tag">chosen</span></th></tr></thead>
+    <tbody>
+      <tr><td>Dimensions</td><td>1024</td><td>1024 (also 256 / 512 / 2048 via MRL)</td></tr>
+      <tr><td>Cost / 1M tokens</td><td>$0.06</td><td><strong>$0.18 (3× more)</strong></td></tr>
+      <tr><td>Retrieval quality (MTEB-class)</td><td>strong general purpose</td><td><strong>state-of-the-art on Voyage benchmarks</strong></td></tr>
+      <tr><td>Latency</td><td>~200 ms</td><td>~250 ms (negligibly slower)</td></tr>
+      <tr><td>~Embeddings / contractor / mo (~50 quotes × ~500 tok)</td><td>~25K tokens</td><td>~25K tokens</td></tr>
+      <tr><td><strong>Embedding cost / contractor / mo</strong></td><td><strong>~$0.0015</strong></td><td><strong>~$0.0045</strong></td></tr>
+      <tr><td>Δ vs. Claude generation cost (~$2.50)</td><td>0.06% of AI bill</td><td>0.18% of AI bill</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Verdict.</strong> Switching from <code class="inline">voyage-3</code> to <code class="inline">voyage-3-large</code> adds about <strong>$0.003 / contractor / month</strong> — three tenths of one cent. Against a $99–$249/mo subscription, this is invisible. Quality wins; we ship on <code class="inline">voyage-3-large</code>.
+  </div>
+
   <h3>Retrieval at generation time</h3>
 <pre class="code"><span class="c">// /lib/context/load.ts</span>
-<span class="k">const</span> { embedding: queryEmb } = <span class="k">await</span> openai.embeddings.create({
-  model: <span class="s">'text-embedding-3-small'</span>,
-  input: userPrompt,
+<span class="k">const</span> { data: [{ embedding: queryEmb }] } = <span class="k">await</span> voyage.embed({
+  model: <span class="s">'voyage-3-large'</span>,
+  input: [userPrompt],
+  input_type: <span class="s">'query'</span>,
 });
 
 <span class="c">// Top-3 most similar PAST quotes from THIS company only.</span>
@@ -795,7 +853,124 @@
 }</pre>
 
   <div class="callout">
-    <strong>Cost reality check.</strong> 50 quotes/mo × Claude Sonnet ≈ $2.50. 50 embeddings × OpenAI ≈ $0.001. pgvector storage is free on Supabase. Total AI cost per contractor is ~$2.50/mo against $99–$249 in revenue → <strong>97%+ gross margin on AI</strong>.
+    <strong>Cost reality check.</strong> 50 quotes/mo × Claude Sonnet ≈ $2.50. 50 <code class="inline">voyage-3-large</code> embeddings ≈ $0.0045. pgvector storage is free on Supabase. Total AI cost per contractor is ~$2.50/mo against $99–$249 in revenue → <strong>97%+ gross margin on AI</strong>.
+  </div>
+
+  <h3>Prompt caching — speed lever, not (yet) a cost lever</h3>
+  <p style="color:var(--muted);max-width:720px">Anthropic caches unchanging prompt prefixes for 5 minutes (or 1 hour extended TTL) at ~10% the input cost. We turn it on by tagging the static portion of the system prompt with <code class="inline">cache_control</code>. End users feel it as <strong>faster repeat generations within a session</strong>; the business sees a modest cost savings.</p>
+
+<pre class="code"><span class="c">// /lib/claude/client.ts — what gets cached vs what doesn't</span>
+<span class="k">await</span> claude.messages.create({
+  model: <span class="s">'claude-sonnet-4'</span>,
+  system: [
+    {
+      type: <span class="s">'text'</span>,
+      text: STATIC_RULES_AND_SCHEMA,            <span class="c">// rules 1–12, JSON schema</span>
+<span class="hl">      cache_control: { type: <span class="s">'ephemeral'</span> }   <span class="c">// ← cached, ~$0.004 cheaper on repeat</span></span>
+    },
+    {
+      type: <span class="s">'text'</span>,
+      text: <span class="fn">renderCompanyConfig</span>(company),    <span class="c">// rates, markup, tax, contractor's SKUs</span>
+<span class="hl">      cache_control: { type: <span class="s">'ephemeral'</span> }   <span class="c">// ← cached PER CONTRACTOR per session</span></span>
+    },
+    {
+      type: <span class="s">'text'</span>,
+      text: <span class="fn">renderFewShot</span>(retrievedQuotes),  <span class="c">// top-3 from vector search — CHANGES every request</span>
+                                                <span class="c">// no cache_control: not cacheable in practice</span>
+    },
+  ],
+  messages: [{ role: <span class="s">'user'</span>, content: userPrompt }],
+});</pre>
+
+  <table class="t">
+    <thead><tr><th>What end user feels</th><th>First quote of session</th><th>Quotes 2+ within 5 min</th><th>Quote after 5+ min gap</th></tr></thead>
+    <tbody>
+      <tr><td>Speed</td><td>~6–10 s (normal)</td><td><strong>~4–7 s (faster)</strong></td><td>back to ~6–10 s</td></tr>
+      <tr><td>Quality</td><td>identical</td><td>identical</td><td>identical</td></tr>
+      <tr><td>UI / output</td><td>no change</td><td>no change</td><td>no change</td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout">
+    <strong>Honest cost estimate.</strong> At 850 quotes/mo across all contractors, prompt caching saves only the rules portion (~1,500 tokens, ~$0.004/quote) → about <strong>$3.40/mo (~$41/yr)</strong>. At this scale, prompt caching is a <em>speed feature</em>, not a margin lever. It becomes a real cost lever at 10× volume.
+  </div>
+
+  <h3>Where your contractors' SKUs live</h3>
+  <p style="color:var(--muted);max-width:720px">A contractor's price catalog is built passively — every time they edit a line item on a quote and save, that line's price is written to their <code class="inline">company_context.price_overrides</code>. The next time the AI sees a similar item, it pulls the contractor's actual price, not a generic estimate. No separate "manage SKUs" screen needed for v0 — though that's a clear v0.5 enhancement.</p>
+
+  <div class="diagram" style="padding:14px 18px">
+    <svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SKU flow">
+      <rect class="node-ui" x="20" y="80" width="170" height="80" rx="8"/>
+      <text class="node-label" x="105" y="112" text-anchor="middle">Owner edits line</text>
+      <text class="node-sub"   x="105" y="130" text-anchor="middle">"3-ton condenser:</text>
+      <text class="node-sub"   x="105" y="146" text-anchor="middle">$2,400 → $2,650"</text>
+
+      <rect class="node-box" x="230" y="80" width="180" height="80" rx="8"/>
+      <text class="node-label" x="320" y="112" text-anchor="middle">Save Draft / Send</text>
+      <text class="node-sub"   x="320" y="130" text-anchor="middle">enqueue context update</text>
+
+      <rect class="node-ai" x="450" y="80" width="180" height="80" rx="8"/>
+      <text class="node-label" x="540" y="112" text-anchor="middle">applyContractorEdits</text>
+      <text class="node-sub"   x="540" y="130" text-anchor="middle">graphile-worker job</text>
+
+      <rect class="node-db" x="670" y="80" width="290" height="80" rx="8"/>
+      <text class="node-label" x="815" y="108" text-anchor="middle">company_context.price_overrides</text>
+      <text class="node-sub"   x="815" y="126" text-anchor="middle">{"3-ton condenser": 2650,</text>
+      <text class="node-sub"   x="815" y="142" text-anchor="middle">"50gal water heater": 1850, …}</text>
+
+      <rect class="node-ai" x="20" y="190" width="940" height="40" rx="8"/>
+      <text class="node-label" x="490" y="216" text-anchor="middle">Next generation injects these into the system prompt — AI uses contractor's prices, not generic estimates</text>
+
+      <defs>
+        <marker id="arrow2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0 0 L10 5 L0 10 z" fill="#0f766e"/>
+        </marker>
+      </defs>
+      <path d="M190 120 L230 120" stroke="#0f766e" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
+      <path d="M410 120 L450 120" stroke="#0f766e" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
+      <path d="M630 120 L670 120" stroke="#0f766e" stroke-width="2" fill="none" marker-end="url(#arrow2)"/>
+      <path d="M815 160 L815 190" stroke="#a21caf" stroke-width="1.8" stroke-dasharray="4 3" fill="none" marker-end="url(#arrow2)"/>
+    </svg>
+  </div>
+
+  <h3>What gets stored, and how much space it takes</h3>
+  <table class="t">
+    <thead><tr><th>Data</th><th>Where</th><th>~Size each</th><th>Per contractor / yr (this scale)</th></tr></thead>
+    <tbody>
+      <tr><td>Price overrides (entire SKU catalog)</td><td><code class="inline">company_context.price_overrides</code> jsonb</td><td>~5–50 KB total</td><td><strong>&lt; 1 MB</strong></td></tr>
+      <tr><td>Quote rows (line items, totals, etc.)</td><td><code class="inline">quotes</code> table</td><td>~3 KB / quote</td><td>~700 KB (Solo / Crew) · ~1.8 MB (Shop)</td></tr>
+      <tr><td>Invoice rows + change deltas</td><td><code class="inline">invoices</code> table</td><td>~3 KB / invoice</td><td>~700 KB · ~1.8 MB</td></tr>
+      <tr><td>Voyage-3-large embeddings</td><td><code class="inline">quote_embeddings</code> · 1024 floats × 4B</td><td>~4 KB / quote</td><td>~1 MB · ~2.4 MB</td></tr>
+      <tr><td>Branded PDFs (90-day expiry then prunable)</td><td>Supabase Storage</td><td>~200–400 KB / PDF</td><td>~70 MB · ~180 MB</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Total storage at your scenario (35 contractors, 850 quotes/mo)</h3>
+  <div class="grid-2">
+    <div class="card card-tight">
+      <h4 style="margin-top:0">Year 1 footprint</h4>
+      <table class="t" style="margin:0">
+        <tbody>
+          <tr><td>Postgres data (quotes + invoices + embeddings + context)</td><td style="text-align:right"><strong>~150 MB</strong></td></tr>
+          <tr><td>Supabase Storage (PDFs, logos)</td><td style="text-align:right"><strong>~2.5 GB</strong></td></tr>
+          <tr><td>Total combined</td><td style="text-align:right"><strong>~2.7 GB</strong></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="card card-tight">
+      <h4 style="margin-top:0">Supabase plan fit</h4>
+      <table class="t" style="margin:0">
+        <tbody>
+          <tr><td>Free tier</td><td style="text-align:right">500 MB DB · 1 GB storage <span class="tag bad">too small</span></td></tr>
+          <tr><td>Pro tier · <strong>$25/mo</strong></td><td style="text-align:right">8 GB DB · 100 GB storage <span class="tag ok">fits 30×</span></td></tr>
+          <tr><td>Overage if exceeded</td><td style="text-align:right">$0.125/GB DB · $0.021/GB storage</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="callout">
+    <strong>Storage cost reality.</strong> Total monthly storage bill at this scale: <strong>$25 flat</strong> for Supabase Pro (which you'd be on anyway). The SKU data itself is <em>noise</em> — fitting your entire contractor's catalog in under 1 MB. Even at 10× scale (350 contractors, 8,500 quotes/mo) you'd still fit in Pro tier. You don't pay per contractor for SKU storage — you pay per contractor for a subscription, of which the storage portion is a fraction of a cent.
   </div>
 </section>
 
@@ -1141,9 +1316,10 @@
   <span class="k">const</span> q = <span class="k">await</span> db.quotes.findUnique({ where: { id: payload.quote_id }});
   <span class="k">if</span> (!q) <span class="k">return</span>;
 
-  <span class="k">const</span> { data: [{ embedding }] } = <span class="k">await</span> openai.embeddings.create({
-    model: <span class="s">'text-embedding-3-small'</span>,
-    input: `${q.job_summary}\n\n${q.raw_prompt}`,
+  <span class="k">const</span> { data: [{ embedding }] } = <span class="k">await</span> voyage.embed({
+    model: <span class="s">'voyage-3-large'</span>,
+    input: [`${q.job_summary}\n\n${q.raw_prompt}`],
+    input_type: <span class="s">'document'</span>,
   });
 
   <span class="k">await</span> db.quote_embeddings.upsert({
@@ -1186,37 +1362,37 @@ Rules:
 <!-- ============== 10. TIMELINE ============== -->
 <section id="timeline">
   <h2><span class="num">10</span> Build timeline — 10 sessions</h2>
-  <p class="lede">Each session has a single clear goal and an acceptance test. Don't move on until the test passes. Total: ~42 hours of focused work, ~3–4 weeks at 10–15 hrs/week.</p>
+  <p class="lede">Each session has a single clear goal and an acceptance test. Don't move on until the test passes. Total: ~45 hours of focused work (~3 hrs added for multi-user / invite flow), ~3–4 weeks at 10–15 hrs/week.</p>
 
   <div class="card">
     <div class="timeline">
 
       <div class="step">
         <div class="title">Session 1 · Scaffold &amp; Auth</div>
-        <div class="meta">3–4 hrs · foundations</div>
-        <div class="desc">Next.js 14 + TS + Tailwind + shadcn. Supabase project, env vars. Login / signup, middleware redirects.</div>
-        <div class="test">✓ Sign up, log in, log out, redirect logic correct</div>
+        <div class="meta">4–5 hrs · foundations</div>
+        <div class="desc">Next.js 14 + TS + Tailwind + shadcn. Supabase project, env vars. Login / signup, middleware redirects. <strong>Invite-by-email flow (admin sends magic-link invite, invitee sets password on accept).</strong></div>
+        <div class="test">✓ Sign up, log in, log out, redirect logic correct. Admin can invite a teammate; invite email arrives; invitee can complete signup and lands in the same company.</div>
       </div>
 
       <div class="step">
         <div class="title">Session 2 · DB, RLS &amp; pgvector</div>
-        <div class="meta">3.5 hrs · data foundations</div>
-        <div class="desc">Run all SQL migrations. Enable <code class="inline">vector</code> extension. Create companies / quotes / invoices / company_context / quote_embeddings with RLS. Quote &amp; invoice number sequences.</div>
-        <div class="test">✓ Can't read another user's rows. <code class="inline">&lt;=&gt;</code> cosine works. <code class="inline">next_invoice_number()</code> returns I-2026-0001.</div>
+        <div class="meta">4 hrs · data foundations</div>
+        <div class="desc">Run all SQL migrations. Enable <code class="inline">vector</code> extension. Create companies / <strong>company_users</strong> / quotes / invoices / company_context / quote_embeddings with RLS keyed on the <code class="inline">company_users</code> subquery. Plan-tier seat-cap trigger. Quote &amp; invoice number sequences.</div>
+        <div class="test">✓ Can't read another company's rows even when a member of company A queries with B's id. <code class="inline">&lt;=&gt;</code> cosine works. Seat-cap trigger refuses a 4th invite on Solo. <code class="inline">next_invoice_number()</code> returns I-2026-0001.</div>
       </div>
 
       <div class="step">
-        <div class="title">Session 3 · Setup wizard</div>
-        <div class="meta">3 hrs · onboarding</div>
-        <div class="desc">Single-screen form, logo upload to Supabase Storage, insert <code class="inline">companies</code> + empty <code class="inline">company_context</code>.</div>
-        <div class="test">✓ Fresh signup → forced to setup → lands on quotes empty state</div>
+        <div class="title">Session 3 · Setup wizard + Team screen</div>
+        <div class="meta">4 hrs · onboarding</div>
+        <div class="desc">Single-screen setup form, logo upload to Supabase Storage, insert <code class="inline">companies</code> + first <code class="inline">company_users</code> row (admin) + empty <code class="inline">company_context</code>. <strong>/settings/team page</strong>: see members, invite by email (capped by plan), change role, remove member.</div>
+        <div class="test">✓ Fresh signup → forced to setup → lands on quotes empty state. Admin can invite up to plan limit; over-limit invites show plan-upgrade nudge.</div>
       </div>
 
       <div class="step">
         <div class="title">Session 4 · Prompt-to-Quote agent</div>
         <div class="meta">5–6 hrs · the hard one</div>
-        <div class="desc">/quotes/new + /api/generate-quote. Install @anthropic-ai/sdk + openai. Context loader, embed, retrieve top-3, build prompt, Zod, server-side math, insert draft.</div>
-        <div class="test">✓ Real HVAC prompt → sensible quote in &lt; 30 s with 3+ line items and correct math</div>
+        <div class="desc">/quotes/new + /api/generate-quote. Install @anthropic-ai/sdk + voyageai. Context loader, embed, retrieve top-3, build prompt, Zod, server-side math, insert draft. <strong>Enable Anthropic prompt caching with <code class="inline">cache_control: { type: 'ephemeral' }</code> on the static rules block and the per-contractor config block</strong> — instant speed win on repeat-use sessions, ~$40/yr savings at current scale, free headroom to grow the prompt later.</div>
+        <div class="test">✓ Real HVAC prompt → sensible quote in &lt; 30 s with 3+ line items and correct math. Second quote in the same session generates noticeably faster; API response includes <code class="inline">cache_read_input_tokens &gt; 0</code> in the usage block.</div>
       </div>
 
       <div class="step">
@@ -1257,7 +1433,7 @@ Rules:
       <div class="step">
         <div class="title">Session 10 · Polish &amp; deploy</div>
         <div class="meta">3 hrs · ship it</div>
-        <div class="desc">PWA manifest + icons. Empty states. Error states (rate-limit graceful, OpenAI fallback, PDF retry). Deploy to Vercel. Custom domain. Smoke test on iPhone + Android.</div>
+        <div class="desc">PWA manifest + icons. Empty states. Error states (rate-limit graceful, Voyage fallback, PDF retry). Deploy to Vercel. Custom domain. Smoke test on iPhone + Android.</div>
         <div class="test">✓ Phone end-to-end: signup → quote → email → accept → invoice → edit → send → paid, in &lt; 7 min</div>
       </div>
 
@@ -1287,11 +1463,11 @@ Rules:
     <div class="card" style="border-color:var(--accent);border-width:2px">
       <div class="tag">Crew · popular</div>
       <h3 style="margin:6px 0 4px;font-size:28px">$139<span style="font-size:13px;color:var(--muted);font-weight:400"> / mo</span></h3>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 8px">2–3 users · 300 quotes/mo</p>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 8px">3–4 users · 300 quotes/mo</p>
       <ul class="bullets" style="font-size:12.5px">
         <li>Everything in Solo</li>
-        <li>Shared team catalog</li>
-        <li>Role permissions</li>
+        <li>3–4 seats, shared team catalog &amp; RAG memory</li>
+        <li>Roles: admin / member</li>
         <li>Team activity feed</li>
       </ul>
       <p style="margin-top:10px;color:var(--ok);font-size:12px;font-weight:600">~$12 cost · 92% margin</p>
@@ -1299,9 +1475,10 @@ Rules:
     <div class="card">
       <div class="tag">Shop</div>
       <h3 style="margin:6px 0 4px;font-size:28px">$249<span style="font-size:13px;color:var(--muted);font-weight:400"> / mo</span></h3>
-      <p style="color:var(--muted);font-size:13px;margin:0 0 8px">4–10 users · unlimited quotes</p>
+      <p style="color:var(--muted);font-size:13px;margin:0 0 8px">5–10 users · unlimited quotes</p>
       <ul class="bullets" style="font-size:12.5px">
         <li>Everything in Crew</li>
+        <li>5–10 seats · roles: admin / manager / member</li>
         <li>Multiple service areas</li>
         <li>Custom email domain</li>
         <li>Advanced reports</li>
@@ -1330,7 +1507,7 @@ Rules:
         <li><strong>RLS forgetting.</strong> A raw SQL query that bypasses the policy is the one bug that ends the company. Always include explicit <code class="inline">company_id</code> filter as belt &amp; suspenders.</li>
         <li><strong>graphile-worker on Vercel.</strong> Need to confirm it runs reliably from a Vercel Cron trigger; if not, fall back to a tiny Render or Railway box.</li>
         <li><strong>React-PDF styling.</strong> Less flexible than HTML/Chromium. Have a fallback plan: <code class="inline">@vercel/og</code> + Playwright on a separate service if PDFs look amateur.</li>
-        <li><strong>Embedding model lock-in.</strong> 1536 dims is OpenAI-specific. Re-embedding the corpus is fine at our scale but worth noting before swapping providers.</li>
+        <li><strong>Embedding model lock-in.</strong> 1024 dims is Voyage <code class="inline">voyage-3-large</code>-specific. Re-embedding the corpus is fine at our scale (≤100 quotes per contractor) but worth noting before swapping models.</li>
       </ul>
     </div>
     <div class="card">
