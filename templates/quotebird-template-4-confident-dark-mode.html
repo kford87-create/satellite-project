@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quotebird · Direction 4 · Confident Dark Mode</title>
+<style>
+  :root {
+    --bg: #0c0e0d;
+    --bg-2: #14171a;
+    --surface: #1a1d1f;
+    --surface-2: #22262a;
+    --line: #2a2e32;
+    --line-soft: #1f2326;
+    --ink: #e8e6e1;
+    --ink-soft: #b7b3aa;
+    --muted: #7a766f;
+    --amber: #d9b46a;
+    --amber-soft: rgba(217, 180, 106, .14);
+    --amber-deep: #b8923f;
+    --green: #6ba274;
+    --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 30px 80px rgba(0,0,0,.5);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 15.5px/1.55 -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+  .mono { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; }
+
+  /* Subtle grain background */
+  body::before {
+    content: ""; position: fixed; inset: 0; pointer-events: none; z-index: 0;
+    background:
+      radial-gradient(circle at 20% 0%, rgba(217,180,106,.05) 0%, transparent 40%),
+      radial-gradient(circle at 80% 100%, rgba(107,162,116,.04) 0%, transparent 40%);
+  }
+  main, footer, .section-nav { position: relative; z-index: 1; }
+
+  /* ===== Section nav ===== */
+  .section-nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(12,14,13,.78); backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 32px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-nav .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; letter-spacing: -.015em; font-size: 16px;
+  }
+  .section-nav .brand .mark {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep));
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; color: var(--bg);
+  }
+  .section-nav ul { list-style: none; display: flex; gap: 28px; }
+  .section-nav a {
+    font-size: 13px; color: var(--ink-soft); padding: 6px 0;
+    border-bottom: 1px solid transparent;
+  }
+  .section-nav a:hover { color: var(--ink); border-bottom-color: var(--amber); }
+  .section-nav .cta {
+    padding: 8px 14px; border-radius: 8px;
+    background: var(--amber); color: var(--bg);
+    font-size: 13px; font-weight: 600; letter-spacing: -.01em;
+  }
+
+  /* ===== Type ===== */
+  h1, h2, h3, h4 { letter-spacing: -.022em; font-weight: 600; }
+  .eyebrow {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-size: 12px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--amber);
+  }
+  .eyebrow .pip {
+    display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--amber); box-shadow: 0 0 0 4px var(--amber-soft);
+  }
+
+  /* ===== Section ===== */
+  section { padding: 110px 0; border-bottom: 1px solid var(--line-soft); }
+  section.alt { background: var(--bg-2); }
+  section.tight { padding: 80px 0; }
+
+  /* ===== Hero ===== */
+  .hero { padding: 130px 0 120px; position: relative; overflow: hidden; }
+  .hero::before {
+    content: ""; position: absolute; left: 50%; top: 40%; width: 800px; height: 800px;
+    transform: translate(-50%, -50%);
+    background: radial-gradient(circle, rgba(217,180,106,.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .hero-grid {
+    position: relative; z-index: 2;
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 80px; align-items: center;
+  }
+  .hero h1 {
+    font-size: 78px; line-height: .98; margin: 22px 0 24px;
+    letter-spacing: -.03em;
+  }
+  .hero h1 .accent { color: var(--amber); }
+  .hero .lede {
+    font-size: 18px; color: var(--ink-soft); line-height: 1.55; max-width: 52ch;
+  }
+  .hero .ctas { margin-top: 36px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 14px 22px; border-radius: 10px;
+    font-size: 14px; font-weight: 600; letter-spacing: -.01em;
+    cursor: pointer; transition: transform .15s ease, background .15s ease;
+  }
+  .btn.primary {
+    background: linear-gradient(180deg, var(--amber), var(--amber-deep));
+    color: var(--bg);
+    box-shadow: 0 6px 24px rgba(217,180,106,.25), 0 1px 0 rgba(255,255,255,.18) inset;
+  }
+  .btn.primary:hover { transform: translateY(-1px); }
+  .btn.ghost {
+    background: rgba(255,255,255,.04); color: var(--ink);
+    border: 1px solid var(--line);
+  }
+  .btn.ghost:hover { background: rgba(255,255,255,.07); }
+  .btn .arrow { transition: transform .2s; }
+  .btn:hover .arrow { transform: translateX(3px); }
+
+  /* hero side panel — product object */
+  .hero-object {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  .hero-object .ob-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-bottom: 18px; border-bottom: 1px solid var(--line);
+  }
+  .hero-object .ob-head .t {
+    font-size: 12.5px; font-weight: 600; color: var(--ink-soft); letter-spacing: -.01em;
+  }
+  .hero-object .ob-head .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 8px rgba(107,162,116,.6);
+  }
+  .hero-object .ob-list { margin-top: 18px; }
+  .hero-object .ob-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 0; border-bottom: 1px dashed var(--line);
+    font-size: 13.5px;
+  }
+  .hero-object .ob-row:last-child { border-bottom: 0; }
+  .hero-object .ob-row .desc { color: var(--ink-soft); }
+  .hero-object .ob-row .sku { font-family: ui-monospace, Menlo, monospace; font-size: 11px; color: var(--muted); margin-right: 8px; }
+  .hero-object .ob-row .price { font-feature-settings: "tnum"; font-weight: 600; }
+  .hero-object .ob-total {
+    margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; font-weight: 700;
+    color: var(--amber); font-size: 16px;
+  }
+
+  .hero-meta {
+    margin-top: 64px; padding-top: 22px; border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px;
+    position: relative; z-index: 2;
+  }
+  .hero-meta .item .k { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+  .hero-meta .item .v {
+    margin-top: 4px; font-size: 22px; font-weight: 600; letter-spacing: -.025em;
+    font-feature-settings: "tnum";
+  }
+  .hero-meta .item .v .accent { color: var(--amber); }
+
+  /* ===== Feature grid ===== */
+  .feat-head {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+    align-items: end; margin-bottom: 64px;
+  }
+  .feat-head h2 {
+    font-size: 56px; line-height: 1.04; max-width: 16ch; margin-top: 18px;
+    letter-spacing: -.028em;
+  }
+  .feat-head h2 .accent { color: var(--amber); }
+  .feat-head p { font-size: 16px; color: var(--ink-soft); line-height: 1.55; max-width: 42ch; }
+
+  .feat-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 1px;
+    background: var(--line);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+  }
+  .feat-card {
+    background: var(--surface);
+    padding: 36px 32px 32px;
+    transition: background .2s ease;
+  }
+  .feat-card:hover { background: var(--surface-2); }
+  .feat-card .icon {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: var(--amber-soft); color: var(--amber);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; letter-spacing: -.02em; font-size: 16px;
+    border: 1px solid rgba(217,180,106,.25);
+  }
+  .feat-card h3 {
+    font-size: 22px; margin: 18px 0 8px; letter-spacing: -.015em;
+  }
+  .feat-card h3 .accent { color: var(--amber); }
+  .feat-card p { font-size: 14.5px; color: var(--ink-soft); line-height: 1.55; }
+  .feat-card .tags {
+    margin-top: 16px; display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .feat-card .tag {
+    font-size: 11px; letter-spacing: .02em; padding: 4px 9px;
+    border-radius: 999px; border: 1px solid var(--line);
+    color: var(--ink-soft); background: var(--bg-2);
+  }
+
+  /* ===== Workflow / timeline ===== */
+  .timeline-head { margin-bottom: 56px; max-width: 60ch; }
+  .timeline-head h2 {
+    font-size: 56px; line-height: 1.04; margin-top: 18px; max-width: 18ch;
+    letter-spacing: -.028em;
+  }
+  .timeline-head h2 .accent { color: var(--amber); }
+  .timeline-head p { font-size: 16px; color: var(--ink-soft); line-height: 1.55; margin-top: 16px; }
+
+  .timeline {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0;
+    border: 1px solid var(--line); border-radius: 16px; overflow: hidden;
+    background: var(--surface);
+  }
+  .tl-step {
+    padding: 32px 26px;
+    border-right: 1px solid var(--line);
+    position: relative;
+  }
+  .tl-step:last-child { border-right: 0; }
+  .tl-step .step-num {
+    font-family: ui-monospace, Menlo, monospace;
+    font-size: 11px; color: var(--amber); letter-spacing: .12em;
+    font-weight: 700;
+  }
+  .tl-step h4 {
+    font-size: 20px; margin: 12px 0 8px; letter-spacing: -.015em;
+  }
+  .tl-step p { font-size: 13.5px; color: var(--ink-soft); line-height: 1.5; }
+  .tl-step::after {
+    content: "→"; position: absolute; right: -8px; top: 50%;
+    color: var(--amber); font-size: 16px;
+    transform: translateY(-50%);
+    background: var(--surface);
+    padding: 0 4px;
+  }
+  .tl-step:last-child::after { display: none; }
+
+  /* ===== Pricing ===== */
+  .pricing-head {
+    text-align: center; margin-bottom: 64px;
+  }
+  .pricing-head h2 {
+    font-size: 60px; line-height: 1.04; max-width: 16ch; margin: 18px auto 14px;
+    letter-spacing: -.028em;
+  }
+  .pricing-head h2 .accent { color: var(--amber); }
+  .pricing-head p {
+    font-size: 16px; color: var(--ink-soft); max-width: 50ch; margin: 0 auto;
+  }
+
+  .plans {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px;
+  }
+  .plan {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 34px 28px 26px;
+    display: flex; flex-direction: column;
+    position: relative;
+    transition: transform .2s ease, border-color .2s ease;
+  }
+  .plan:hover { transform: translateY(-3px); border-color: var(--line); }
+  .plan.featured {
+    background: linear-gradient(180deg, var(--surface-2), var(--surface));
+    border-color: var(--amber);
+    box-shadow: 0 0 0 1px rgba(217,180,106,.18), 0 24px 60px rgba(0,0,0,.45);
+  }
+  .plan .ribbon {
+    position: absolute; top: -1px; right: 22px;
+    background: var(--amber); color: var(--bg);
+    padding: 5px 12px; border-radius: 0 0 8px 8px;
+    font-size: 10px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .plan .tier {
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--amber); font-weight: 700;
+  }
+  .plan h3 {
+    font-size: 24px; margin: 6px 0 0; letter-spacing: -.015em;
+  }
+  .plan .price {
+    display: flex; align-items: baseline; gap: 6px;
+    margin: 22px 0 4px;
+  }
+  .plan .price .amt {
+    font-size: 56px; font-weight: 600; letter-spacing: -.04em; line-height: 1;
+    font-feature-settings: "tnum";
+  }
+  .plan .price .per { font-size: 14px; color: var(--muted); }
+  .plan .seats {
+    font-size: 13.5px; color: var(--ink-soft); margin-bottom: 24px;
+  }
+  .plan ul { list-style: none; margin: 0 0 24px; flex: 1; }
+  .plan li {
+    padding: 9px 0; border-bottom: 1px solid var(--line);
+    font-size: 13.5px; color: var(--ink-soft);
+    display: flex; gap: 10px; align-items: baseline;
+  }
+  .plan li:last-child { border-bottom: 0; }
+  .plan li::before {
+    content: "✓"; color: var(--amber); font-weight: 700; font-size: 12px;
+  }
+  .plan-cta {
+    display: block; text-align: center;
+    padding: 13px; border-radius: 10px;
+    background: rgba(255,255,255,.05); border: 1px solid var(--line);
+    color: var(--ink); font-size: 14px; font-weight: 600;
+    transition: all .2s ease;
+  }
+  .plan.featured .plan-cta {
+    background: linear-gradient(180deg, var(--amber), var(--amber-deep));
+    border-color: transparent;
+    color: var(--bg);
+    box-shadow: 0 4px 14px rgba(217,180,106,.25);
+  }
+  .plan-cta:hover { transform: translateY(-1px); }
+  .plan-foot { text-align: center; margin-top: 12px; font-size: 12px; color: var(--muted); }
+  .pricing-bottom {
+    margin-top: 36px; text-align: center;
+    font-size: 13.5px; color: var(--muted);
+  }
+  .pricing-bottom strong { color: var(--ink); }
+
+  /* ===== Main app ===== */
+  .app-head { margin-bottom: 56px; max-width: 60ch; }
+  .app-head h2 {
+    font-size: 56px; line-height: 1.04; margin-top: 18px; max-width: 18ch;
+    letter-spacing: -.028em;
+  }
+  .app-head h2 .accent { color: var(--amber); }
+  .app-head p { font-size: 16px; color: var(--ink-soft); margin-top: 14px; }
+
+  .app-grid { display: grid; grid-template-columns: 1.1fr 1fr; gap: 80px; align-items: center; }
+  .app-notes { display: flex; flex-direction: column; gap: 6px; }
+  .ann {
+    padding: 22px 0; border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: 48px 1fr; gap: 18px; align-items: start;
+  }
+  .ann:first-child { border-top: 0; padding-top: 0; }
+  .ann .marker {
+    width: 32px; height: 32px; border-radius: 8px;
+    background: var(--amber-soft); color: var(--amber);
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 13px; border: 1px solid rgba(217,180,106,.3);
+  }
+  .ann h4 { font-size: 16px; margin-bottom: 4px; letter-spacing: -.01em; }
+  .ann p { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+
+  /* phone */
+  .phone-stage {
+    display: flex; justify-content: center; position: relative;
+  }
+  .phone-stage::before {
+    content: ""; position: absolute; inset: -40px -60px;
+    background: radial-gradient(ellipse at center, rgba(217,180,106,.1) 0%, transparent 60%);
+    pointer-events: none;
+  }
+  .phone {
+    width: 320px;
+    background: #1f2225; border-radius: 38px; padding: 12px;
+    box-shadow: 0 50px 120px rgba(0,0,0,.65), 0 12px 40px rgba(0,0,0,.4),
+                0 1px 0 rgba(255,255,255,.06) inset;
+    border: 1px solid rgba(255,255,255,.04);
+    position: relative;
+  }
+  .phone .screen {
+    background: var(--bg); border-radius: 28px; overflow: hidden;
+    aspect-ratio: 9 / 19; color: var(--ink);
+  }
+  .phone .topbar {
+    padding: 14px 22px 6px; display: flex; justify-content: space-between;
+    font-size: 11px; font-weight: 600; color: var(--ink-soft);
+  }
+  .phone .nav {
+    padding: 10px 18px 14px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .phone .nav .mark {
+    width: 22px; height: 22px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep));
+    color: var(--bg); font-weight: 800; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .phone .nav .t { font-size: 14px; font-weight: 600; letter-spacing: -.01em; }
+  .phone .nav .pill {
+    margin-left: auto; padding: 4px 10px; border-radius: 999px;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+    background: var(--amber-soft); color: var(--amber);
+    border: 1px solid rgba(217,180,106,.25);
+  }
+  .phone .body { padding: 16px 18px; font-size: 12.5px; }
+  .phone .label {
+    font-size: 9.5px; font-weight: 600; letter-spacing: .18em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 6px;
+  }
+  .phone .label .accent { color: var(--amber); }
+  .phone .fields {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 14px;
+  }
+  .phone .field {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px 10px; font-size: 10.5px; color: var(--ink-soft);
+  }
+  .phone .textarea {
+    background: var(--surface); border: 1px solid var(--amber); border-radius: 10px;
+    padding: 12px; font-size: 11px; line-height: 1.5; color: var(--ink);
+    min-height: 92px;
+    box-shadow: 0 0 0 3px var(--amber-soft);
+  }
+  .phone .textarea .accent { color: var(--amber); font-weight: 600; }
+  .phone .helper { font-size: 9.5px; color: var(--muted); margin: 12px 0 6px; }
+  .phone .chips { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 14px; }
+  .phone .chips span {
+    background: var(--surface); border: 1px solid var(--line);
+    color: var(--ink-soft);
+    padding: 5px 9px; border-radius: 999px;
+    font-size: 10px; font-weight: 500;
+  }
+  .phone .gen {
+    background: linear-gradient(180deg, var(--amber), var(--amber-deep));
+    color: var(--bg); border-radius: 10px;
+    padding: 13px; text-align: center;
+    font-size: 13px; font-weight: 700; letter-spacing: -.01em;
+    box-shadow: 0 4px 14px rgba(217,180,106,.22), 0 1px 0 rgba(255,255,255,.2) inset;
+  }
+  .phone .meta {
+    margin-top: 14px; padding-top: 10px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between;
+    font-size: 9.5px; color: var(--muted); font-family: ui-monospace, Menlo, monospace;
+  }
+  .phone .meta strong { color: var(--amber); font-weight: 600; }
+
+  /* ===== Footer ===== */
+  footer.site { padding: 60px 0 40px; border-bottom: 0; background: var(--bg-2); }
+  footer.site .top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px; }
+  footer.site .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 18px; font-weight: 600; letter-spacing: -.015em;
+  }
+  footer.site .brand .mark {
+    width: 24px; height: 24px; border-radius: 6px;
+    background: linear-gradient(135deg, var(--amber), var(--amber-deep));
+    color: var(--bg); font-weight: 800; font-size: 11px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  footer.site .blurb { margin-top: 12px; max-width: 36ch; font-size: 13.5px; color: var(--ink-soft); line-height: 1.55; }
+  footer.site h6 {
+    font-size: 11px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 14px; font-weight: 600;
+  }
+  footer.site ul { list-style: none; }
+  footer.site li { padding: 5px 0; font-size: 13.5px; color: var(--ink-soft); cursor: pointer; }
+  footer.site li:hover { color: var(--ink); }
+  footer.site .bottom {
+    margin-top: 50px; padding-top: 22px; border-top: 1px solid var(--line);
+    display: flex; justify-content: space-between; font-size: 12px; color: var(--muted);
+  }
+  footer.site .bottom .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px;
+    background: var(--amber-soft); color: var(--amber);
+    border: 1px solid rgba(217,180,106,.25);
+    font-weight: 600; font-size: 11px; letter-spacing: .04em;
+  }
+  footer.site .bottom .badge .dot {
+    width: 6px; height: 6px; border-radius: 50%; background: var(--green);
+    box-shadow: 0 0 6px rgba(107,162,116,.5);
+  }
+
+  @media (max-width: 900px) {
+    .hero h1 { font-size: 48px; }
+    .feat-head h2, .timeline-head h2, .pricing-head h2, .app-head h2 { font-size: 38px; }
+    .hero-grid, .feat-head, .app-grid { grid-template-columns: 1fr; gap: 36px; }
+    .feat-grid { grid-template-columns: 1fr; }
+    .timeline { grid-template-columns: 1fr; }
+    .tl-step { border-right: 0; border-bottom: 1px solid var(--line); }
+    .tl-step::after { display: none; }
+    .plans { grid-template-columns: 1fr; }
+    .hero-meta { grid-template-columns: 1fr 1fr; }
+    footer.site .top { grid-template-columns: 1fr; }
+    .section-nav ul { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<main>
+
+<!-- Section nav -->
+<div class="section-nav">
+  <div class="brand">
+    <span class="mark">Q</span>
+    <span>Quotebird</span>
+  </div>
+  <ul>
+    <li><a href="#landing">Landing</a></li>
+    <li><a href="#signup">Signup</a></li>
+    <li><a href="#app">Main app</a></li>
+  </ul>
+  <a class="cta" href="#signup">Start →</a>
+</div>
+
+<!-- LANDING / HERO -->
+<section id="landing" class="hero">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow"><span class="pip"></span> Quoting · Invoicing · Catalog</span>
+        <h1>The quoting tool with <span class="accent">your prices</span> built in.</h1>
+        <p class="lede">
+          Upload your supplier price sheets once. Quotebird's AI reads every SKU,
+          unit, and price — then uses them on every quote, forever. No generic
+          estimates. No after-the-fact corrections. Just your numbers, sent fast,
+          looking sharp.
+        </p>
+        <div class="ctas">
+          <a class="btn primary" href="#signup">Start quoting <span class="arrow">→</span></a>
+          <a class="btn ghost" href="#app">See the app</a>
+        </div>
+      </div>
+
+      <div class="hero-object">
+        <div class="ob-head">
+          <div class="t">Q-2026-0042 · Quote draft</div>
+          <div class="dot" title="Live"></div>
+        </div>
+        <div class="ob-list">
+          <div class="ob-row">
+            <div><span class="sku mono">XR16-036</span><span class="desc">3-Ton 16 SEER Condenser</span></div>
+            <div class="price">$2,650</div>
+          </div>
+          <div class="ob-row">
+            <div><span class="sku mono">LBR-INST</span><span class="desc">Install labor · 6 hr</span></div>
+            <div class="price">$750</div>
+          </div>
+          <div class="ob-row">
+            <div><span class="sku mono">LBR-LEAK</span><span class="desc">Leak test · 1.5 hr</span></div>
+            <div class="price">$188</div>
+          </div>
+          <div class="ob-row">
+            <div><span class="sku mono">MAT-R410</span><span class="desc">Refrigerant + fittings</span></div>
+            <div class="price">$225</div>
+          </div>
+          <div class="ob-row">
+            <div><span class="sku mono">PRM-MECH</span><span class="desc">Mechanical permit</span></div>
+            <div class="price">$135</div>
+          </div>
+        </div>
+        <div class="ob-total">
+          <span>Total · with tax</span>
+          <span>$4,225.13</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="hero-meta">
+      <div class="item">
+        <div class="k">Prompt → PDF</div>
+        <div class="v"><span class="accent">~30s</span></div>
+      </div>
+      <div class="item">
+        <div class="k">Catalog size</div>
+        <div class="v">342 <span style="color:var(--muted);font-size:14px;">SKUs avg</span></div>
+      </div>
+      <div class="item">
+        <div class="k">Fabricated prices</div>
+        <div class="v">0<span style="color:var(--muted);font-size:14px;"> · ever</span></div>
+      </div>
+      <div class="item">
+        <div class="k">Mobile-first</div>
+        <div class="v">PWA <span style="color:var(--muted);font-size:14px;">installs</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section class="alt">
+  <div class="wrap">
+    <div class="feat-head">
+      <div>
+        <span class="eyebrow"><span class="pip"></span> What it does</span>
+        <h2>Three tools that finally know about <span class="accent">each other.</span></h2>
+      </div>
+      <p>Quotebird isn't a spreadsheet bolted onto a payment processor. It's a catalog, a quoting AI, and an invoicing layer — wrapped in something that opens fast on a five-year-old phone and respects the trade.</p>
+    </div>
+
+    <div class="feat-grid">
+      <div class="feat-card">
+        <div class="icon">01</div>
+        <h3>Your catalog, <span class="accent">ingested.</span></h3>
+        <p>Snap a photo or upload a PDF of your supplier price sheet. Claude Vision extracts every SKU code, description, unit, and price. You review the rows, approve, and it's yours forever.</p>
+        <div class="tags">
+          <span class="tag">Photo</span><span class="tag">PDF</span><span class="tag">Review gate</span><span class="tag">~$0.50 / sheet</span>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="icon">02</div>
+        <h3>Quoting that uses <span class="accent">your prices.</span></h3>
+        <p>Describe the job in plain English. The AI retrieves matching SKUs from your catalog by semantic similarity and composes the quote using the exact prices you set. Unmatched items get flagged for you to fill — no fabricated numbers.</p>
+        <div class="tags">
+          <span class="tag">Claude Sonnet 4</span><span class="tag">Voyage-3-large</span><span class="tag">pgvector</span>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="icon">03</div>
+        <h3>Branded delivery, <span class="accent">honest invoicing.</span></h3>
+        <p>Your logo, warranty wording, payment terms. Customer replies "I accept." One tap converts the quote to an invoice — line edits are tracked as a transparent "Changes from original quote" section, shown to the customer.</p>
+        <div class="tags">
+          <span class="tag">Resend</span><span class="tag">React-PDF</span><span class="tag">Change deltas</span>
+        </div>
+      </div>
+      <div class="feat-card">
+        <div class="icon">04</div>
+        <h3>Built for <span class="accent">the truck.</span></h3>
+        <p>Mobile-first PWA, installable to your home screen. Works offline, syncs later. Designed for a contractor pulling out a phone at the customer's house — not a desk worker with two monitors.</p>
+        <div class="tags">
+          <span class="tag">PWA</span><span class="tag">Offline-first</span><span class="tag">iOS · Android</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFLOW -->
+<section>
+  <div class="wrap">
+    <div class="timeline-head">
+      <span class="eyebrow"><span class="pip"></span> The flow</span>
+      <h2>Onboard once. Then quote <span class="accent">forever.</span></h2>
+      <p>Twenty minutes of catalog setup buys you years of zero-friction quoting. Every job after the first one is a thirty-second conversation between you, the textarea, and a PDF.</p>
+    </div>
+
+    <div class="timeline">
+      <div class="tl-step">
+        <div class="step-num mono">01 · UPLOAD</div>
+        <h4>Supplier sheets in</h4>
+        <p>Three or four PDFs. Twenty minutes of your time. Claude Vision reads every SKU; you review and approve.</p>
+      </div>
+      <div class="tl-step">
+        <div class="step-num mono">02 · TYPE</div>
+        <h4>Describe the job</h4>
+        <p>At the kitchen table. Plain English. Customer fields optional. The AI handles structure and math.</p>
+      </div>
+      <div class="tl-step">
+        <div class="step-num mono">03 · SEND</div>
+        <h4>Branded PDF</h4>
+        <p>Logo, warranty, payment terms. Email goes out via Resend. Signed PDF link expires in 90 days.</p>
+      </div>
+      <div class="tl-step">
+        <div class="step-num mono">04 · COLLECT</div>
+        <h4>Accept → invoice → paid</h4>
+        <p>One tap converts. Outstanding widget tracks the rest. Overdue cron flips invoices nightly.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNUP -->
+<section id="signup" class="alt">
+  <div class="wrap">
+    <div class="pricing-head">
+      <span class="eyebrow"><span class="pip"></span> Pricing</span>
+      <h2>Pick the shape of your <span class="accent">shop.</span></h2>
+      <p>Monthly · per-seat-band · no feature-gating. Every plan ships with the AI catalog, quoting, branded PDFs, invoicing, and overdue tracking.</p>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <div class="tier">Solo</div>
+        <h3>The One-Truck Shop</h3>
+        <div class="price">
+          <span class="amt">$99</span><span class="per">/mo</span>
+        </div>
+        <div class="seats">1 user · 100 quotes / month</div>
+        <ul>
+          <li>SKU catalog ingestion</li>
+          <li>AI prompt-to-quote</li>
+          <li>Branded PDFs &amp; email</li>
+          <li>Quote → Invoice</li>
+          <li>Manual payment tracking</li>
+        </ul>
+        <a class="plan-cta" href="#">Start Solo →</a>
+        <div class="plan-foot">No trial · cancel anytime</div>
+      </div>
+
+      <div class="plan featured">
+        <div class="ribbon">Most popular</div>
+        <div class="tier">Crew</div>
+        <h3>The Working Crew</h3>
+        <div class="price">
+          <span class="amt">$139</span><span class="per">/mo</span>
+        </div>
+        <div class="seats">3–4 users · 300 quotes / month</div>
+        <ul>
+          <li>Everything in Solo</li>
+          <li>Shared team catalog &amp; AI memory</li>
+          <li>Roles: admin · member</li>
+          <li>Team activity feed</li>
+          <li>Priority email support</li>
+        </ul>
+        <a class="plan-cta" href="#">Start Crew →</a>
+        <div class="plan-foot">14-day refund window</div>
+      </div>
+
+      <div class="plan">
+        <div class="tier">Shop</div>
+        <h3>The Multi-Truck Shop</h3>
+        <div class="price">
+          <span class="amt">$249</span><span class="per">/mo</span>
+        </div>
+        <div class="seats">5–10 users · unlimited quotes</div>
+        <ul>
+          <li>Everything in Crew</li>
+          <li>Roles: admin · manager · member</li>
+          <li>Multiple service areas</li>
+          <li>Custom email domain</li>
+          <li>API access (v0.5)</li>
+        </ul>
+        <a class="plan-cta" href="#">Start Shop →</a>
+        <div class="plan-foot">Volume contracts on request</div>
+      </div>
+    </div>
+
+    <p class="pricing-bottom"><strong>No free trial.</strong> A working payment method is required at signup. Need a trial? Write us — we issue Stripe coupons for serious prospects on a case-by-case basis.</p>
+  </div>
+</section>
+
+<!-- MAIN APP -->
+<section id="app">
+  <div class="wrap">
+    <div class="app-head">
+      <span class="eyebrow"><span class="pip"></span> The main screen</span>
+      <h2>Type the job. <span class="accent">Send the quote.</span></h2>
+      <p>This is the screen you'll spend most of your time on. Customer fields up top. A big honest textarea. Three example chips. One generate button. That's it.</p>
+    </div>
+
+    <div class="app-grid">
+      <div class="app-notes">
+        <div class="ann">
+          <div class="marker">A</div>
+          <div><h4>Optional customer info</h4><p>Name, email, phone, address. The quote can be drafted without them and emailed later — useful for over-the-phone estimates.</p></div>
+        </div>
+        <div class="ann">
+          <div class="marker">B</div>
+          <div><h4>The textarea</h4><p>Plain English. Equipment, materials, labor estimate, anything special. The AI handles structure, math, and markup. You bring the trade knowledge.</p></div>
+        </div>
+        <div class="ann">
+          <div class="marker">C</div>
+          <div><h4>Example chips</h4><p>Tap to pre-fill. Useful when you're standing at the customer's house and the wording slips your mind.</p></div>
+        </div>
+        <div class="ann">
+          <div class="marker">D</div>
+          <div><h4>Generate</h4><p>Quote in under thirty seconds. Lands on the review screen — every line still editable. Send when ready.</p></div>
+        </div>
+      </div>
+
+      <div class="phone-stage">
+        <div class="phone">
+          <div class="screen">
+            <div class="topbar"><span>9:41</span><span>●●● 5G</span></div>
+            <div class="nav">
+              <div class="mark">Q</div>
+              <div class="t">New quote</div>
+              <div class="pill">Draft</div>
+            </div>
+            <div class="body">
+              <div class="label">A · <span class="accent">Customer</span></div>
+              <div class="fields">
+                <div class="field">J. Patel</div>
+                <div class="field">jp@email.com</div>
+                <div class="field">(916) 555-…</div>
+                <div class="field">214 Cedar St.</div>
+              </div>
+
+              <div class="label">B · <span class="accent">Describe the job</span></div>
+              <div class="textarea">
+                Replace 3-ton AC condenser, <span class="accent">16 SEER</span>, second floor attic
+                access. R-22 system from 1998. Reuse line set if leak test passes.
+                Mechanical permit required.
+              </div>
+
+              <div class="helper">C · Try one of these:</div>
+              <div class="chips">
+                <span>3-ton condenser</span>
+                <span>50gal water heater</span>
+                <span>220V range circuit</span>
+              </div>
+
+              <div class="gen">D · Generate quote ⚡</div>
+
+              <div class="meta">
+                <span>Catalog · <strong>342 SKUs</strong></span>
+                <span>v1.0 · BETA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- Footer -->
+<footer class="site">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="brand">
+          <span class="mark">Q</span>
+          <span>Quotebird</span>
+        </div>
+        <p class="blurb">The AI-native quoting and invoicing tool for HVAC, plumbing, and electrical shops who'd rather be on the truck than at the desk.</p>
+      </div>
+      <div>
+        <h6>Product</h6>
+        <ul><li>Features</li><li>Pricing</li><li>Changelog</li><li>Roadmap</li></ul>
+      </div>
+      <div>
+        <h6>Company</h6>
+        <ul><li>About</li><li>Customers</li><li>Careers</li><li>Press</li></ul>
+      </div>
+      <div>
+        <h6>Help</h6>
+        <ul><li>Docs</li><li>Onboarding</li><li>Security</li><li>Contact</li></ul>
+      </div>
+    </div>
+    <div class="bottom">
+      <div>© 2026 Quotebird Inc.</div>
+      <div class="badge"><span class="dot"></span>All systems operational</div>
+      <div>Terms · Privacy · Cookies</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

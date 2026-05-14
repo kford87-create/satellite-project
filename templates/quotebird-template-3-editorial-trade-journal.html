@@ -1,0 +1,787 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quotebird · Direction 3 · Editorial Trade Journal</title>
+<style>
+  :root {
+    --paper: #f4eee2;
+    --paper-2: #ece4d3;
+    --ink: #181614;
+    --ink-soft: #44403a;
+    --muted: #847d72;
+    --rule: #b9ad96;
+    --rule-soft: #d7cdb8;
+    --navy: #1a3357;
+    --navy-soft: #c2cad8;
+    --rust: #a83b27;
+    --rust-soft: #ecd6c8;
+    --gold: #b08d3a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--paper);
+    color: var(--ink);
+    font-family: "Iowan Old Style", Charter, "Palatino Linotype", Palatino, Georgia, serif;
+    font-size: 17px; line-height: 1.55;
+    font-feature-settings: "kern", "liga", "onum";
+    -webkit-font-smoothing: antialiased;
+  }
+  .sans { font-family: -apple-system, BlinkMacSystemFont, "Inter", "Helvetica Neue", system-ui, sans-serif; }
+  a { color: var(--navy); text-decoration: none; border-bottom: 1px solid var(--rule); padding-bottom: 1px; }
+  a:hover { color: var(--rust); border-bottom-color: var(--rust); }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 0 36px; }
+
+  /* ===== Section nav ===== */
+  .section-nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(244,238,226,.95); backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--rule);
+    padding: 16px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .section-nav .brand { font-family: inherit; font-size: 18px; letter-spacing: .04em; color: var(--ink); font-style: italic; text-transform: none; }
+  .section-nav ul { list-style: none; display: flex; gap: 30px; }
+  .section-nav a { border: 0; padding: 0; color: var(--muted); }
+  .section-nav a:hover { color: var(--rust); }
+
+  /* ===== Masthead ===== */
+  .masthead {
+    padding: 56px 0 24px; border-bottom: 1px solid var(--ink);
+  }
+  .masthead .meta-row {
+    display: flex; justify-content: space-between; align-items: baseline;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--muted); margin-bottom: 36px;
+  }
+  .masthead .meta-row strong { color: var(--ink); }
+  .masthead h1 {
+    font-size: 130px; line-height: .9; letter-spacing: -.025em;
+    font-weight: 400; text-align: center;
+    font-style: italic;
+  }
+  .masthead h1 .amp { color: var(--rust); }
+  .masthead .deck {
+    text-align: center; margin-top: 22px;
+    font-size: 14px; letter-spacing: .12em; text-transform: uppercase;
+    color: var(--ink-soft); font-style: normal;
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+    font-weight: 600;
+  }
+  .masthead .deck .dot { color: var(--rust); margin: 0 8px; }
+  .masthead .rule-thin {
+    margin-top: 24px; border-top: 3px double var(--ink); border-bottom: 1px solid var(--ink);
+    height: 8px;
+  }
+
+  /* ===== Section ===== */
+  section { padding: 88px 0; border-bottom: 1px solid var(--rule); }
+  section.alt { background: var(--paper-2); }
+  section.dark { background: var(--navy); color: var(--paper); border-bottom: 0; }
+  section.dark a { color: var(--paper); border-color: rgba(255,255,255,.3); }
+
+  /* ===== Lead article (hero) ===== */
+  .lede-wrap {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: start;
+    margin-top: 56px;
+  }
+  .lede-text .kicker {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--rust); font-weight: 700; margin-bottom: 16px;
+  }
+  .lede-text h2 {
+    font-size: 60px; line-height: 1.04; letter-spacing: -.015em;
+    font-weight: 400; margin-bottom: 20px;
+  }
+  .lede-text h2 em { font-style: italic; color: var(--rust); }
+  .lede-text .byline {
+    margin-top: 12px;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600;
+  }
+  .lede-text .byline strong { color: var(--ink); }
+  .lede-body { column-count: 1; }
+  .lede-body p { font-size: 16.5px; margin-bottom: 14px; }
+  .lede-body .dropcap::first-letter {
+    font-size: 64px; line-height: .85; float: left; margin: 6px 8px 0 0;
+    font-style: italic; color: var(--rust);
+  }
+  .lede-cta {
+    margin-top: 28px;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    display: flex; gap: 12px; flex-wrap: wrap;
+  }
+  .btn {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 22px; border-radius: 0;
+    font-size: 13px; font-weight: 600; letter-spacing: .12em; text-transform: uppercase;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+    cursor: pointer;
+  }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn:hover { background: var(--rust); border-color: var(--rust); color: var(--paper); }
+
+  /* ===== Pull quote ===== */
+  .pull-quote {
+    margin: 64px 0;
+    padding: 30px 36px 28px;
+    background: var(--paper-2);
+    border-left: 3px solid var(--rust);
+    font-size: 28px; line-height: 1.22; font-style: italic;
+    letter-spacing: -.005em; color: var(--ink); max-width: 32ch;
+  }
+  .pull-quote .attr {
+    margin-top: 14px;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--muted); font-weight: 600; font-style: normal;
+  }
+  .pull-quote .attr strong { color: var(--ink); }
+
+  /* ===== The Catalog feature ===== */
+  .feature-block {
+    display: grid; grid-template-columns: 2fr 1fr; gap: 80px;
+    align-items: start;
+  }
+  .feature-block .head .kicker {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--rust); font-weight: 700;
+  }
+  .feature-block h3 {
+    font-size: 44px; line-height: 1.08; letter-spacing: -.015em;
+    font-weight: 400; margin: 14px 0 18px;
+  }
+  .feature-block h3 em { font-style: italic; color: var(--navy); }
+  .feature-block .head .deck {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 14px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 28px;
+  }
+  .feature-block .body { column-count: 2; column-gap: 36px; column-rule: 1px solid var(--rule-soft); }
+  .feature-block .body p { font-size: 16px; margin-bottom: 14px; }
+  .sidebar {
+    border-top: 3px double var(--ink); padding-top: 16px;
+  }
+  .sidebar h6 {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--rust); font-weight: 700; margin-bottom: 14px;
+  }
+  .sidebar .item {
+    padding: 14px 0; border-bottom: 1px solid var(--rule-soft);
+  }
+  .sidebar .item:last-child { border-bottom: 0; }
+  .sidebar .item h5 {
+    font-size: 19px; font-weight: 400;
+    font-style: italic; margin-bottom: 4px;
+  }
+  .sidebar .item p {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 13px; color: var(--ink-soft);
+  }
+
+  /* ===== Three-column feature row ===== */
+  .triptych-head {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 60px;
+    align-items: end; margin-bottom: 56px;
+  }
+  .triptych-head .kicker {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--rust); font-weight: 700; margin-bottom: 12px;
+  }
+  .triptych-head h3 {
+    font-size: 50px; line-height: 1.05; letter-spacing: -.015em; font-weight: 400;
+  }
+  .triptych-head h3 em { font-style: italic; color: var(--navy); }
+  .triptych-head p {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 14.5px; color: var(--ink-soft); line-height: 1.55;
+  }
+
+  .triptych { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border-top: 3px double var(--ink); }
+  .triptych .col { padding: 28px 28px 28px 0; border-right: 1px solid var(--rule); }
+  .triptych .col:last-child { border-right: 0; padding-right: 0; }
+  .triptych .col:not(:first-child) { padding-left: 28px; }
+  .triptych .col .roman {
+    font-style: italic; color: var(--rust);
+    font-size: 22px; margin-bottom: 10px;
+  }
+  .triptych .col h4 {
+    font-size: 24px; line-height: 1.15; letter-spacing: -.01em;
+    font-weight: 400; margin-bottom: 12px;
+  }
+  .triptych .col h4 em { font-style: italic; }
+  .triptych .col p {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 14px; color: var(--ink-soft); line-height: 1.55;
+  }
+
+  /* ===== Rate card (pricing) ===== */
+  .rate-head {
+    text-align: center;
+    margin-bottom: 56px;
+  }
+  .rate-head .kicker {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--rust); font-weight: 700;
+  }
+  .rate-head h3 {
+    font-size: 56px; line-height: 1.05; letter-spacing: -.015em; font-weight: 400;
+    margin: 14px auto 12px; max-width: 14ch;
+  }
+  .rate-head h3 em { font-style: italic; color: var(--navy); }
+  .rate-head .deck {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 13.5px; letter-spacing: .08em; text-transform: uppercase;
+    color: var(--ink-soft); margin-top: 8px;
+  }
+
+  .ratecard {
+    border-top: 3px double var(--ink); border-bottom: 3px double var(--ink);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 0;
+  }
+  .rate {
+    padding: 36px 30px 30px;
+    border-right: 1px solid var(--rule);
+    display: flex; flex-direction: column;
+  }
+  .rate:last-child { border-right: 0; }
+  .rate.featured { background: var(--paper-2); }
+  .rate .tier {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--rust); font-weight: 700; margin-bottom: 6px;
+  }
+  .rate .tier .em-tag {
+    color: var(--gold); margin-left: 6px;
+  }
+  .rate h4 {
+    font-size: 38px; font-weight: 400; letter-spacing: -.015em;
+    font-style: italic; margin-bottom: 6px;
+  }
+  .rate .price {
+    font-size: 52px; line-height: 1; font-weight: 400; letter-spacing: -.025em;
+    margin: 24px 0 6px;
+    font-feature-settings: "lnum", "tnum";
+  }
+  .rate .price small {
+    font-size: 14px; color: var(--muted);
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+  }
+  .rate .seats {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 13px; color: var(--ink-soft); margin-bottom: 22px;
+  }
+  .rate ul { list-style: none; margin: 0 0 22px; flex: 1; }
+  .rate li {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 13.5px; padding: 8px 0; border-bottom: 1px solid var(--rule-soft);
+    display: flex; gap: 10px; color: var(--ink-soft);
+  }
+  .rate li:last-child { border-bottom: 0; }
+  .rate li::before { content: "✶"; color: var(--rust); }
+  .rate-cta {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    text-align: center; padding: 14px;
+    background: var(--ink); color: var(--paper);
+    font-size: 12px; font-weight: 700; letter-spacing: .16em; text-transform: uppercase;
+    border: 0;
+  }
+  .rate.featured .rate-cta { background: var(--rust); }
+  .rate-foot {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    margin-top: 12px; font-size: 11px; color: var(--muted);
+    letter-spacing: .04em; text-align: center;
+  }
+  .rate-bottom {
+    margin-top: 30px; text-align: center;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 13px; color: var(--muted); letter-spacing: .04em;
+  }
+  .rate-bottom strong { color: var(--ink); }
+
+  /* ===== Main app section ===== */
+  .app-head {
+    margin-bottom: 56px;
+  }
+  .app-head .kicker {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700;
+  }
+  .app-head h3 {
+    font-size: 60px; line-height: 1.04; letter-spacing: -.02em; font-weight: 400;
+    color: var(--paper); margin: 14px 0 18px; max-width: 18ch;
+  }
+  .app-head h3 em { color: var(--gold); font-style: italic; }
+  .app-head .deck {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 16px; line-height: 1.55; color: rgba(244,238,226,.78); max-width: 50ch;
+  }
+
+  .app-spread {
+    display: grid; grid-template-columns: 1.2fr 1fr; gap: 80px; align-items: center;
+  }
+  .app-text .field-line {
+    border-top: 1px solid rgba(244,238,226,.18); padding: 18px 0;
+    display: grid; grid-template-columns: 60px 1fr; gap: 24px; align-items: start;
+  }
+  .app-text .field-line:last-child { border-bottom: 1px solid rgba(244,238,226,.18); }
+  .app-text .field-line .lbl {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--gold); font-weight: 700; padding-top: 4px;
+  }
+  .app-text .field-line h5 {
+    font-size: 19px; font-style: italic; font-weight: 400; margin-bottom: 4px;
+    color: var(--paper);
+  }
+  .app-text .field-line p {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 14px; color: rgba(244,238,226,.7); line-height: 1.5;
+  }
+
+  /* phone (product-photo style) */
+  .phone-frame {
+    background: var(--paper-2); padding: 36px 28px;
+    text-align: center;
+  }
+  .phone-frame .caption {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--ink-soft); font-weight: 700; margin-bottom: 22px;
+  }
+  .phone-frame .caption strong { color: var(--rust); }
+  .phone {
+    width: 290px; background: var(--ink); border-radius: 32px; padding: 11px;
+    margin: 0 auto;
+    box-shadow: 0 30px 70px rgba(26,51,87,.25), 0 8px 16px rgba(0,0,0,.18);
+  }
+  .phone .screen {
+    background: var(--paper); border-radius: 22px; overflow: hidden;
+    aspect-ratio: 9 / 19; text-align: left;
+  }
+  .phone .top {
+    padding: 12px 18px 4px; display: flex; justify-content: space-between;
+    font-size: 10px; font-weight: 700; color: var(--ink);
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+  }
+  .phone .nav {
+    padding: 8px 16px 14px; border-bottom: 1px solid var(--rule);
+    display: flex; align-items: center; gap: 10px;
+  }
+  .phone .nav .b {
+    font-style: italic; font-size: 15px;
+  }
+  .phone .nav .pill {
+    margin-left: auto;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    background: var(--rust-soft); color: var(--rust);
+    padding: 3px 8px; border-radius: 999px;
+    font-size: 9px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
+  }
+  .phone .body { padding: 14px 16px; font-size: 11.5px; }
+  .phone .label {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 9px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--rust); font-weight: 700; margin-bottom: 6px;
+  }
+  .phone .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; margin-bottom: 12px; }
+  .phone .field {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 6px 8px; font-size: 10px; color: var(--ink-soft);
+    background: var(--paper);
+  }
+  .phone .textarea {
+    background: var(--paper); border: 1px solid var(--ink); border-radius: 3px;
+    padding: 10px; font-size: 10.5px; line-height: 1.4; color: var(--ink);
+    min-height: 86px;
+    font-style: italic;
+  }
+  .phone .textarea .em { color: var(--rust); }
+  .phone .chips {
+    display: flex; flex-wrap: wrap; gap: 4px; margin: 10px 0 14px;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+  }
+  .phone .chips span {
+    font-size: 9px; padding: 4px 8px; border-radius: 0;
+    border: 1px solid var(--rule); color: var(--ink-soft);
+    font-weight: 600; letter-spacing: .04em;
+  }
+  .phone .gen {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    text-align: center; padding: 12px;
+    background: var(--ink); color: var(--paper);
+    font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase;
+  }
+  .phone .gen .em { color: var(--gold); }
+  .phone .meta {
+    margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--rule);
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    display: flex; justify-content: space-between;
+    font-size: 9px; color: var(--muted); letter-spacing: .04em;
+  }
+  .phone .meta strong { color: var(--ink); }
+
+  /* ===== Footer (colophon) ===== */
+  footer.site {
+    background: var(--paper-2); padding: 70px 0 50px;
+    border-top: 3px double var(--ink);
+  }
+  footer.site .colophon-head {
+    text-align: center;
+    font-size: 11px; letter-spacing: .25em; text-transform: uppercase;
+    color: var(--muted);
+    font-family: -apple-system, "Inter", system-ui, sans-serif; font-weight: 700;
+    margin-bottom: 28px;
+  }
+  footer.site h6 { text-align: center; font-size: 36px; font-weight: 400; font-style: italic; margin-bottom: 6px; }
+  footer.site h6::before { content: "✦"; color: var(--rust); margin-right: 12px; font-style: normal; }
+  footer.site .tagline { text-align: center; font-size: 14px; color: var(--ink-soft); max-width: 50ch; margin: 0 auto 40px; }
+  footer.site .cols {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 36px;
+    padding-top: 30px; border-top: 1px solid var(--rule);
+  }
+  footer.site .col .h {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--muted); font-weight: 700; margin-bottom: 12px;
+  }
+  footer.site .col ul { list-style: none; }
+  footer.site .col li {
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 13.5px; padding: 4px 0;
+  }
+  footer.site .bottom {
+    margin-top: 36px; padding-top: 22px; border-top: 1px solid var(--rule);
+    display: flex; justify-content: space-between;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 12px; color: var(--muted);
+  }
+
+  @media (max-width: 900px) {
+    .masthead h1 { font-size: 64px; }
+    .lede-text h2 { font-size: 38px; }
+    .feature-block h3, .triptych-head h3, .rate-head h3, .app-head h3 { font-size: 36px; }
+    .lede-wrap, .feature-block, .triptych-head, .app-spread { grid-template-columns: 1fr; gap: 36px; }
+    .feature-block .body { column-count: 1; }
+    .triptych, .ratecard { grid-template-columns: 1fr; }
+    .triptych .col { border-right: 0; border-bottom: 1px solid var(--rule); padding: 22px 0; }
+    .triptych .col:not(:first-child) { padding-left: 0; }
+    footer.site .cols { grid-template-columns: 1fr 1fr; }
+    .section-nav ul { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Section nav -->
+<div class="section-nav">
+  <div class="brand">The Quotebird Journal</div>
+  <ul>
+    <li><a href="#landing">Landing</a></li>
+    <li><a href="#signup">Signup</a></li>
+    <li><a href="#app">Main app</a></li>
+  </ul>
+</div>
+
+<!-- LANDING / Masthead -->
+<section id="landing" style="padding-top:0;">
+  <div class="wrap">
+    <div class="masthead">
+      <div class="meta-row">
+        <span>Issue No. 01</span>
+        <span><strong>Spring 2026</strong></span>
+        <span>quotebird.com</span>
+      </div>
+      <h1>Quotebird <span class="amp">&amp;</span> the Trade</h1>
+      <div class="deck">Quoting <span class="dot">·</span> Invoicing <span class="dot">·</span> Catalog <span class="dot">·</span> Built for Shops That Build Things</div>
+      <div class="rule-thin"></div>
+    </div>
+
+    <div class="lede-wrap">
+      <div class="lede-text">
+        <div class="kicker">The Cover Story</div>
+        <h2>The quoting tool the trades have been waiting a <em>decade</em> for.</h2>
+        <div class="byline">Filed by <strong>The Quotebird Team</strong> · Sacramento, CA · 2026</div>
+      </div>
+      <div class="lede-body">
+        <p class="dropcap"><strong>Quoting</strong> hasn't kept up with the trades. A 30-year HVAC business runs on a spreadsheet, a thrice-folded supplier price sheet, and a pile of emailed PDFs. Quotebird is the first quoting tool built around how the work actually happens — at the kitchen table, on a phone, with a customer looking over your shoulder.</p>
+
+        <p>You upload your supplier price sheets once. Claude Vision extracts every SKU. You approve the catalog. From that moment on, every quote you send pulls real prices from <em>your</em> catalog — never a fabricated number, never a guess that you have to clean up afterward.</p>
+
+        <p>Then you describe the job in plain English and a branded PDF lands in the customer's inbox before they finish their coffee. The accepted ones convert to invoices with a tap. Unforeseen changes are tracked transparently. You mark paid. The dashboard shows you what's owed.</p>
+
+        <div class="lede-cta">
+          <a class="btn" href="#signup">Subscribe now →</a>
+          <a class="btn ghost" href="#app">Read the app spec</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- The Catalog (feature story) -->
+<section class="alt">
+  <div class="wrap">
+    <div class="feature-block">
+      <div>
+        <div class="head">
+          <div class="kicker">Feature · No. 01</div>
+          <h3>Your supplier sheet, <em>read by the machine.</em></h3>
+          <div class="deck">A meditation on catalog ingestion</div>
+        </div>
+        <div class="body">
+          <p>The first job a contractor does with Quotebird isn't a quote. It's a coffee-and-photos session. You sit down with your three or four most-used supplier price sheets — Carrier, Rheem, Eaton, the local plumbing wholesaler — and you upload each one.</p>
+
+          <p>Claude Sonnet 4, with its vision capability, reads every page. It identifies SKU codes, descriptions, units, and prices. It hands you back a structured list, organized by category, with anything it couldn't read clearly flagged in amber for your eyes.</p>
+
+          <p>You review. Twenty minutes, maybe forty if the photos were rough. You approve the rows that look right. You correct or skip the ones it flagged. You hit save.</p>
+
+          <p>From that moment, Quotebird knows your prices. Not estimates of your prices — <em>your prices</em>. The next time you ask for a quote that involves a 3-Ton 16 SEER condenser, the line item says $2,650, because that's what you sell it for. Not because the AI guessed.</p>
+        </div>
+      </div>
+
+      <aside class="sidebar">
+        <h6>Sidebar · By the Numbers</h6>
+        <div class="item">
+          <h5>342 SKUs</h5>
+          <p>The average catalog after onboarding for an HVAC shop using Quotebird.</p>
+        </div>
+        <div class="item">
+          <h5>~$0.20</h5>
+          <p>The cost to extract a 20-page price sheet via Claude Vision. One-time.</p>
+        </div>
+        <div class="item">
+          <h5>20 min</h5>
+          <p>Typical time spent reviewing the AI's extraction before the catalog goes live.</p>
+        </div>
+        <div class="item">
+          <h5>Zero</h5>
+          <p>Fabricated prices, ever. If a SKU isn't matched, the quote flags it for you.</p>
+        </div>
+      </aside>
+    </div>
+
+    <div class="pull-quote">
+      A spreadsheet doesn't shake the customer's hand. Your quote does. Make sure it looks like it came from a shop that gives a damn.
+      <div class="attr">— <strong>The Quotebird thesis</strong>, etched into every PDF</div>
+    </div>
+  </div>
+</section>
+
+<!-- Triptych of features -->
+<section>
+  <div class="wrap">
+    <div class="triptych-head">
+      <div>
+        <div class="kicker">Departments</div>
+        <h3>Three things Quotebird does <em>especially</em> well.</h3>
+      </div>
+      <p>Every quoting tool claims a long list of features. We picked three that actually matter — the rest are absent on purpose. Build what was asked. Stop there. Resist scope creep.</p>
+    </div>
+
+    <div class="triptych">
+      <div class="col">
+        <div class="roman">I.</div>
+        <h4>Catalog-driven <em>pricing</em></h4>
+        <p>Photos and PDFs of supplier sheets, ingested by Claude Vision. Reviewed by the contractor. Used as the source of truth for every quote thereafter. No invented prices, ever.</p>
+      </div>
+      <div class="col">
+        <div class="roman">II.</div>
+        <h4>Branded <em>delivery</em></h4>
+        <p>Logo, warranty wording, payment terms — the PDF feels like it came from your shop, not from a SaaS template. Email goes out via Resend with a signed PDF link.</p>
+      </div>
+      <div class="col">
+        <div class="roman">III.</div>
+        <h4>Honest <em>invoicing</em></h4>
+        <p>Convert the accepted quote with a tap. Any line edits become a transparent "Changes from original quote" section on the invoice. Nothing hidden from the customer.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNUP / Rate card -->
+<section id="signup" class="alt">
+  <div class="wrap">
+    <div class="rate-head">
+      <div class="kicker">The Rate Card</div>
+      <h3>Choose the shape of your <em>shop.</em></h3>
+      <div class="deck">Monthly · per-seat-band · no feature gating</div>
+    </div>
+
+    <div class="ratecard">
+      <div class="rate">
+        <div class="tier">Solo</div>
+        <h4>The One-Truck</h4>
+        <div class="price">$99<small> /mo</small></div>
+        <div class="seats">1 user · 100 quotes / month</div>
+        <ul>
+          <li>SKU catalog ingestion</li>
+          <li>AI prompt-to-quote</li>
+          <li>Branded PDFs &amp; email</li>
+          <li>Quote → Invoice conversion</li>
+          <li>Manual payment tracking</li>
+        </ul>
+        <a class="rate-cta" href="#">Subscribe</a>
+        <div class="rate-foot">No trial · cancel anytime</div>
+      </div>
+
+      <div class="rate featured">
+        <div class="tier">Crew <span class="em-tag">★ Editor's choice</span></div>
+        <h4>The Working Crew</h4>
+        <div class="price">$139<small> /mo</small></div>
+        <div class="seats">3–4 users · 300 quotes / month</div>
+        <ul>
+          <li>Everything in Solo</li>
+          <li>Shared team catalog</li>
+          <li>Roles: admin · member</li>
+          <li>Team activity feed</li>
+          <li>Priority email support</li>
+        </ul>
+        <a class="rate-cta" href="#">Subscribe</a>
+        <div class="rate-foot">14-day refund window</div>
+      </div>
+
+      <div class="rate">
+        <div class="tier">Shop</div>
+        <h4>The Multi-Truck</h4>
+        <div class="price">$249<small> /mo</small></div>
+        <div class="seats">5–10 users · unlimited</div>
+        <ul>
+          <li>Everything in Crew</li>
+          <li>Roles: admin · manager · member</li>
+          <li>Multiple service areas</li>
+          <li>Custom email domain</li>
+          <li>API access (v0.5)</li>
+        </ul>
+        <a class="rate-cta" href="#">Subscribe</a>
+        <div class="rate-foot">Volume contracts on request</div>
+      </div>
+    </div>
+
+    <p class="rate-bottom"><strong>Editorial note.</strong> Quotebird does not advertise a free trial. A working payment method is required at signup. Coupons issued for serious prospects on a case-by-case basis — write us.</p>
+  </div>
+</section>
+
+<!-- MAIN APP -->
+<section id="app" class="dark">
+  <div class="wrap">
+    <div class="app-head">
+      <div class="kicker">Inside the Issue · The Product</div>
+      <h3>The screen you'll <em>live</em> in.</h3>
+      <div class="deck">A walkthrough of Quotebird's Prompt-to-Quote screen — the one place where the entire product converges. Customer fields up top. A big honest textarea. Three example chips. One generate button. That's the whole interface.</div>
+    </div>
+
+    <div class="app-spread">
+      <div class="app-text">
+        <div class="field-line">
+          <div class="lbl">A</div>
+          <div><h5>Customer fields</h5><p>Optional but encouraged. Name, email, phone, address. The quote can be drafted without them and emailed later — useful for shop estimates done over the phone.</p></div>
+        </div>
+        <div class="field-line">
+          <div class="lbl">B</div>
+          <div><h5>The textarea</h5><p>Plain English. Equipment, materials, labor estimate, anything special. The AI handles structure, math, and markup. You provide the trade knowledge.</p></div>
+        </div>
+        <div class="field-line">
+          <div class="lbl">C</div>
+          <div><h5>Example chips</h5><p>Tap to pre-fill. Three running prompts — one per common job. Useful when you're at the customer's house and the wording slips your mind.</p></div>
+        </div>
+        <div class="field-line">
+          <div class="lbl">D</div>
+          <div><h5>Generate</h5><p>Quote lands in under thirty seconds. Review screen opens. Every line still editable. Send when you're ready.</p></div>
+        </div>
+      </div>
+
+      <div class="phone-frame">
+        <div class="caption">Figure 1 · <strong>Prompt-to-Quote screen</strong>, iOS, in the field</div>
+        <div class="phone">
+          <div class="screen">
+            <div class="top"><span>9:41</span><span>5G</span></div>
+            <div class="nav">
+              <span class="b">New quote</span>
+              <div class="pill">Draft</div>
+            </div>
+            <div class="body">
+              <div class="label">A · Customer</div>
+              <div class="fields">
+                <div class="field">J. Patel</div>
+                <div class="field">jp@email.com</div>
+                <div class="field">(916) 555-…</div>
+                <div class="field">214 Cedar St.</div>
+              </div>
+
+              <div class="label">B · The job</div>
+              <div class="textarea">
+                Replace 3-ton condenser, <span class="em">16 SEER</span>, second floor
+                attic access. R-22 from 1998. Reuse line set if leak test passes.
+                Mechanical permit required.
+              </div>
+
+              <div class="label" style="margin-top:12px;">C · Examples</div>
+              <div class="chips">
+                <span>3-ton condenser</span>
+                <span>50gal water heater</span>
+                <span>220V range</span>
+              </div>
+
+              <div class="gen">D · Generate <span class="em">quote</span></div>
+
+              <div class="meta">
+                <span>Catalog · <strong>342 SKUs</strong></span>
+                <span>Issue 01</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer / Colophon -->
+<footer class="site">
+  <div class="wrap">
+    <div class="colophon-head">Colophon</div>
+    <h6>The Quotebird Journal</h6>
+    <p class="tagline">A quoting and invoicing tool, set in Iowan Old Style and Inter, printed digitally and shipped out of Sacramento, CA, since 2026.</p>
+
+    <div class="cols">
+      <div class="col">
+        <div class="h">Issues</div>
+        <ul><li>Current</li><li>Archive</li><li>Subscribe</li><li>Gift</li></ul>
+      </div>
+      <div class="col">
+        <div class="h">Sections</div>
+        <ul><li>Catalog</li><li>Quoting</li><li>Invoicing</li><li>Letters</li></ul>
+      </div>
+      <div class="col">
+        <div class="h">Masthead</div>
+        <ul><li>About</li><li>Team</li><li>Contact</li><li>Press</li></ul>
+      </div>
+      <div class="col">
+        <div class="h">Service</div>
+        <ul><li>Help</li><li>Status</li><li>Security</li><li>Acceptable use</li></ul>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <div>© Quotebird Inc. · Issue 01 · Spring 2026</div>
+      <div>Terms · Privacy · Cookies</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

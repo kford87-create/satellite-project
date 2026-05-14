@@ -1,0 +1,671 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quotebird · Direction 1 · Warm Trades-Modern</title>
+<style>
+  :root {
+    --bg: #f3ede1;
+    --paper: #fbf7ee;
+    --surface: #ffffff;
+    --ink: #1c1814;
+    --ink-soft: #4a4339;
+    --muted: #7a7165;
+    --line: #d8cfbe;
+    --green: #28433a;
+    --green-soft: #d3dcd5;
+    --rust: #b14e22;
+    --rust-soft: #f3d9c4;
+    --gold: #c89d4a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.6 -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .serif { font-family: Charter, "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, serif; font-feature-settings: "kern", "liga", "onum"; }
+  a { color: inherit; text-decoration: none; }
+  img { max-width: 100%; display: block; }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 28px; }
+
+  /* ===== Section selector ===== */
+  .section-nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(243,237,225,.94);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 14px 28px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--muted);
+  }
+  .section-nav .brand {
+    font-family: Charter, Georgia, serif; font-size: 17px; font-style: italic;
+    color: var(--ink); letter-spacing: 0; text-transform: none;
+  }
+  .section-nav .brand::before {
+    content: "✦"; color: var(--rust); margin-right: 8px; font-size: 14px;
+  }
+  .section-nav ul { list-style: none; display: flex; gap: 28px; }
+  .section-nav a { padding: 4px 0; border-bottom: 1px solid transparent; }
+  .section-nav a:hover { border-bottom-color: var(--rust); color: var(--ink); }
+
+  /* ===== Eyebrow ===== */
+  .eyebrow {
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: var(--rust); font-weight: 600;
+    display: inline-flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before {
+    content: ""; width: 18px; height: 1px; background: var(--rust);
+  }
+
+  /* ===== Section ===== */
+  section { padding: 96px 0; border-bottom: 1px solid var(--line); }
+  section.dark { background: var(--green); color: #f3ede1; border-bottom: 0; }
+
+  /* ===== HERO ===== */
+  .hero { padding: 80px 0 110px; }
+  .hero h1 {
+    font-family: Charter, Georgia, serif;
+    font-size: 76px; line-height: 1.02; letter-spacing: -.015em;
+    margin: 24px 0 26px;
+    font-weight: 400;
+    max-width: 12ch;
+  }
+  .hero h1 em { font-style: italic; color: var(--rust); }
+  .hero .lede {
+    font-size: 19px; line-height: 1.55; max-width: 52ch; color: var(--ink-soft);
+  }
+  .hero .cta-row { margin-top: 38px; display: flex; gap: 14px; align-items: center; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 14px 24px; border-radius: 4px;
+    font-size: 14.5px; font-weight: 600; letter-spacing: .02em;
+    border: 1px solid var(--ink); background: var(--ink); color: var(--paper);
+    cursor: pointer; transition: transform .15s ease;
+  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn.ghost { background: transparent; color: var(--ink); }
+  .btn .arrow { display: inline-block; transition: transform .2s ease; }
+  .btn:hover .arrow { transform: translateX(3px); }
+  .hero-meta {
+    margin-top: 60px; padding-top: 28px; border-top: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;
+    max-width: 760px;
+  }
+  .hero-meta .item .k { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+  .hero-meta .item .v { font-family: Charter, Georgia, serif; font-size: 26px; margin-top: 2px; }
+  .hero-meta .item .v em { font-style: italic; color: var(--rust); }
+
+  /* ===== Trades row ===== */
+  .trades {
+    display: grid; grid-template-columns: 1fr 3fr;
+    gap: 80px; align-items: start;
+  }
+  .trades .label { font-size: 11px; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); padding-top: 6px; }
+  .trades-list { display: grid; grid-template-columns: repeat(3, 1fr); gap: 28px; }
+  .trade-card {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 28px; border-radius: 4px; position: relative;
+  }
+  .trade-card .num {
+    font-family: Charter, Georgia, serif;
+    font-size: 13px; font-style: italic; color: var(--rust);
+    position: absolute; top: 22px; right: 26px;
+  }
+  .trade-card h3 {
+    font-family: Charter, Georgia, serif; font-size: 22px;
+    font-weight: 400; margin-bottom: 8px;
+  }
+  .trade-card p { font-size: 14.5px; color: var(--ink-soft); }
+
+  /* ===== Features ===== */
+  .features {
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0;
+    border-top: 1px solid var(--line);
+    margin-top: 60px;
+  }
+  .feature {
+    padding: 36px 28px 32px; border-right: 1px solid var(--line);
+  }
+  .feature:last-child { border-right: 0; }
+  .feature .num {
+    font-family: Charter, Georgia, serif; font-style: italic;
+    color: var(--rust); font-size: 28px; letter-spacing: -.01em;
+  }
+  .feature h4 {
+    font-family: Charter, Georgia, serif; font-size: 21px;
+    margin: 16px 0 10px; font-weight: 400;
+  }
+  .feature p { font-size: 14.5px; color: var(--ink-soft); }
+
+  /* ===== Workflow ===== */
+  .workflow {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 80px; align-items: center;
+  }
+  .workflow h2 {
+    font-family: Charter, Georgia, serif; font-size: 44px;
+    line-height: 1.08; font-weight: 400; letter-spacing: -.01em;
+    margin: 18px 0 22px; max-width: 14ch;
+  }
+  .workflow h2 em { color: var(--rust); font-style: italic; }
+  .workflow p { color: var(--ink-soft); font-size: 16px; max-width: 42ch; }
+  .steps { display: flex; flex-direction: column; gap: 18px; }
+  .step {
+    background: var(--paper); border: 1px solid var(--line);
+    padding: 22px 24px; border-radius: 4px;
+    display: grid; grid-template-columns: 38px 1fr; gap: 18px; align-items: start;
+  }
+  .step .n {
+    font-family: Charter, Georgia, serif; font-size: 22px; font-style: italic;
+    color: var(--rust); padding-top: 1px;
+  }
+  .step h5 { font-size: 15px; margin-bottom: 4px; font-weight: 600; }
+  .step p { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+
+  /* ===== Quote / testimonial ===== */
+  .quote {
+    background: var(--green); color: #f3ede1; padding: 80px 0;
+    border-top: 0;
+  }
+  .quote blockquote {
+    font-family: Charter, Georgia, serif; font-size: 36px; line-height: 1.25;
+    font-weight: 400; letter-spacing: -.005em; max-width: 22ch;
+    font-style: italic;
+  }
+  .quote blockquote::before { content: "“"; color: var(--gold); font-size: 64px; line-height: 0; vertical-align: -16px; margin-right: 8px; }
+  .quote .cite {
+    margin-top: 32px;
+    font-size: 12px; letter-spacing: .2em; text-transform: uppercase;
+    color: rgba(243,237,225,.75);
+  }
+  .quote .cite strong { color: var(--gold); font-weight: 600; letter-spacing: .15em; }
+
+  /* ===== Pricing ===== */
+  .price-head {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px;
+    align-items: end; margin-bottom: 60px;
+  }
+  .price-head h2 {
+    font-family: Charter, Georgia, serif; font-size: 44px;
+    line-height: 1.05; letter-spacing: -.01em; font-weight: 400;
+    max-width: 14ch;
+  }
+  .price-head h2 em { color: var(--rust); font-style: italic; }
+  .price-head p { color: var(--ink-soft); font-size: 15px; max-width: 40ch; }
+
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+  .plan {
+    background: var(--paper); border: 1px solid var(--line); border-radius: 4px;
+    padding: 30px 26px 26px; display: flex; flex-direction: column;
+    position: relative;
+  }
+  .plan.featured {
+    background: var(--green); color: #f3ede1; border-color: var(--green);
+  }
+  .plan .tier {
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    font-weight: 600; color: var(--rust);
+  }
+  .plan.featured .tier { color: var(--gold); }
+  .plan .ribbon {
+    position: absolute; top: 18px; right: 22px;
+    font-size: 10px; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--gold); border: 1px solid var(--gold);
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .plan h3 {
+    font-family: Charter, Georgia, serif; font-weight: 400;
+    font-size: 30px; margin: 8px 0 4px; letter-spacing: -.01em;
+  }
+  .plan .price { font-family: Charter, Georgia, serif; font-size: 46px; margin: 18px 0 4px; letter-spacing: -.02em; }
+  .plan .price span { font-size: 15px; color: var(--muted); font-family: inherit; }
+  .plan.featured .price span { color: rgba(243,237,225,.65); }
+  .plan .sub { font-size: 13.5px; color: var(--ink-soft); }
+  .plan.featured .sub { color: rgba(243,237,225,.75); }
+  .plan ul { list-style: none; margin: 24px 0; flex: 1; }
+  .plan li { font-size: 14px; padding: 8px 0; border-bottom: 1px solid var(--line); display: flex; gap: 10px; align-items: baseline; }
+  .plan.featured li { border-bottom-color: rgba(243,237,225,.18); }
+  .plan li::before {
+    content: "›"; color: var(--rust); font-weight: 700; font-size: 14px;
+  }
+  .plan.featured li::before { color: var(--gold); }
+  .plan-cta {
+    display: block; padding: 14px; text-align: center; border-radius: 4px;
+    background: var(--ink); color: var(--paper); font-weight: 600; font-size: 14.5px;
+    letter-spacing: .02em;
+  }
+  .plan.featured .plan-cta { background: var(--gold); color: var(--green); }
+  .plan-foot { margin-top: 12px; font-size: 12px; color: var(--muted); text-align: center; }
+  .plan.featured .plan-foot { color: rgba(243,237,225,.6); }
+  .price-bottom { margin-top: 30px; font-size: 13px; color: var(--muted); text-align: center; }
+  .price-bottom strong { color: var(--ink); }
+
+  /* ===== App / phone ===== */
+  .app-bg { background: var(--green); color: #f3ede1; }
+  .app-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center; }
+  .app-grid h2 {
+    font-family: Charter, Georgia, serif; font-size: 44px;
+    line-height: 1.08; letter-spacing: -.01em; font-weight: 400;
+    margin: 18px 0 22px; max-width: 14ch;
+  }
+  .app-grid h2 em { color: var(--gold); font-style: italic; }
+  .app-grid p { color: rgba(243,237,225,.78); font-size: 16px; max-width: 44ch; }
+  .app-grid .chips { margin-top: 22px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .app-grid .chips span {
+    border: 1px solid rgba(243,237,225,.25); padding: 8px 14px;
+    border-radius: 999px; font-size: 12.5px; color: rgba(243,237,225,.82);
+  }
+  .phone-wrap { display: flex; justify-content: center; }
+  .phone {
+    width: 320px; background: #15231f; border-radius: 34px;
+    padding: 12px; box-shadow: 0 36px 80px rgba(0,0,0,.35), 0 8px 16px rgba(0,0,0,.25);
+  }
+  .phone .screen {
+    background: var(--paper); border-radius: 24px; overflow: hidden;
+    aspect-ratio: 9 / 19;
+  }
+  .phone .topbar {
+    display: flex; justify-content: space-between; padding: 14px 22px 4px;
+    font-size: 11px; font-weight: 600; color: var(--ink);
+  }
+  .phone .nav {
+    padding: 8px 18px 14px; display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .phone .nav .icon {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: var(--green-soft); color: var(--green);
+    display: flex; align-items: center; justify-content: center;
+    font-family: Charter, serif; font-style: italic; font-weight: 600; font-size: 14px;
+  }
+  .phone .nav .t { font-family: Charter, serif; font-size: 15px; font-style: italic; }
+  .phone .nav .badge {
+    margin-left: auto; font-size: 9px; letter-spacing: .14em; text-transform: uppercase;
+    background: var(--rust-soft); color: var(--rust); padding: 4px 8px; border-radius: 999px; font-weight: 700;
+  }
+  .phone .body { padding: 16px 18px; font-size: 12px; }
+  .phone .body .eb {
+    font-size: 9px; letter-spacing: .2em; text-transform: uppercase; color: var(--rust);
+    font-weight: 700; margin-bottom: 6px;
+  }
+  .phone .body h3 {
+    font-family: Charter, serif; font-size: 19px; font-weight: 400;
+    margin-bottom: 14px; line-height: 1.2;
+  }
+  .phone .fields {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 10px;
+  }
+  .phone .field {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 7px 10px; font-size: 10px; color: var(--ink-soft);
+  }
+  .phone .textarea {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 10px 12px; font-size: 10px; line-height: 1.4; color: var(--ink);
+    min-height: 78px;
+  }
+  .phone .textarea em { color: var(--rust); font-style: italic; }
+  .phone .helper {
+    font-size: 9px; color: var(--muted); margin: 8px 0 4px;
+  }
+  .phone .chips-row {
+    display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 12px;
+  }
+  .phone .chips-row span {
+    background: var(--green-soft); color: var(--green); font-size: 9px;
+    padding: 4px 7px; border-radius: 999px; font-weight: 600;
+  }
+  .phone .gen-btn {
+    display: flex; justify-content: center; align-items: center; gap: 6px;
+    background: var(--ink); color: var(--paper); border-radius: 8px;
+    padding: 12px; font-size: 12px; font-weight: 600; letter-spacing: .02em;
+  }
+  .phone .gen-btn em { font-family: Charter, serif; font-style: italic; color: var(--gold); }
+  .phone .footer-row {
+    margin-top: 14px; display: flex; justify-content: space-between;
+    font-size: 9px; color: var(--muted);
+    border-top: 1px solid var(--line); padding-top: 8px;
+  }
+  .phone .footer-row strong { color: var(--green); font-family: Charter, serif; font-style: italic; }
+
+  /* ===== Footer ===== */
+  footer.site {
+    padding: 60px 0 50px; background: var(--ink); color: rgba(243,237,225,.7);
+    border-top: 0;
+  }
+  footer.site .top {
+    display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 40px;
+    padding-bottom: 30px; border-bottom: 1px solid rgba(243,237,225,.1);
+  }
+  footer.site .brand {
+    font-family: Charter, serif; font-size: 24px; font-style: italic;
+    color: #f3ede1; letter-spacing: -.01em;
+  }
+  footer.site .brand::before { content: "✦ "; color: var(--gold); }
+  footer.site .brand-sub { font-size: 13px; margin-top: 8px; max-width: 32ch; }
+  footer.site h6 {
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(243,237,225,.5); margin-bottom: 14px; font-weight: 600;
+  }
+  footer.site ul { list-style: none; }
+  footer.site li { padding: 4px 0; font-size: 13.5px; }
+  footer.site .bottom {
+    padding-top: 28px; display: flex; justify-content: space-between;
+    font-size: 12px;
+  }
+
+  @media (max-width: 880px) {
+    .hero h1 { font-size: 48px; }
+    .trades, .workflow, .app-grid, .price-head { grid-template-columns: 1fr; gap: 28px; }
+    .features { grid-template-columns: 1fr; }
+    .feature { border-right: 0; border-bottom: 1px solid var(--line); }
+    .plans { grid-template-columns: 1fr; }
+    footer.site .top { grid-template-columns: 1fr; }
+    .section-nav ul { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ Section nav ============ -->
+<div class="section-nav">
+  <div class="brand">Quotebird</div>
+  <ul>
+    <li><a href="#landing">Landing</a></li>
+    <li><a href="#signup">Signup</a></li>
+    <li><a href="#app">Main app</a></li>
+  </ul>
+</div>
+
+<!-- ============ LANDING ============ -->
+<section id="landing" class="hero">
+  <div class="wrap">
+    <span class="eyebrow">For shops that take their craft seriously</span>
+    <h1 class="serif">From the cab to the customer in <em>thirty seconds.</em></h1>
+    <p class="lede">
+      Quotebird is the quoting tool built for HVAC, plumbing, and electrical shops who
+      know their trade — and are tired of doing the paperwork like it's 2004. Upload
+      your supplier price sheets, describe the job in plain English, send a branded
+      PDF before you leave the driveway.
+    </p>
+    <div class="cta-row">
+      <a class="btn" href="#signup">Start quoting · 7-day trial <span class="arrow">→</span></a>
+      <a class="btn ghost" href="#app">See it on a phone</a>
+    </div>
+
+    <div class="hero-meta">
+      <div class="item">
+        <div class="k">Time to first quote</div>
+        <div class="v serif">Under <em>30 sec</em></div>
+      </div>
+      <div class="item">
+        <div class="k">Setup</div>
+        <div class="v serif"><em>Five</em> minutes</div>
+      </div>
+      <div class="item">
+        <div class="k">Trusted by</div>
+        <div class="v serif">1–5 person <em>shops</em></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="trades">
+      <div class="label">Built for the trades</div>
+      <div>
+        <div class="trades-list">
+          <div class="trade-card">
+            <span class="num serif">01</span>
+            <h3>HVAC</h3>
+            <p>Condenser swaps, line-set leak tests, mini-split installs, ductwork. Quote the job from the truck before the homeowner pours another coffee.</p>
+          </div>
+          <div class="trade-card">
+            <span class="num serif">02</span>
+            <h3>Plumbing</h3>
+            <p>Water heater replacements, repipes, drain work, permit pulls. Your supplier price sheet becomes your catalog in one upload.</p>
+          </div>
+          <div class="trade-card">
+            <span class="num serif">03</span>
+            <h3>Electrical</h3>
+            <p>Service upgrades, dedicated circuits, panel changes. Quotes that include the permit fee without you having to remember it.</p>
+          </div>
+        </div>
+
+        <div class="features">
+          <div class="feature">
+            <div class="num serif">i.</div>
+            <h4 class="serif">Your catalog, ingested</h4>
+            <p>Snap a photo of your supplier price sheet — or upload a PDF. The AI reads every SKU, price, and unit. You review, approve, and it's yours.</p>
+          </div>
+          <div class="feature">
+            <div class="num serif">ii.</div>
+            <h4 class="serif">Type the job, get the quote</h4>
+            <p>Describe the work in plain English. The quote uses <em>your</em> catalog prices — never a guess. Unmatched items get flagged for you to set.</p>
+          </div>
+          <div class="feature">
+            <div class="num serif">iii.</div>
+            <h4 class="serif">Branded PDF, sent by email</h4>
+            <p>Your logo, your warranty wording, your terms. Customer replies "I accept." You convert it to an invoice with one tap.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ How it works ============ -->
+<section>
+  <div class="wrap">
+    <div class="workflow">
+      <div>
+        <span class="eyebrow">A working day, redrawn</span>
+        <h2 class="serif">Built for the truck, the cab, and the kitchen table — not the <em>desk.</em></h2>
+        <p>Most quoting software was designed for people who sit at a computer all day. You're not those people. Quotebird is shaped around how trade work actually happens: in the moment, on a phone, with a customer looking over your shoulder.</p>
+      </div>
+      <div class="steps">
+        <div class="step">
+          <div class="n">i</div>
+          <div>
+            <h5>Onboard once.</h5>
+            <p>Upload your three or four supplier price sheets. Claude Vision extracts the SKUs. You review the catalog over a coffee — done in twenty minutes.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="n">ii</div>
+          <div>
+            <h5>Describe the job.</h5>
+            <p>At the customer's house. "Replace 3-ton condenser, 16 SEER, attic access tight, will reuse line set if leak test passes." That's all.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="n">iii</div>
+          <div>
+            <h5>Send the PDF.</h5>
+            <p>Quote shows up branded with your logo, warranty wording, payment terms. Email goes out before the customer's coffee is cold.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="n">iv</div>
+          <div>
+            <h5>Convert &amp; collect.</h5>
+            <p>"I accept." One tap turns the quote into an invoice. Edit any unforeseen changes — those show up transparently for the customer.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Quote ============ -->
+<section class="quote">
+  <div class="wrap">
+    <blockquote class="serif">A spreadsheet doesn't shake the customer's hand. Your quote does. Make it look like it came from a shop that gives a damn.</blockquote>
+    <div class="cite">— <strong>The Quotebird thesis</strong> · written into every PDF</div>
+  </div>
+</section>
+
+<!-- ============ SIGNUP ============ -->
+<section id="signup">
+  <div class="wrap">
+    <div class="price-head">
+      <div>
+        <span class="eyebrow">Pricing · all plans monthly</span>
+        <h2 class="serif">Pick the shape of your <em>shop.</em></h2>
+      </div>
+      <p>Per-seat-band pricing — no feature-gating you out of the things that matter. Every plan ships with the SKU catalog, the AI quoting, branded PDFs, invoicing, and overdue tracking.</p>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <div class="tier">Solo</div>
+        <h3 class="serif">For the one-truck shop</h3>
+        <div class="price serif">$99<span> / month</span></div>
+        <div class="sub">1 user · 100 quotes / month</div>
+        <ul>
+          <li>SKU catalog ingestion</li>
+          <li>AI prompt-to-quote</li>
+          <li>Branded PDFs &amp; email delivery</li>
+          <li>Quote → Invoice conversion</li>
+          <li>Manual payment tracking</li>
+        </ul>
+        <a class="plan-cta" href="#">Start with Solo →</a>
+        <div class="plan-foot">No free trial · Stripe coupons issued on request</div>
+      </div>
+
+      <div class="plan featured">
+        <div class="ribbon">Popular</div>
+        <div class="tier">Crew</div>
+        <h3 class="serif">For the working crew</h3>
+        <div class="price serif">$139<span> / month</span></div>
+        <div class="sub">3–4 users · 300 quotes / month</div>
+        <ul>
+          <li>Everything in Solo</li>
+          <li>Shared team catalog &amp; AI memory</li>
+          <li>Roles: admin · member</li>
+          <li>Team activity feed</li>
+          <li>Priority email support</li>
+        </ul>
+        <a class="plan-cta" href="#">Start with Crew →</a>
+        <div class="plan-foot">14-day refund · cancel anytime</div>
+      </div>
+
+      <div class="plan">
+        <div class="tier">Shop</div>
+        <h3 class="serif">For the multi-truck shop</h3>
+        <div class="price serif">$249<span> / month</span></div>
+        <div class="sub">5–10 users · unlimited quotes</div>
+        <ul>
+          <li>Everything in Crew</li>
+          <li>Roles: admin · manager · member</li>
+          <li>Multiple service areas</li>
+          <li>Custom email domain</li>
+          <li>Advanced reports · API access</li>
+        </ul>
+        <a class="plan-cta" href="#">Start with Shop →</a>
+        <div class="plan-foot">Volume contracts available · talk to us</div>
+      </div>
+    </div>
+
+    <p class="price-bottom"><strong>No free trial.</strong> A working payment method is required at signup. Trials and discounts issued on a case-by-case basis — write us if you'd like one.</p>
+  </div>
+</section>
+
+<!-- ============ MAIN APP ============ -->
+<section id="app" class="app-bg">
+  <div class="wrap">
+    <div class="app-grid">
+      <div>
+        <span class="eyebrow" style="color: var(--gold)">The main screen</span>
+        <h2 class="serif">Type the job. Get the <em>quote.</em></h2>
+        <p>This is the one screen you'll spend most of your time on. Customer fields up top — optional but encouraged. A big honest textarea for the job description. Tap the chips for examples. Hit generate.</p>
+        <div class="chips">
+          <span>Optimized for mobile</span>
+          <span>Works offline · syncs later</span>
+          <span>Installs to home screen</span>
+        </div>
+      </div>
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="screen">
+            <div class="topbar"><span>9:41</span><span>●●● 5G</span></div>
+            <div class="nav">
+              <div class="icon">Q</div>
+              <div class="t">New quote</div>
+              <div class="badge">Draft</div>
+            </div>
+            <div class="body">
+              <div class="eb">Customer</div>
+              <div class="fields">
+                <div class="field">J. Patel</div>
+                <div class="field">jp@email.com</div>
+                <div class="field">(916) 555-…</div>
+                <div class="field">214 Cedar St.</div>
+              </div>
+
+              <div class="eb" style="margin-top:14px;">Describe the job</div>
+              <div class="textarea">
+                Replace 3-ton AC condenser, <em>16 SEER, second floor attic access.</em>
+                Customer has R-22 system from 1998. Will reuse line set if leak test
+                passes. Mechanical permit required.
+              </div>
+
+              <div class="helper">Try one of these:</div>
+              <div class="chips-row">
+                <span>3-ton condenser swap</span>
+                <span>50gal water heater</span>
+                <span>220V range circuit</span>
+              </div>
+
+              <div class="gen-btn">⚡ Generate <em>quote</em></div>
+
+              <div class="footer-row">
+                <span>Catalog · <strong>342 SKUs</strong></span>
+                <span>Powered by Quotebird</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ Footer ============ -->
+<footer class="site">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="brand">Quotebird</div>
+        <p class="brand-sub">Quoting and invoicing for shops that take their craft seriously. Made in California — built for the road.</p>
+      </div>
+      <div>
+        <h6>Product</h6>
+        <ul><li>Features</li><li>Pricing</li><li>Changelog</li><li>Roadmap</li></ul>
+      </div>
+      <div>
+        <h6>Company</h6>
+        <ul><li>About</li><li>The journal</li><li>Customers</li><li>Contact</li></ul>
+      </div>
+      <div>
+        <h6>Help</h6>
+        <ul><li>Getting started</li><li>Catalog upload</li><li>Status</li><li>Security</li></ul>
+      </div>
+    </div>
+    <div class="bottom">
+      <div>© 2026 Quotebird Inc.</div>
+      <div>Terms · Privacy · Acceptable use</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quotebird · Direction 2 · Bold Hi-Contrast</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --ink: #0a0a0a;
+    --ink-soft: #2a2a2a;
+    --muted: #828282;
+    --line: #e8e8e8;
+    --pop: #d44a1f;        /* copper / electric orange */
+    --pop-deep: #a83712;
+    --shadow: 0 1px 0 rgba(0,0,0,.04), 0 12px 32px rgba(0,0,0,.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font: 16px/1.55 -apple-system, BlinkMacSystemFont, "Helvetica Neue", "Inter", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: inherit; text-decoration: none; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 36px; }
+
+  /* ===== Section nav ===== */
+  .section-nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(255,255,255,.96); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--line);
+    padding: 18px 36px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .section-nav .brand {
+    font-weight: 900; font-size: 18px; letter-spacing: -.04em;
+    font-stretch: condensed;
+    text-transform: uppercase;
+  }
+  .section-nav .brand::after { content: "."; color: var(--pop); }
+  .section-nav ul { list-style: none; display: flex; gap: 30px; }
+  .section-nav a {
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    font-weight: 600;
+  }
+  .section-nav a:hover { color: var(--ink); }
+  .section-nav .cta {
+    background: var(--ink); color: #fff; padding: 9px 16px; border-radius: 999px;
+    font-size: 12px; letter-spacing: .08em; text-transform: uppercase; font-weight: 700;
+  }
+
+  /* ===== Display type — condensed bold ===== */
+  .display {
+    font-weight: 900;
+    font-stretch: condensed;
+    font-family: "Helvetica Neue", "Arial Narrow", "Inter", system-ui, sans-serif;
+    letter-spacing: -.045em;
+    line-height: .92;
+    text-transform: uppercase;
+  }
+  .num-tag {
+    font-weight: 700; font-size: 11px; letter-spacing: .25em;
+    font-feature-settings: "tnum";
+    color: var(--pop);
+  }
+  .num-tag::before { content: ""; display: inline-block; width: 24px; height: 1px; background: var(--pop); vertical-align: middle; margin-right: 12px; }
+
+  /* ===== Sections ===== */
+  section { padding: 130px 0; border-bottom: 1px solid var(--line); }
+  section.tight { padding: 80px 0; }
+  section.ink { background: var(--ink); color: #fff; border-bottom: 0; }
+  section.ink .num-tag { color: var(--pop); }
+
+  /* ===== HERO ===== */
+  .hero { padding: 100px 0 120px; }
+  .hero-grid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 80px; align-items: end; }
+  .hero h1.display {
+    font-size: 132px; margin: 28px 0 0;
+  }
+  .hero h1 .accent { color: var(--pop); }
+  .hero h1 .small {
+    display: block;
+    font-size: 60px; letter-spacing: -.035em; color: var(--ink-soft);
+    margin-top: 14px;
+  }
+  .hero .copy {
+    padding-bottom: 18px;
+  }
+  .hero .copy p {
+    font-size: 18px; line-height: 1.5; color: var(--ink-soft); max-width: 38ch;
+  }
+  .hero .copy .ctas {
+    margin-top: 30px; display: flex; gap: 10px; flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 10px;
+    padding: 16px 24px; border-radius: 999px;
+    font-size: 14px; letter-spacing: .04em; text-transform: uppercase; font-weight: 700;
+    background: var(--ink); color: #fff;
+    border: 2px solid var(--ink);
+    cursor: pointer; transition: transform .15s;
+  }
+  .btn:hover { transform: translateY(-2px); }
+  .btn.outline { background: transparent; color: var(--ink); }
+  .btn.pop { background: var(--pop); border-color: var(--pop); color: #fff; }
+  .btn .arrow { transition: transform .2s; }
+  .btn:hover .arrow { transform: translateX(3px); }
+
+  .marquee-strip {
+    margin-top: 80px; padding: 22px 0;
+    border-top: 1px solid var(--line); border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 30px;
+    align-items: center;
+  }
+  .marquee-strip .cell {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; letter-spacing: .04em; color: var(--ink-soft);
+    border-right: 1px solid var(--line); padding-right: 30px;
+  }
+  .marquee-strip .cell:last-child { border-right: 0; }
+  .marquee-strip .cell strong { color: var(--ink); font-weight: 700; }
+  .marquee-strip .dot {
+    width: 8px; height: 8px; border-radius: 50%; background: var(--pop);
+    box-shadow: 0 0 0 4px rgba(212,74,31,.18);
+  }
+
+  /* ===== Features block ===== */
+  .feat-head { display: grid; grid-template-columns: 1fr 1.4fr; gap: 80px; align-items: end; margin-bottom: 80px; }
+  .feat-head h2.display {
+    font-size: 86px; max-width: 16ch;
+  }
+  .feat-head h2 .accent { color: var(--pop); }
+  .feat-head p {
+    font-size: 17px; line-height: 1.55; color: var(--ink-soft); max-width: 44ch;
+  }
+
+  .feature-rows {
+    border-top: 2px solid var(--ink);
+  }
+  .feature-row {
+    display: grid; grid-template-columns: 100px 1fr 1.5fr 1fr;
+    align-items: start; gap: 40px;
+    padding: 40px 0; border-bottom: 1px solid var(--line);
+  }
+  .feature-row .idx { font-weight: 800; font-size: 32px; letter-spacing: -.04em; color: var(--ink); font-feature-settings: "tnum"; }
+  .feature-row h3 {
+    font-weight: 800; font-size: 26px; letter-spacing: -.025em; line-height: 1.1;
+    text-transform: uppercase; font-stretch: condensed;
+  }
+  .feature-row h3 .pop { color: var(--pop); }
+  .feature-row p { font-size: 15px; color: var(--ink-soft); line-height: 1.5; }
+  .feature-row .tags { display: flex; flex-wrap: wrap; gap: 6px; }
+  .feature-row .tag {
+    font-size: 11px; letter-spacing: .12em; text-transform: uppercase;
+    border: 1px solid var(--ink); padding: 5px 10px; border-radius: 999px; font-weight: 700;
+  }
+
+  /* ===== Workflow block (ink) ===== */
+  .work-head h2.display {
+    font-size: 110px; max-width: 12ch; margin: 24px 0 0;
+  }
+  .work-head h2 .accent { color: var(--pop); }
+  .work-strip {
+    margin-top: 60px;
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+  .work-step {
+    background: rgba(255,255,255,.04); border: 1px solid rgba(255,255,255,.12);
+    border-radius: 4px; padding: 24px;
+    position: relative;
+  }
+  .work-step .n {
+    font-weight: 900; font-size: 42px; letter-spacing: -.05em; color: var(--pop);
+    font-feature-settings: "tnum";
+  }
+  .work-step h4 {
+    font-weight: 800; font-size: 19px; letter-spacing: -.02em; line-height: 1.15;
+    text-transform: uppercase; font-stretch: condensed;
+    margin: 12px 0 8px;
+  }
+  .work-step p { font-size: 13.5px; color: rgba(255,255,255,.6); }
+
+  /* ===== Pricing ===== */
+  .price-intro { margin-bottom: 70px; max-width: 64ch; }
+  .price-intro h2.display { font-size: 96px; margin: 24px 0 22px; max-width: 14ch; }
+  .price-intro h2 .pop { color: var(--pop); }
+  .price-intro p { font-size: 17px; color: var(--ink-soft); line-height: 1.5; }
+
+  .plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0; border: 2px solid var(--ink); border-radius: 4px; overflow: hidden; }
+  .plan { padding: 36px 30px 30px; border-right: 1px solid var(--line); position: relative; }
+  .plan:last-child { border-right: 0; }
+  .plan.featured { background: var(--ink); color: #fff; }
+  .plan.featured .badge {
+    position: absolute; top: 30px; right: 28px;
+    background: var(--pop); color: #fff; padding: 5px 10px; border-radius: 999px;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase; font-weight: 700;
+  }
+  .plan .tier {
+    font-weight: 900; font-size: 36px; letter-spacing: -.04em;
+    text-transform: uppercase; font-stretch: condensed;
+  }
+  .plan.featured .tier .accent { color: var(--pop); }
+  .plan .price {
+    margin: 18px 0 4px;
+    font-weight: 900; font-size: 64px; letter-spacing: -.05em; line-height: 1;
+    font-stretch: condensed;
+  }
+  .plan .price small { font-size: 14px; font-weight: 600; color: var(--muted); letter-spacing: 0; font-stretch: normal; }
+  .plan.featured .price small { color: rgba(255,255,255,.6); }
+  .plan .seats {
+    font-size: 12px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 24px; font-weight: 600;
+  }
+  .plan.featured .seats { color: rgba(255,255,255,.7); }
+  .plan ul { list-style: none; margin: 0 0 24px; }
+  .plan li {
+    font-size: 14px; padding: 10px 0; border-bottom: 1px solid var(--line);
+    display: flex; gap: 12px; align-items: center;
+  }
+  .plan.featured li { border-bottom-color: rgba(255,255,255,.1); }
+  .plan li::before {
+    content: "■"; color: var(--pop); font-size: 10px;
+  }
+  .plan-cta {
+    display: block; padding: 16px; text-align: center;
+    background: var(--ink); color: #fff; border-radius: 999px;
+    font-weight: 700; font-size: 13px; letter-spacing: .12em; text-transform: uppercase;
+  }
+  .plan.featured .plan-cta { background: var(--pop); }
+  .plan-foot {
+    text-align: center; margin-top: 14px; font-size: 11px; color: var(--muted); letter-spacing: .04em;
+  }
+  .plan.featured .plan-foot { color: rgba(255,255,255,.55); }
+  .price-bottom {
+    margin-top: 36px; text-align: center; font-size: 13.5px;
+    color: var(--muted); letter-spacing: .02em;
+  }
+  .price-bottom strong { color: var(--ink); }
+
+  /* ===== App / phone ===== */
+  .app-head {
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 60px;
+    align-items: end; margin-bottom: 70px;
+  }
+  .app-head h2.display {
+    font-size: 104px; max-width: 13ch; margin: 24px 0 0;
+  }
+  .app-head h2 .accent { color: var(--pop); }
+  .app-head p { font-size: 16px; line-height: 1.55; color: var(--ink-soft); max-width: 36ch; padding-bottom: 8px; }
+  .app-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 80px; align-items: center;
+  }
+  .app-callouts {
+    display: flex; flex-direction: column; gap: 24px;
+  }
+  .callout {
+    display: grid; grid-template-columns: 40px 1fr; gap: 18px; align-items: start;
+    padding: 22px 0; border-top: 1px solid var(--line);
+  }
+  .callout:first-child { border-top: 0; padding-top: 0; }
+  .callout .marker {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--ink); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 900; font-size: 13px; letter-spacing: -.02em;
+  }
+  .callout h4 { font-size: 16px; font-weight: 800; letter-spacing: -.01em; margin-bottom: 4px; }
+  .callout p { font-size: 14px; color: var(--ink-soft); line-height: 1.5; }
+
+  /* phone */
+  .phone-wrap { display: flex; justify-content: center; }
+  .phone {
+    width: 320px; background: var(--ink); border-radius: 36px;
+    padding: 12px;
+    box-shadow: 0 40px 100px rgba(0,0,0,.18), 0 12px 32px rgba(0,0,0,.08);
+    border: 1px solid var(--ink);
+  }
+  .phone .screen {
+    background: #fff; border-radius: 26px; overflow: hidden;
+    aspect-ratio: 9 / 19;
+  }
+  .phone .top {
+    padding: 14px 20px 6px; display: flex; justify-content: space-between;
+    font-size: 11px; font-weight: 700;
+  }
+  .phone .nav {
+    padding: 10px 18px 12px; border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; gap: 12px;
+  }
+  .phone .nav .b {
+    font-weight: 900; font-stretch: condensed; font-size: 18px; letter-spacing: -.04em;
+    text-transform: uppercase;
+  }
+  .phone .nav .b::after { content: "."; color: var(--pop); }
+  .phone .nav .pill {
+    margin-left: auto; padding: 4px 10px; border-radius: 999px;
+    font-size: 10px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase;
+    background: var(--pop); color: #fff;
+  }
+  .phone .body { padding: 16px 18px; font-size: 12.5px; }
+  .phone .label {
+    font-size: 9.5px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase;
+    color: var(--ink-soft); margin-bottom: 6px;
+  }
+  .phone .label .pop { color: var(--pop); }
+  .phone .fields { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 12px; }
+  .phone .field {
+    border: 1px solid var(--line); border-radius: 4px;
+    padding: 8px 10px; font-size: 10.5px; color: var(--ink-soft);
+  }
+  .phone .textarea {
+    background: #fafafa; border: 1px solid var(--ink); border-radius: 4px;
+    padding: 12px; font-size: 11px; line-height: 1.45; color: var(--ink);
+    min-height: 90px;
+  }
+  .phone .textarea .pop { color: var(--pop); font-weight: 700; }
+  .phone .chips { margin: 12px 0 14px; display: flex; flex-wrap: wrap; gap: 4px; }
+  .phone .chips span {
+    background: #fff; border: 1px solid var(--ink); color: var(--ink);
+    padding: 5px 8px; border-radius: 999px;
+    font-size: 9.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .phone .gen {
+    background: var(--pop); color: #fff; border-radius: 999px;
+    padding: 13px; text-align: center;
+    font-size: 13px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  }
+  .phone .meta {
+    margin-top: 12px; display: flex; justify-content: space-between;
+    font-size: 9.5px; color: var(--muted); letter-spacing: .04em;
+    padding-top: 10px; border-top: 1px solid var(--line);
+  }
+  .phone .meta strong { color: var(--ink); font-weight: 800; }
+
+  /* ===== Footer ===== */
+  footer.site {
+    background: var(--ink); color: rgba(255,255,255,.65);
+    padding: 80px 0 60px;
+  }
+  footer.site .top { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 50px; }
+  footer.site .brand {
+    font-weight: 900; font-size: 36px; letter-spacing: -.045em; color: #fff;
+    text-transform: uppercase; font-stretch: condensed;
+  }
+  footer.site .brand::after { content: "."; color: var(--pop); }
+  footer.site .blurb { margin-top: 12px; max-width: 36ch; font-size: 14px; line-height: 1.5; }
+  footer.site h6 {
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase;
+    color: rgba(255,255,255,.45); font-weight: 700; margin-bottom: 14px;
+  }
+  footer.site ul { list-style: none; }
+  footer.site li { padding: 5px 0; font-size: 13.5px; }
+  footer.site li:hover { color: #fff; cursor: pointer; }
+  footer.site .bottom {
+    margin-top: 56px; padding-top: 26px; border-top: 1px solid rgba(255,255,255,.1);
+    display: flex; justify-content: space-between; font-size: 12px;
+  }
+
+  @media (max-width: 900px) {
+    .hero h1.display { font-size: 70px; }
+    .hero h1 .small { font-size: 36px; }
+    .feat-head h2.display, .work-head h2.display, .price-intro h2.display, .app-head h2.display { font-size: 56px; }
+    .hero-grid, .feat-head, .work-strip, .app-head, .app-grid { grid-template-columns: 1fr; gap: 30px; }
+    .work-strip { grid-template-columns: 1fr; }
+    .plans { grid-template-columns: 1fr; }
+    .feature-row { grid-template-columns: 1fr; gap: 12px; }
+    .marquee-strip { grid-template-columns: 1fr 1fr; }
+    footer.site .top { grid-template-columns: 1fr; }
+    .section-nav ul { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Section nav -->
+<div class="section-nav">
+  <div class="brand">Quotebird</div>
+  <ul>
+    <li><a href="#landing">Landing</a></li>
+    <li><a href="#signup">Signup</a></li>
+    <li><a href="#app">Main app</a></li>
+  </ul>
+  <a class="cta" href="#signup">Start</a>
+</div>
+
+<!-- LANDING / HERO -->
+<section id="landing" class="hero">
+  <div class="wrap">
+    <span class="num-tag">01 · The pitch</span>
+    <div class="hero-grid">
+      <div>
+        <h1 class="display">
+          Quote like<br>
+          it's <span class="accent">2026.</span>
+          <span class="small display">Not 2004.</span>
+        </h1>
+      </div>
+      <div class="copy">
+        <p>The AI-native quoting tool for small trade shops. Upload your supplier price sheets. Describe the job. Send a branded PDF before the customer pours their second cup of coffee.</p>
+        <div class="ctas">
+          <a class="btn pop" href="#signup">Start quoting <span class="arrow">→</span></a>
+          <a class="btn outline" href="#app">See the app</a>
+        </div>
+      </div>
+    </div>
+
+    <div class="marquee-strip">
+      <div class="cell"><span class="dot"></span><span><strong>30 sec</strong> from prompt to PDF</span></div>
+      <div class="cell"><span class="dot"></span><span><strong>342 SKU</strong> avg catalog size</span></div>
+      <div class="cell"><span class="dot"></span><span><strong>97%</strong> AI cost margin</span></div>
+      <div class="cell"><span class="dot"></span><span><strong>1–10</strong> users per shop</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section>
+  <div class="wrap">
+    <span class="num-tag">02 · What it does</span>
+    <div class="feat-head">
+      <h2 class="display">Built for shops that <span class="accent">show up.</span></h2>
+      <p>Quotebird isn't a spreadsheet bolted onto a payment processor. It's three tools that finally know about each other — a catalog, a quoting AI, and an invoicing layer — wrapped in something that opens fast on a five-year-old phone.</p>
+    </div>
+
+    <div class="feature-rows">
+      <div class="feature-row">
+        <div class="idx">01</div>
+        <div>
+          <h3>Your catalog,<br><span class="pop">ingested.</span></h3>
+        </div>
+        <p>Snap a photo or upload a PDF of your supplier price sheet. Claude Vision extracts every SKU code, description, unit, and price. You review the rows, approve them, and the catalog is yours forever.</p>
+        <div class="tags">
+          <span class="tag">Photo</span><span class="tag">PDF</span><span class="tag">Review gate</span>
+        </div>
+      </div>
+
+      <div class="feature-row">
+        <div class="idx">02</div>
+        <div>
+          <h3>Type the job,<br><span class="pop">get the quote.</span></h3>
+        </div>
+        <p>Describe the work in plain English. The AI pulls matching SKUs from your catalog at the exact prices you set. Never a guess. Unmatched items get flagged for you to set — no fabricated numbers.</p>
+        <div class="tags">
+          <span class="tag">Voyage-3-large</span><span class="tag">Claude Sonnet</span><span class="tag">No hallucinated prices</span>
+        </div>
+      </div>
+
+      <div class="feature-row">
+        <div class="idx">03</div>
+        <div>
+          <h3>Send. Convert.<br><span class="pop">Mark paid.</span></h3>
+        </div>
+        <p>Branded PDF goes out by email. Customer replies "I accept." One tap turns the quote into an invoice — any unforeseen changes get logged transparently and shown to the customer.</p>
+        <div class="tags">
+          <span class="tag">Resend</span><span class="tag">Change deltas</span><span class="tag">Mobile-first</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WORKFLOW -->
+<section class="ink">
+  <div class="wrap">
+    <span class="num-tag">03 · The flow</span>
+    <div class="work-head">
+      <h2 class="display">Onboard once.<br>Then <span class="accent">quote forever.</span></h2>
+    </div>
+    <div class="work-strip">
+      <div class="work-step">
+        <div class="n">01</div>
+        <h4>Upload sheets</h4>
+        <p>Three or four supplier PDFs. Twenty minutes of your time. Catalog locked.</p>
+      </div>
+      <div class="work-step">
+        <div class="n">02</div>
+        <h4>Type the job</h4>
+        <p>At the kitchen table. Plain English. Hit generate.</p>
+      </div>
+      <div class="work-step">
+        <div class="n">03</div>
+        <h4>Send the PDF</h4>
+        <p>Branded. Logo. Your warranty wording. Customer email-ready.</p>
+      </div>
+      <div class="work-step">
+        <div class="n">04</div>
+        <h4>Get paid</h4>
+        <p>Accept → invoice → mark paid. Outstanding widget tracks the rest.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SIGNUP -->
+<section id="signup">
+  <div class="wrap">
+    <div class="price-intro">
+      <span class="num-tag">04 · Pricing</span>
+      <h2 class="display">Pick a tier. <span class="pop">Cancel anytime.</span></h2>
+      <p>Per-seat-band pricing. No nickel-and-diming on features. Every plan ships with the AI catalog, quoting, branded PDFs, invoicing, and overdue tracking.</p>
+    </div>
+
+    <div class="plans">
+      <div class="plan">
+        <div class="tier">Solo</div>
+        <div class="price">$99<small> / mo</small></div>
+        <div class="seats">1 user · 100 quotes / month</div>
+        <ul>
+          <li>SKU catalog (photo / PDF)</li>
+          <li>AI prompt-to-quote</li>
+          <li>Branded PDFs &amp; email</li>
+          <li>Quote → Invoice</li>
+          <li>Manual payment tracking</li>
+        </ul>
+        <a class="plan-cta" href="#">Start Solo</a>
+        <div class="plan-foot">No trial · cancel anytime</div>
+      </div>
+
+      <div class="plan featured">
+        <div class="badge">Most popular</div>
+        <div class="tier">Crew<span class="accent">.</span></div>
+        <div class="price">$139<small> / mo</small></div>
+        <div class="seats">3–4 users · 300 quotes / month</div>
+        <ul>
+          <li>Everything in Solo</li>
+          <li>Shared team catalog</li>
+          <li>Roles: admin · member</li>
+          <li>Team activity feed</li>
+          <li>Priority email support</li>
+        </ul>
+        <a class="plan-cta" href="#">Start Crew</a>
+        <div class="plan-foot">14-day refund window</div>
+      </div>
+
+      <div class="plan">
+        <div class="tier">Shop</div>
+        <div class="price">$249<small> / mo</small></div>
+        <div class="seats">5–10 users · unlimited quotes</div>
+        <ul>
+          <li>Everything in Crew</li>
+          <li>Roles: admin · manager · member</li>
+          <li>Multiple service areas</li>
+          <li>Custom email domain</li>
+          <li>API access (v0.5)</li>
+        </ul>
+        <a class="plan-cta" href="#">Start Shop</a>
+        <div class="plan-foot">Volume contracts on request</div>
+      </div>
+    </div>
+
+    <p class="price-bottom"><strong>No free trial.</strong> Working payment method required at signup. Need a trial? Ask — we issue Stripe coupons for serious prospects on a case-by-case basis.</p>
+  </div>
+</section>
+
+<!-- MAIN APP -->
+<section id="app">
+  <div class="wrap">
+    <span class="num-tag">05 · The screen you'll live in</span>
+    <div class="app-head">
+      <h2 class="display">Type the job. <span class="accent">Done.</span></h2>
+      <p>Customer fields up top — optional but encouraged. A big honest textarea for the job description. Tap a chip for an example. Generate.</p>
+    </div>
+    <div class="app-grid">
+      <div class="app-callouts">
+        <div class="callout">
+          <div class="marker">A</div>
+          <div><h4>Optional customer info</h4><p>Name, email, phone, address — fill what you have. The quote can be drafted without them and emailed later.</p></div>
+        </div>
+        <div class="callout">
+          <div class="marker">B</div>
+          <div><h4>The job, in your words</h4><p>Plain English. The AI handles the structure, the line-item math, and the markup. You handle the trade knowledge.</p></div>
+        </div>
+        <div class="callout">
+          <div class="marker">C</div>
+          <div><h4>Example chips</h4><p>Tap to pre-fill the textarea. Useful when you're standing at the customer's house and the wording slips your mind.</p></div>
+        </div>
+        <div class="callout">
+          <div class="marker">D</div>
+          <div><h4>Generate</h4><p>Quote in under thirty seconds. Lands on the review screen — every line still editable. Send when ready.</p></div>
+        </div>
+      </div>
+
+      <div class="phone-wrap">
+        <div class="phone">
+          <div class="screen">
+            <div class="top"><span>9:41</span><span>5G ●●●</span></div>
+            <div class="nav">
+              <div class="b">Quotebird</div>
+              <div class="pill">Draft</div>
+            </div>
+            <div class="body">
+              <div class="label">A · <span class="pop">Customer</span></div>
+              <div class="fields">
+                <div class="field">J. Patel</div>
+                <div class="field">jp@email.com</div>
+                <div class="field">(916) 555-…</div>
+                <div class="field">214 Cedar St.</div>
+              </div>
+
+              <div class="label">B · <span class="pop">Describe the job</span></div>
+              <div class="textarea">
+                Replace 3-ton AC condenser, <span class="pop">16 SEER</span>, second
+                floor attic access. R-22 system from 1998. Reuse line set if leak test
+                passes. Mechanical permit required.
+              </div>
+
+              <div class="label" style="margin-top: 10px;">C · <span class="pop">Examples</span></div>
+              <div class="chips">
+                <span>3-ton condenser</span>
+                <span>50gal water heater</span>
+                <span>220V range circuit</span>
+              </div>
+
+              <div class="gen">D · Generate quote ⚡</div>
+
+              <div class="meta">
+                <span>Catalog · <strong>342 SKUs</strong></span>
+                <span>v1.0 · BETA</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="site">
+  <div class="wrap">
+    <div class="top">
+      <div>
+        <div class="brand">Quotebird</div>
+        <p class="blurb">The AI-native quoting and invoicing tool for HVAC, plumbing, and electrical shops who'd rather be on the truck than at the desk.</p>
+      </div>
+      <div>
+        <h6>Product</h6>
+        <ul><li>Features</li><li>Pricing</li><li>Changelog</li><li>Status</li></ul>
+      </div>
+      <div>
+        <h6>Company</h6>
+        <ul><li>About</li><li>Customers</li><li>Careers</li><li>Press</li></ul>
+      </div>
+      <div>
+        <h6>Help</h6>
+        <ul><li>Docs</li><li>Onboarding guide</li><li>Security</li><li>Contact</li></ul>
+      </div>
+    </div>
+    <div class="bottom">
+      <div>© 2026 Quotebird Inc.</div>
+      <div>Terms · Privacy · Acceptable use</div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>

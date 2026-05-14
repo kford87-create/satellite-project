@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Quotebird · UI Direction Gallery</title>
+<style>
+  :root {
+    --bg: #1a1d20;
+    --panel: #25292d;
+    --line: #34383d;
+    --ink: #e8e6e1;
+    --muted: #8b9098;
+    --accent: #d9b46a;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg); color: var(--ink);
+    font: 15px/1.55 -apple-system, BlinkMacSystemFont, "Inter", system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 40px 24px;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; }
+  .head {
+    text-align: center; margin-bottom: 50px;
+  }
+  .head .eyebrow {
+    font-size: 11px; letter-spacing: .22em; text-transform: uppercase; color: var(--accent);
+    font-weight: 700;
+  }
+  .head h1 {
+    font-size: 38px; margin: 12px 0 10px; letter-spacing: -.025em; font-weight: 600;
+  }
+  .head p {
+    color: var(--muted); font-size: 15px; max-width: 60ch; margin: 0 auto;
+  }
+
+  .grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;
+  }
+  @media (max-width: 760px) { .grid { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--panel); border: 1px solid var(--line); border-radius: 14px;
+    overflow: hidden; cursor: pointer; display: block;
+    transition: transform .2s ease, border-color .2s ease;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .card:hover { transform: translateY(-3px); border-color: var(--accent); }
+  .card .preview {
+    aspect-ratio: 16 / 10; position: relative; overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+  /* Direction-specific preview "thumbnails" — colored gradients to evoke each direction */
+  .preview-1 {
+    background:
+      linear-gradient(135deg, #f3ede1 0%, #d3dcd5 100%);
+    position: relative;
+  }
+  .preview-1::after {
+    content: "From the cab to the customer in thirty seconds.";
+    position: absolute; inset: 0; padding: 24px;
+    font-family: Charter, Georgia, serif; font-size: 22px; line-height: 1.15;
+    color: #1c1814; font-style: italic;
+    display: flex; align-items: center;
+  }
+  .preview-1::before {
+    content: "✦"; position: absolute; top: 18px; right: 22px;
+    color: #b14e22; font-size: 22px;
+  }
+  .preview-2 {
+    background: #fff; position: relative;
+  }
+  .preview-2::after {
+    content: "QUOTE LIKE IT'S 2026.";
+    position: absolute; inset: 0; padding: 24px;
+    font-weight: 900; font-size: 38px; line-height: .95;
+    letter-spacing: -.04em; color: #0a0a0a;
+    font-stretch: condensed; text-transform: uppercase;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+    display: flex; align-items: center;
+  }
+  .preview-2::before {
+    content: "."; position: absolute; bottom: 20px; right: 36px;
+    color: #d44a1f; font-size: 60px; font-weight: 900; line-height: 0;
+  }
+  .preview-3 {
+    background: #f4eee2; position: relative;
+  }
+  .preview-3::after {
+    content: "The Quotebird Journal";
+    position: absolute; inset: 0; padding: 24px;
+    font-family: "Iowan Old Style", Charter, Georgia, serif;
+    font-size: 32px; font-style: italic; color: #181614; letter-spacing: -.015em;
+    display: flex; align-items: center; justify-content: center;
+    text-align: center;
+  }
+  .preview-3::before {
+    content: "ISSUE NO. 01 · SPRING 2026";
+    position: absolute; top: 18px; left: 0; right: 0;
+    text-align: center;
+    font-size: 10px; letter-spacing: .25em; color: #847d72;
+    font-weight: 700;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+  }
+  .preview-4 {
+    background:
+      radial-gradient(circle at 30% 30%, rgba(217,180,106,.18) 0%, transparent 50%),
+      radial-gradient(circle at 80% 80%, rgba(107,162,116,.1) 0%, transparent 50%),
+      #0c0e0d;
+    position: relative;
+  }
+  .preview-4::after {
+    content: "The quoting tool with your prices built in.";
+    position: absolute; inset: 0; padding: 24px;
+    font-family: -apple-system, "Inter", system-ui, sans-serif;
+    font-size: 24px; line-height: 1.1; font-weight: 600;
+    color: #e8e6e1; letter-spacing: -.025em;
+    display: flex; align-items: center;
+  }
+  .preview-4::before {
+    content: "Q"; position: absolute; top: 18px; right: 22px;
+    width: 32px; height: 32px; border-radius: 8px;
+    background: linear-gradient(135deg, #d9b46a, #b8923f);
+    color: #0c0e0d; display: flex; align-items: center; justify-content: center;
+    font-size: 16px; font-weight: 800;
+  }
+
+  .meta { padding: 22px 24px; }
+  .meta .tag {
+    display: inline-block;
+    font-size: 10.5px; letter-spacing: .14em; text-transform: uppercase;
+    color: var(--accent); font-weight: 700; margin-bottom: 6px;
+  }
+  .meta h3 { font-size: 19px; letter-spacing: -.015em; font-weight: 600; margin-bottom: 6px; }
+  .meta p { font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+  .meta .palette {
+    margin-top: 14px; display: flex; gap: 6px;
+  }
+  .meta .swatch {
+    width: 24px; height: 24px; border-radius: 4px; border: 1px solid var(--line);
+  }
+  .footer {
+    margin-top: 50px; text-align: center; font-size: 12px; color: var(--muted);
+  }
+  .footer code {
+    background: var(--panel); padding: 3px 7px; border-radius: 4px; border: 1px solid var(--line);
+    font-family: ui-monospace, Menlo, monospace; font-size: 11px;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="head">
+    <div class="eyebrow">Quotebird · UI Direction Gallery</div>
+    <h1>Pick a direction.</h1>
+    <p>Four meaningfully distinct visual directions for Quotebird. Each is a self-contained HTML file with three sections: marketing landing, signup / paywall, and the main app screen (Prompt-to-Quote on mobile). Click any card to open.</p>
+  </div>
+
+  <div class="grid">
+    <a class="card" href="quotebird-template-1-warm-trades-modern.html">
+      <div class="preview preview-1"></div>
+      <div class="meta">
+        <span class="tag">Direction 01</span>
+        <h3>Warm Trades-Modern</h3>
+        <p>Filson-catalog-meets-Notion. Parchment, forest green, brick orange. Refined serif headlines with italic accents. Feels like a shop that respects the craft and updated the tools.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#f3ede1"></span>
+          <span class="swatch" style="background:#28433a"></span>
+          <span class="swatch" style="background:#b14e22"></span>
+          <span class="swatch" style="background:#c89d4a"></span>
+          <span class="swatch" style="background:#1c1814"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="quotebird-template-2-bold-hi-contrast.html">
+      <div class="preview preview-2"></div>
+      <div class="meta">
+        <span class="tag">Direction 02</span>
+        <h3>Bold Hi-Contrast</h3>
+        <p>Stripe/Linear toughened. Stark white, near-black ink, one strong copper accent. Oversize condensed display type. Confident, declarative, modern tooling.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#ffffff"></span>
+          <span class="swatch" style="background:#0a0a0a"></span>
+          <span class="swatch" style="background:#d44a1f"></span>
+          <span class="swatch" style="background:#828282"></span>
+          <span class="swatch" style="background:#e8e8e8"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="quotebird-template-3-editorial-trade-journal.html">
+      <div class="preview preview-3"></div>
+      <div class="meta">
+        <span class="tag">Direction 03</span>
+        <h3>Editorial Trade Journal</h3>
+        <p>Monocle-for-trades. Paper cream, deep navy, rust accent. Magazine layout with masthead, decks, pull quotes, and a rate card. Quotebird as a publication people want to read.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#f4eee2"></span>
+          <span class="swatch" style="background:#1a3357"></span>
+          <span class="swatch" style="background:#a83b27"></span>
+          <span class="swatch" style="background:#b08d3a"></span>
+          <span class="swatch" style="background:#181614"></span>
+        </div>
+      </div>
+    </a>
+
+    <a class="card" href="quotebird-template-4-confident-dark-mode.html">
+      <div class="preview preview-4"></div>
+      <div class="meta">
+        <span class="tag">Direction 04</span>
+        <h3>Confident Dark Mode</h3>
+        <p>Premium pocket tool. Charcoal background, warm cream text, single amber accent. Humanist sans throughout. Every pixel intentional — feels like you're holding a precision instrument.</p>
+        <div class="palette">
+          <span class="swatch" style="background:#0c0e0d"></span>
+          <span class="swatch" style="background:#22262a"></span>
+          <span class="swatch" style="background:#d9b46a"></span>
+          <span class="swatch" style="background:#6ba274"></span>
+          <span class="swatch" style="background:#e8e6e1"></span>
+        </div>
+      </div>
+    </a>
+  </div>
+
+  <div class="footer">
+    Files in <code>templates/</code> · single-file HTML · open offline · ~26–33 KB each
+  </div>
+</div>
+</body>
+</html>
